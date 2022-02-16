@@ -50,12 +50,17 @@ def set_config():
         conf.save(
             "headers", "referer", "https://www.pixiv.net/ranking.php?mode=daily&content=illust"
         )
-    # +++++++++++++++++++++headers=======================
-    if type(conf.data("thread", "max_thread")) is not str:
-        conf.save("thread", "max_thread", "5")
-    if type(conf.data("File", "save_file")) is not str:
-        conf.save("File", "save_file", "pixiv")
-    if type(conf.data("File", "out_file")) is not str:
-        conf.save("File", "out_file", "downloaded")
+    # +++++++++++++++++++++user=======================
+    if type(conf.data("user", "max_thread")) is not str:
+        conf.save("user", "max_thread", "5")
+    if type(conf.data("user", "save_file")) is not str:
+        conf.save("user", "save_file", "pixiv")
+    if type(conf.data("user", "out_file")) is not str:
+        conf.save("user", "out_file", "downloaded")
+    if type(conf.data("user", "access_token")) is not str:
+        conf.save("user", "access_token", "")
+    if type(conf.data("user", "refresh_token")) is not str:
+        conf.save("user", "refresh_token", "")
+    # +++++++++++++++++++++user=======================
     return conf
 

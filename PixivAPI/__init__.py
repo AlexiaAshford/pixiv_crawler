@@ -1,4 +1,4 @@
-import json
+from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
 import setting
 import requests
@@ -38,9 +38,8 @@ class PixivApp:
     @staticmethod
     def pixiv_app_api():
         """构造接口类"""
-        access_token = ""
         app_pixiv = AppPixivAPI()
-        app_pixiv.set_auth(access_token)
+        app_pixiv.set_auth(config.data("user", "access_token"))
         return app_pixiv
 
     @staticmethod
@@ -51,4 +50,10 @@ class PixivApp:
     @staticmethod
     def illustration_information(works_id: int):
         """插画信息 <class 'pixivpy3.utils.JsonDict'>"""
-        return PixivApp.pixiv_app_api().illust_detail(works_id)
+        response = PixivApp.pixiv_app_api().illust_detail(works_id)
+        if response.error is None:
+            return response.illust
+        print(response.error["message"])
+        return ""
+
+
