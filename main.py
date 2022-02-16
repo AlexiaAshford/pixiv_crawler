@@ -7,21 +7,21 @@ import PixivAPI
 
 def shell_Collection():
     for illusts in PixivAPI.PixivApp.start_information()["illusts"]:
-        id = illusts["id"]
-        title = illusts["title"]
-        # image_urls = illusts["image_urls"]
-        print(title, f"\t{id}")
+        shell_illustration(illusts["id"])
 
 
 def shell_illustration(illustration_id: int):
     response = PixivAPI.PixivApp.illustration_information(illustration_id)
     if response != "":
-        print("插画名称：", response.title)
-        print("插画链接：", response.image_urls['large'])
+        print("插画名称：", response.title, "开始下载")
+        PixivAPI.Download.download_png(response.image_urls['large'])
 
 
 def shell_pixiv_token():
-    if PixivAPI.config.data("user", "access_token") == "":
+    for retry in range(PixivAPI.config.data("headers", "retry")):
+        if PixivAPI.config.data("user", "access_token") != "":
+            return True
+        print("本地配置文件没有令牌，请登入网站获取code")
         PixivAPI.login_pixiv.login()
 
 
@@ -39,6 +39,8 @@ def shell():
             print("help")
         elif inputs[0] == 'd' or inputs[0] == 'download':
             shell_illustration(inputs[0])
+        elif inputs[0] == 's' or inputs[0] == 'stars':
+            shell_Collection()
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:
