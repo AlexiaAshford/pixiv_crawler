@@ -11,7 +11,7 @@ def new_file():
 
 def shell_collection():
     response = PixivAPI.PixivApp.start_information()
-    if type(response) is list:
+    if type(response) is list or response == []:
         for index, values in enumerate(response):
             author_name = values['user']['name']
             image_name = values["title"]
@@ -32,6 +32,14 @@ def shell_illustration(illustration_id: int):
         if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
             PixivAPI.Download.download(image_url, image_name, file_path)
 
+
+def shell_search(png_name: str, target='partial_match_for_tags'):
+    response = PixivAPI.PixivApp.search_information(png_name, target)
+    if type(response) is list or response == []:
+        for search_data in response:
+            image_id = search_data['id']
+            image_name = PixivAPI.remove_str(search_data['title'])
+            shell_illustration(image_id)
 
 def shell_pixiv_token():
     for retry in range(int(PixivAPI.config.data("headers", "retry"))):
@@ -57,6 +65,8 @@ def shell():
             shell_illustration(inputs[0])
         elif inputs[0] == 's' or inputs[0] == 'stars':
             shell_collection()
+        elif inputs[0] == 'n' or inputs[0] == 'name':
+            shell_search(inputs[1])
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:

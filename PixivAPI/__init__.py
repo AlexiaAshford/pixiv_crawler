@@ -1,6 +1,5 @@
 import os
 import re
-
 from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
 import setting
@@ -54,9 +53,8 @@ class Download:
     @staticmethod
     def download(png_url: str, png_name: str, file_path: str):
         with open(os.path.join(file_path, f'{png_name}.png'), 'wb+') as file:
-            print(f"插图 {png_name} 下载成功")
             file.write(get(png_url).content)
-            print('成功下载图片：{}.png'.format(png_name))
+            print('成功下载图片：{}'.format(png_name))
 
 
 class PixivApp:
@@ -77,6 +75,16 @@ class PixivApp:
     def start_information():
         """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
+        if response.error is None:
+            return response.illusts
+        return response.error
+
+    @staticmethod
+    def search_information(png_name: str, search_target: str):
+        """搜搜插画 <class 'pixivpy3.utils.JsonDict'>"""
+        response = PixivApp.pixiv_app_api().search_illust(
+            word=png_name, search_target=search_target
+        )
         if response.error is None:
             return response.illusts
         return response.error
