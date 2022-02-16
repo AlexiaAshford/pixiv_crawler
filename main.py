@@ -1,22 +1,34 @@
+import os
 import re
 import sys
-
 from rich import print
 import PixivAPI
 
 
-def shell_Collection():
-    for illusts in PixivAPI.PixivApp.start_information():
-        shell_illustration(illusts["id"])
+def new_file():
+    PixivAPI.mkdir(PixivAPI.config.data("user", "save_file"))
+
+
+def shell_collection():
+    response = PixivAPI.PixivApp.start_information()
+    if type(response) is list:
+        for index, values in enumerate(response):
+            author_name = values['user']['name']
+            author_id = values['user']['id']
+            update = values['create_date']
+            print("\n第{}幅插图 {}:".format(index, update))
+            print("作者:{}\n插画{}:".format(author_name, values["title"]))
+            shell_illustration(values["id"])
 
 
 def shell_illustration(illustration_id: int):
     response = PixivAPI.PixivApp.illustration_information(illustration_id)
     if response.get("message") is None:
         image_url = response.image_urls['large']
-        image_name = response.title
-        print(f"插画名称：{image_name}开始下载")
-        PixivAPI.Download.download_png(image_url, image_name)
+        image_name = PixivAPI.filter_str(response.title)
+        file_path = PixivAPI.config.data("user", "save_file")
+        if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
+            PixivAPI.Download.download_png(image_url, image_name, file_path)
 
 
 def shell_pixiv_token():
@@ -42,7 +54,7 @@ def shell():
         elif inputs[0] == 'd' or inputs[0] == 'download':
             shell_illustration(inputs[0])
         elif inputs[0] == 's' or inputs[0] == 'stars':
-            shell_Collection()
+            shell_collection()
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:
@@ -52,4 +64,5 @@ def shell():
 
 if __name__ == '__main__':
     shell_pixiv_token()
+    new_file()
     shell()

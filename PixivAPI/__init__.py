@@ -1,4 +1,5 @@
 import os
+import re
 
 from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
@@ -29,6 +30,10 @@ def get(url, params=None, max_retry=config.data("headers", "retry")):
         print("插图下载失败，重新第{}次请求：".format(retry))
 
 
+def filter_str(content: str):
+    return re.compile("[^\\u4e00-\\u9fa5^a-z^A-Z^0-9]").sub(content, "")
+
+
 def input_(prompt, default=None):
     while True:
         ret = input(prompt)
@@ -38,13 +43,15 @@ def input_(prompt, default=None):
             return default
 
 
+def mkdir(file_path: str):
+    if not os.path.exists(file_path):
+        os.mkdir(file_path)
+
+
 class Download:
     @staticmethod
-    def download_png(png_url: str, png_name: str):
-        save_path = config.data("user", "save_file")
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-        with open(os.path.join(save_path, f'{png_name}.png'), 'wb+') as file:
+    def download_png(png_url: str, png_name: str, file_path: str):
+        with open(os.path.join(file_path, f'{png_name}.png'), 'wb+') as file:
             file.write(get(png_url).content)
             print('成功下载图片：{}.png'.format(png_name))
 
@@ -67,10 +74,9 @@ class PixivApp:
     def start_information():
         """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
-        # print(response)
         if response.error is None:
             return response.illusts
-        return ""
+        return response.error
 
     @staticmethod
     def illustration_information(works_id: int):
