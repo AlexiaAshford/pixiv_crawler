@@ -1,11 +1,16 @@
+# After logging in you should see a blank page and request that looks like this: .
+# Copy value of the param into the 's prompt and hit the
+# key.https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback?state=...&code=..
+
 from argparse import ArgumentParser
 from base64 import urlsafe_b64encode
 from hashlib import sha256
-import PixivAPI
+from pprint import pprint
 from secrets import token_urlsafe
 from sys import exit
 from urllib.parse import urlencode
 from webbrowser import open as open_url
+
 import requests
 
 # Latest app version can be found using GET /v1/application-info/android
@@ -32,6 +37,22 @@ def oauth_pkce(transform):
     return code_verifier, code_challenge
 
 
+def print_auth_token_response(response):
+    data = response.json()
+
+    try:
+        access_token = data["access_token"]
+        refresh_token = data["refresh_token"]
+    except KeyError:
+        print("error:")
+        pprint(data)
+        exit(1)
+
+    print("access_token:", access_token)
+    print("refresh_token:", refresh_token)
+    print("expires_in:", data.get("expires_in", 0))
+
+
 def login():
     code_verifier, code_challenge = oauth_pkce(s256)
     login_params = {
@@ -39,19 +60,20 @@ def login():
         "code_challenge_method": "S256",
         "client": "pixiv-android",
     }
-    open_url(f"https://app-api.pixiv.net/web/v1/login?{urlencode(login_params)}")
 
-    while True:
-        code_strip = input("code: ").strip()
-        if code_strip != "":
-            break
+    open_url(f"{LOGIN_URL}?{urlencode(login_params)}")
+
+    try:
+        code = input("code: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return
 
     response = requests.post(
         AUTH_TOKEN_URL,
         data={
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
-            "code": code_strip,
+            "code": code,
             "code_verifier": code_verifier,
             "grant_type": "authorization_code",
             "include_policy": "true",
@@ -59,9 +81,8 @@ def login():
         },
         headers={"User-Agent": USER_AGENT},
     )
-    save_token(response.json())
 
-
+    print_auth_token_response(response)
 
 
 def refresh(refresh_token):
@@ -76,17 +97,9 @@ def refresh(refresh_token):
         },
         headers={"User-Agent": USER_AGENT},
     )
-    save_token(response.json())
+    print_auth_token_response(response)
 
 
-def save_token(response):
-    if response.get("code") is None:
-        access_token = response["access_token"]
-        refresh_token = response["refresh_token"]
-        PixivAPI.config.save("user", "access_token", access_token)
-        PixivAPI.config.save("user", "refresh_token", refresh_token)
-    else:
-        print(response.get("message"))
 def main():
     parser = ArgumentParser()
     subparsers = parser.add_subparsers()

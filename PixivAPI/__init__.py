@@ -27,6 +27,15 @@ def get(url, params=None, max_retry=config.data("headers", "retry")):
         print("插图下载失败，重新第{}次请求：".format(retry))
 
 
+def input_(prompt, default=None):
+    while True:
+        ret = input(prompt)
+        if ret != '':
+            return ret
+        elif default is not None:
+            return default
+
+
 class Download:
     @staticmethod
     def download_png(png_url: str) -> bytes:
@@ -36,16 +45,25 @@ class Download:
 
 class PixivApp:
     @staticmethod
-    def pixiv_app_api():
-        """构造接口类"""
+    def pixiv_app_api(max_retry=config.data("headers", "retry")):
+        """构造API接口类"""
         app_pixiv = AppPixivAPI()
-        app_pixiv.set_auth(config.data("user", "access_token"))
-        return app_pixiv
+        for retry in range(int(max_retry)):
+            access_token = config.data("user", "access_token")
+            refresh_token = config.data("user", "refresh_token")
+            app_pixiv.set_auth(access_token=access_token, refresh_token=refresh_token)
+            if app_pixiv.illust_recommended().error is not None:
+                login_pixiv.refresh(refresh_token)
+                print("令牌失效，尝试刷新令牌{}：".format(retry))
+            return app_pixiv
 
     @staticmethod
     def start_information():
         """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
-        return PixivApp.pixiv_app_api().illust_recommended()
+        response = PixivApp.pixiv_app_api().illust_recommended()
+        if response.error is None:
+            return response.illust
+        return ""
 
     @staticmethod
     def illustration_information(works_id: int):
@@ -55,5 +73,3 @@ class PixivApp:
             return response.illust
         print(response.error["message"])
         return ""
-
-
