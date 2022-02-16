@@ -16,7 +16,7 @@ def download_pic(illust_id):
 
 
 if __name__ == '__main__':
-    config = setting.Config('config.ini')
+    config = setting.set_config()
     config.load()
     for index, page in enumerate(range(1, 6)):
         response = PixivAPI.Ranking.ranking_id(page)

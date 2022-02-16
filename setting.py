@@ -43,7 +43,7 @@ def set_config():
             "headers", "User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"
         )
     if type(conf.data("headers", "Cookie")) is not str:
-        conf.save("headers", "Cookie`", "")
+        conf.save("headers", "Cookie", "")
     if type(conf.data("headers", "retry")) is not str:
         conf.save("headers", "retry", "5")
     if type(conf.data("headers", "referer")) is not str:
