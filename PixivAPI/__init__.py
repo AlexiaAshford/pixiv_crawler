@@ -30,8 +30,10 @@ def get(url, params=None, max_retry=config.data("headers", "retry")):
         print("插图下载失败，重新第{}次请求：".format(retry))
 
 
-def filter_str(content: str):
-    return re.compile("[^\\u4e00-\\u9fa5^a-z^A-Z^0-9]").sub(content, "")
+def remove_str(content: str):
+    file_name = re.sub('[/:*?"<>|]', '-', content)  # 去掉非法字符
+    res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
+    return res_compile.sub("", file_name)
 
 
 def input_(prompt, default=None):
@@ -50,8 +52,9 @@ def mkdir(file_path: str):
 
 class Download:
     @staticmethod
-    def download_png(png_url: str, png_name: str, file_path: str):
+    def download(png_url: str, png_name: str, file_path: str):
         with open(os.path.join(file_path, f'{png_name}.png'), 'wb+') as file:
+            print(f"插图 {png_name} 下载成功")
             file.write(get(png_url).content)
             print('成功下载图片：{}.png'.format(png_name))
 
@@ -61,13 +64,13 @@ class PixivApp:
     def pixiv_app_api(max_retry=config.data("headers", "retry")):
         """构造API接口类"""
         app_pixiv = AppPixivAPI()
-        for retry in range(int(max_retry)):
+        for index, retry in enumerate(range(int(max_retry))):
             access_token = config.data("user", "access_token")
             refresh_token = config.data("user", "refresh_token")
             app_pixiv.set_auth(access_token=access_token, refresh_token=refresh_token)
             if app_pixiv.illust_recommended().error is not None:
                 login_pixiv.refresh(refresh_token)
-                print("令牌失效，尝试刷新令牌{}：".format(retry))
+                print("令牌失效，尝试刷新令牌{}".format(index))
             return app_pixiv
 
     @staticmethod

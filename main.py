@@ -14,10 +14,12 @@ def shell_collection():
     if type(response) is list:
         for index, values in enumerate(response):
             author_name = values['user']['name']
-            author_id = values['user']['id']
+            image_name = values["title"]
             update = values['create_date']
-            print("\n第{}幅插图 {}:".format(index, update))
-            print("作者:{}\n插画{}:".format(author_name, values["title"]))
+            tags_llist = [i['name'] for i in values['tags']]
+            print("\n第{}幅插图 [{}]:".format(index, update))
+            print("作者: {}\n插画: {}:".format(author_name, image_name))
+            print("标签: {}".format(', '.join(tags_llist)))
             shell_illustration(values["id"])
 
 
@@ -25,10 +27,10 @@ def shell_illustration(illustration_id: int):
     response = PixivAPI.PixivApp.illustration_information(illustration_id)
     if response.get("message") is None:
         image_url = response.image_urls['large']
-        image_name = PixivAPI.filter_str(response.title)
+        image_name = PixivAPI.remove_str(response.title)
         file_path = PixivAPI.config.data("user", "save_file")
         if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
-            PixivAPI.Download.download_png(image_url, image_name, file_path)
+            PixivAPI.Download.download(image_url, image_name, file_path)
 
 
 def shell_pixiv_token():
