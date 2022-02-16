@@ -1,3 +1,5 @@
+import os
+
 from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
 import setting
@@ -38,9 +40,13 @@ def input_(prompt, default=None):
 
 class Download:
     @staticmethod
-    def download_png(png_url: str) -> bytes:
-        url = 'https://embed.pixiv.net/decorate.php?illust_id={}&mode=sns-automator'
-        return get(url.format(png_url)).content
+    def download_png(png_url: str, png_name: str):
+        save_path = config.data("user", "save_file")
+        if not os.path.exists(save_path):
+            os.mkdir(save_path)
+        with open(os.path.join(save_path, f'{png_name}.png'), 'wb+') as file:
+            file.write(get(png_url).content)
+            print('成功下载图片：{}.png'.format(png_name))
 
 
 class PixivApp:
@@ -61,8 +67,9 @@ class PixivApp:
     def start_information():
         """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
+        # print(response)
         if response.error is None:
-            return response.illust
+            return response.illusts
         return ""
 
     @staticmethod
@@ -71,5 +78,4 @@ class PixivApp:
         response = PixivApp.pixiv_app_api().illust_detail(works_id)
         if response.error is None:
             return response.illust
-        print(response.error["message"])
-        return ""
+        return response.error

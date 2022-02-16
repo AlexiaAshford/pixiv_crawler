@@ -6,19 +6,21 @@ import PixivAPI
 
 
 def shell_Collection():
-    for illusts in PixivAPI.PixivApp.start_information()["illusts"]:
+    for illusts in PixivAPI.PixivApp.start_information():
         shell_illustration(illusts["id"])
 
 
 def shell_illustration(illustration_id: int):
     response = PixivAPI.PixivApp.illustration_information(illustration_id)
-    if response != "":
-        print("插画名称：", response.title, "开始下载")
-        PixivAPI.Download.download_png(response.image_urls['large'])
+    if response.get("message") is None:
+        image_url = response.image_urls['large']
+        image_name = response.title
+        print(f"插画名称：{image_name}开始下载")
+        PixivAPI.Download.download_png(image_url, image_name)
 
 
 def shell_pixiv_token():
-    for retry in range(PixivAPI.config.data("headers", "retry")):
+    for retry in range(int(PixivAPI.config.data("headers", "retry"))):
         if PixivAPI.config.data("user", "access_token") != "":
             return True
         print("本地配置文件没有令牌，请登入网站获取code")
