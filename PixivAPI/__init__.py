@@ -93,6 +93,16 @@ class PixivApp:
         return response.error
 
     @staticmethod
+    def about_recommend(works_id: int):
+        """插画相关推荐 <class 'PixivApp.utils.JsonDict'>"""
+        response = PixivApp.pixiv_app_api().illust_related(works_id)
+        next_qs = PixivApp.pixiv_app_api().parse_qs(response.next_url)
+        response2 = PixivApp.pixiv_app_api().illust_related(**next_qs)
+        if response2.error is None:
+            return response2.illusts
+        return response2.error
+
+    @staticmethod
     def search_information(png_name: str, search_target: str):
         """搜搜插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().search_illust(

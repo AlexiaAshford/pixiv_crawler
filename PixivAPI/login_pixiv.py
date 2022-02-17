@@ -1,9 +1,7 @@
-from argparse import ArgumentParser
 from base64 import urlsafe_b64encode
 from hashlib import sha256
 import PixivAPI
 from secrets import token_urlsafe
-from sys import exit
 from urllib.parse import urlencode
 from webbrowser import open as open_url
 import requests
@@ -86,18 +84,4 @@ def save_token(response):
         PixivAPI.config.save("user", "refresh_token", refresh_token)
     else:
         print(response.get("message"))
-def main():
-    parser = ArgumentParser()
-    subparsers = parser.add_subparsers()
-    parser.set_defaults(func=lambda _: parser.print_usage())
-    login_parser = subparsers.add_parser("login")
-    login_parser.set_defaults(func=lambda _: login())
-    refresh_parser = subparsers.add_parser("refresh")
-    refresh_parser.add_argument("refresh_token")
-    refresh_parser.set_defaults(func=lambda ns: refresh(ns.refresh_token))
-    args = parser.parse_args()
-    args.func(args)
 
-
-if __name__ == "__main__":
-    main()

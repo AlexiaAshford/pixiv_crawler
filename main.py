@@ -38,8 +38,13 @@ def shell_collection():
             shell_illustration(image_id)
 
 
-def shell_recommend():
-    response = PixivAPI.PixivApp.recommend_information()
+def shell_recommend(inputs):
+    if len(inputs) >= 2:
+        image_id = PixivAPI.rec_id(str(inputs[1]))
+        response = PixivAPI.PixivApp.about_recommend(image_id)
+        print("cccc")
+    else:
+        response = PixivAPI.PixivApp.recommend_information()
     if type(response) is list or response == []:
         for index, values in enumerate(response):
             author_name = values.user['name']
@@ -53,8 +58,8 @@ def shell_recommend():
             shell_illustration(image_id)
 
 
-def shell_illustration(illustration_id: int):
-    image_id = PixivAPI.rec_id(str(illustration_id))
+def shell_illustration(png_id: int):
+    image_id = PixivAPI.rec_id(str(png_id))
     if type(image_id) is str and image_id == "":
         print(image_id)
         return
@@ -88,6 +93,7 @@ def shell_pixiv_token():
         PixivAPI.login_pixiv.login()
 
 
+
 def shell():
     if len(sys.argv) > 1 and type(sys.argv) is list:
         command_line = True
@@ -108,7 +114,7 @@ def shell():
         elif inputs[0] == 'n' or inputs[0] == 'name':
             shell_search(inputs[1])
         elif inputs[0] == 't' or inputs[0] == 'recommend':
-            shell_recommend()
+            shell_recommend(inputs)
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:
