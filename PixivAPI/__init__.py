@@ -66,14 +66,14 @@ class PixivApp:
     @staticmethod
     def pixiv_app_api(max_retry=config.data("headers", "retry")):
         """构造API接口类"""
-        app_pixiv = AppPixivAPI()
         for index, retry in enumerate(range(int(max_retry))):
+            app_pixiv = AppPixivAPI()
             access_token = config.data("user", "access_token")
             refresh_token = config.data("user", "refresh_token")
             app_pixiv.set_auth(access_token=access_token, refresh_token=refresh_token)
             if app_pixiv.illust_recommended().error is not None:
                 login_pixiv.refresh(refresh_token)
-                print("令牌失效，尝试刷新令牌{}".format(index))
+                print("令牌失效，尝试刷新令牌:retry {}".format(index))
             return app_pixiv
 
     @staticmethod
@@ -86,8 +86,8 @@ class PixivApp:
 
     @staticmethod
     def recommend_information():
-        """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().illust_follow()
+        """推荐插画 <class 'pixivpy3.utils.JsonDict'>"""
+        response = PixivApp.pixiv_app_api().illust_recommended()
         if response.error is None:
             return response.illusts
         return response.error
