@@ -94,12 +94,13 @@ def shell():
         inputs = sys.argv[1:]
     else:
         command_line = False
+        print(PixivAPI.config.data("user", "help"))
         inputs = re.split('\\s+', PixivAPI.input_('>').strip())
     while True:
         if inputs[0] == 'q' or inputs[0] == 'quit':
             sys.exit("已退出程序")
         elif inputs[0] == 'h' or inputs[0] == 'help':
-            print("help")
+            print(PixivAPI.config.data("user", "help"))
         elif inputs[0] == 'd' or inputs[0] == 'download':
             shell_illustration(inputs[1])
         elif inputs[0] == 's' or inputs[0] == 'stars':
