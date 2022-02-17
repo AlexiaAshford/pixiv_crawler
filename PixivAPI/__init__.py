@@ -4,7 +4,7 @@ from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
 import setting
 import requests
-from pixivpy3 import *
+from PixivApp import *
 from rich import print
 
 config = setting.set_config()
@@ -78,7 +78,7 @@ class PixivApp:
 
     @staticmethod
     def start_information():
-        """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
+        """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
         if response.error is None:
             return response.illusts
@@ -86,7 +86,7 @@ class PixivApp:
 
     @staticmethod
     def recommend_information():
-        """推荐插画 <class 'pixivpy3.utils.JsonDict'>"""
+        """推荐插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
         if response.error is None:
             return response.illusts
@@ -94,7 +94,7 @@ class PixivApp:
 
     @staticmethod
     def search_information(png_name: str, search_target: str):
-        """搜搜插画 <class 'pixivpy3.utils.JsonDict'>"""
+        """搜搜插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().search_illust(
             word=png_name, search_target=search_target
         )
@@ -104,7 +104,7 @@ class PixivApp:
 
     @staticmethod
     def illustration_information(works_id: int):
-        """插画信息 <class 'pixivpy3.utils.JsonDict'>"""
+        """插画信息 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_detail(works_id)
         if response.error is None:
             return response.illust
