@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import time
-
 from rich import print
 import PixivAPI
 
@@ -15,7 +14,7 @@ def show_image_information(
         index: int, update: str, author_name: str,
         image_name: str, image_id: int, tags_llist: list
 ):
-    print("\n\n第{}幅插图:".format(index))
+    print("\n第{}幅插图:".format(index))
     print("插画名称: {}:".format(image_name))
     print("插画ID: {}".format(image_id))
     print("作者名称: {}".format(author_name))
@@ -42,7 +41,6 @@ def shell_recommend(inputs):
     if len(inputs) >= 2:
         image_id = PixivAPI.rec_id(str(inputs[1]))
         response = PixivAPI.PixivApp.about_recommend(image_id)
-        print("cccc")
     else:
         response = PixivAPI.PixivApp.recommend_information()
     if type(response) is list or response == []:
@@ -69,7 +67,9 @@ def shell_illustration(png_id: int):
         image_name = PixivAPI.remove_str(response.title)
         file_path = PixivAPI.config.data("user", "save_file")
         if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
+            start = time.time()
             PixivAPI.Download.download(image_url, image_name, file_path)
+            print(f'下载耗时:{round(time.time() - start, 2)} 秒')
         else:
             print(f"{image_name} 已经下载过了")
     else:
