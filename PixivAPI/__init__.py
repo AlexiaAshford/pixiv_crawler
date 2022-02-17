@@ -35,6 +35,11 @@ def remove_str(content: str):
     return res_compile.sub("", file_name)
 
 
+def rec_id(book_id):
+    book_id = book_id if 'http' not in book_id else re.findall(r'/([0-9]+)/?', book_id)[0]
+    return int(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
+
+
 def input_(prompt, default=None):
     while True:
         ret = input(prompt)
@@ -75,6 +80,14 @@ class PixivApp:
     def start_information():
         """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
+        if response.error is None:
+            return response.illusts
+        return response.error
+
+    @staticmethod
+    def recommend_information():
+        """收藏插画 <class 'pixivpy3.utils.JsonDict'>"""
+        response = PixivApp.pixiv_app_api().illust_follow()
         if response.error is None:
             return response.illusts
         return response.error

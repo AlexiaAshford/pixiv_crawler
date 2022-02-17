@@ -28,7 +28,6 @@ def oauth_pkce(transform):
 
     code_verifier = token_urlsafe(32)
     code_challenge = transform(code_verifier.encode("ascii"))
-
     return code_verifier, code_challenge
 
 
