@@ -115,6 +115,9 @@ def shell():
             shell_search(inputs[1])
         elif inputs[0] == 't' or inputs[0] == 'recommend':
             shell_recommend(inputs)
+        elif inputs[0] == 'f' or inputs[0] == 'follow':
+            response = PixivAPI.PixivApp.follow_information()
+            print(response)
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:

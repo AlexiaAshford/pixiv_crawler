@@ -103,6 +103,14 @@ class PixivApp:
         return response2.error
 
     @staticmethod
+    def follow_information():
+        """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
+        response = PixivApp.pixiv_app_api().illust_follow()
+        if response.error is None:
+            return response.illusts
+        return response.error
+
+    @staticmethod
     def search_information(png_name: str, search_target: str):
         """搜搜插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().search_illust(
