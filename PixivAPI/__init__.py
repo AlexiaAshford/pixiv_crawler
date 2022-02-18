@@ -7,21 +7,6 @@ Vars.cfg.load()
 max_retry = Vars.cfg.data("headers", "retry")
 
 
-def remove_str(content: str):
-    res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-    return res_compile.sub("", re.sub('[/:*?"<>|]', '-', content))
-
-
-def rec_id(book_id):
-    book_id = book_id if 'http' not in book_id else re.findall(r'/([0-9]+)/?', book_id)[0]
-    return int(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
-
-
-def mkdir(file_path: str):
-    if not os.path.exists(file_path):
-        os.mkdir(file_path)
-
-
 class Download:
     @staticmethod
     def save_image(image_id: int):
