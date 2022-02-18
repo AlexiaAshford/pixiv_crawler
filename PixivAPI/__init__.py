@@ -62,25 +62,24 @@ class Download:
     def save_image(image_id: int):
         response = PixivApp.illustration_information(image_id)
         if response.get("message") is None:
-            image_url = response.image_urls['large']
             image_name = remove_str(response.title)
             file_path = config.data("user", "save_file")
             if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
                 with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
-                    file.write(get(image_url).content)
-                    print('成功下载图片：{}'.format(image_name))
+                    file.write(get(response.image_urls['large']).content)
+                    print('成功下载图片：{}\n'.format(image_name))
             else:
-                print(f"{image_name} 已经下载过了")
+                print(f"{image_name} 已经下载过了\n")
         else:
             print(response.get("message"))
 
     @staticmethod
     def threading_download(image_id_list: list):
+        image_id_len = len(image_id_list)
         lock_tasks_list = threading.Lock()
-        threads_pool = []
+        print(f"开始下载，一共 {image_id_len} 张图片")
 
         # 生成下载队列.
-
         def downloader():
             """多线程下载函数"""
             nonlocal lock_tasks_list
@@ -88,11 +87,12 @@ class Download:
             while image_id_list:
                 lock_tasks_list.acquire()
                 image_id = image_id_list.pop()
+                print("正在下载第{}张".format(image_id_len - len(image_id_list)))
                 lock_tasks_list.release()
-
                 Download.save_image(image_id)
 
-        for _ in range(5):
+        threads_pool = []
+        for _ in range(int(config.data("user", "max_thread"))):
             th = threading.Thread(target=downloader)
             threads_pool.append(th)
             th.start()
@@ -155,7 +155,7 @@ class PixivApp:
         """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().user_illusts(author_id)
         if response.error is None:
-            return [data.id for data in response.illusts]
+            return list(set([data.id for data in response.illusts]))
         return response.error
 
     @staticmethod
@@ -173,5 +173,11 @@ class PixivApp:
         """插画信息 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_detail(works_id)
         if response.error is None:
+            tags_llist = [i['name'] for i in response.illust['tags']]
+            print("插画名称: {}:".format(response.illust.title))
+            print("插画ID: {}".format(response.illust.id))
+            print("作者名称: {}".format(response.illust.user['name']))
+            print("插画标签: {}".format(', '.join(tags_llist)))
+            print("发布时间: {}\n\n".format(response.illust.create_date))
             return response.illust
         return response.error
