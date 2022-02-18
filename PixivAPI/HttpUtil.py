@@ -28,3 +28,11 @@ def post(url, data=None, *args, **kwargs):
         if result.status_code == 200:
             return result
         print("插图下载失败，重新第{}次请求：".format(retry))
+
+
+def put(url, data=None, *args, **kwargs):
+    for retry in range(int(PixivAPI.config.data("headers", "retry"))):
+        result = requests.put(url=url, headers=headers(), data=data)
+        if result.status_code == 200:
+            return result
+        print("插图下载失败，重新第{}次请求：".format(retry))

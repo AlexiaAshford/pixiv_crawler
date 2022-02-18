@@ -18,7 +18,7 @@ def input_(prompt, default=None):
 
 class Config:
 
-    def __init__(self, filename):
+    def __init__(self, filename: str, main_path: str):
         self.filename = filename
         self.config = configparser.ConfigParser()
 
@@ -49,7 +49,7 @@ class Config:
 
 
 def set_config():
-    conf = Config(os.path.join(os.getcwd(), 'config.ini'))
+    conf = Config('config.ini', os.path.join(os.getcwd()))
     conf.load()
     # +++++++++++++++++++++headers=======================
     if type(conf.data("headers", "User-Agent")) is not str:
