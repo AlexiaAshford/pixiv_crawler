@@ -56,6 +56,22 @@ def shell_recommend(inputs):
             shell_illustration(image_id)
 
 
+def shell_download_author(author_id: str):
+    response = PixivAPI.PixivApp.author_information(author_id)
+    if type(response) is list or response == []:
+        for index, values in enumerate(response):
+            author_name = values.user['name']
+            image_name = values.title
+            image_id = values.id
+            update = values.create_date
+            tags_llist = [i['name'] for i in values['tags']]
+            show_image_information(
+                index, update, author_name, image_name, image_id, tags_llist
+            )
+            shell_illustration(image_id)
+
+    
+
 def shell_illustration(png_id: int):
     image_id = PixivAPI.rec_id(str(png_id))
     if type(image_id) is str and image_id == "":
@@ -108,7 +124,10 @@ def shell():
         elif inputs[0] == 'h' or inputs[0] == 'help':
             print(PixivAPI.config.data("user", "help"))
         elif inputs[0] == 'd' or inputs[0] == 'download':
-            shell_illustration(inputs[1])
+            if len(inputs) <= 2:
+                shell_illustration(inputs[1])
+            else:
+                shell_download_author(inputs[1])
         elif inputs[0] == 's' or inputs[0] == 'stars':
             shell_collection()
         elif inputs[0] == 'n' or inputs[0] == 'name':

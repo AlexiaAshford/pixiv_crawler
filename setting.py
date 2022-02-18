@@ -65,7 +65,7 @@ def set_config():
         conf.save("user", "help",
                   "输入首字母\nh | help\t\t\t\t\t\t--- 显示说明\n"
                   "q | quit\t\t\t\t\t\t--- 退出正在运作的程序\n"
-                  "d | picture\t\t\t\t\t\t--- 输入id或者url下载插画\n"
+                  "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
                   "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
                   "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
                   "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名"

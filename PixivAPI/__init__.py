@@ -111,6 +111,14 @@ class PixivApp:
         return response.error
 
     @staticmethod
+    def author_information(author_id: str):
+        """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
+        response = PixivApp.pixiv_app_api().user_illusts(author_id)
+        if response.error is None:
+            return response.illusts
+        return response.error
+
+    @staticmethod
     def search_information(png_name: str, search_target: str):
         """搜搜插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().search_illust(
