@@ -9,7 +9,6 @@ class Vars:
     cfg = Config('Pixiv-Config.conf', os.getcwd())
 
 
-
 def remove_str(content: str):
     res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
     return res_compile.sub("", re.sub('[/:*?"<>|]', '-', content))
@@ -23,6 +22,7 @@ def rec_id(book_id):
 def mkdir(file_path: str):
     if not os.path.exists(file_path):
         os.mkdir(file_path)
+
 
 def input_(prompt, default=None):
     while True:
@@ -61,11 +61,10 @@ def set_config():
         Vars.cfg.save("user", "refresh_token", "")
     if type(Vars.cfg.data("user", "help")) is not str:
         Vars.cfg.save("user", "help",
-                  "输入首字母\nh | help\t\t\t\t\t\t--- 显示说明\n"
-                  "q | quit\t\t\t\t\t\t--- 退出正在运作的程序\n"
-                  "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
-                  "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
-                  "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
-                  "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名"
-                  )
-
+                      "输入首字母\nh | help\t\t\t\t\t\t--- 显示说明\n"
+                      "q | quit\t\t\t\t\t\t--- 退出正在运作的程序\n"
+                      "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
+                      "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
+                      "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
+                      "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名"
+                      )

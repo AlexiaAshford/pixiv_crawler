@@ -78,8 +78,11 @@ class PixivApp:
         """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivToken.instantiation_api().illust_recommended()
         if response.error is None:
-            return response.illusts
-        return response.error
+            image_id_list = list(set([data.id for data in response.illusts]))
+            if type(image_id_list) is list and len(image_id_list) != 0:
+                Download.threading_download(image_id_list)
+        else:
+            print(response.error)
 
     @staticmethod
     def recommend_information():
