@@ -1,13 +1,13 @@
 import requests
+from instance import *
 from fake_useragent import UserAgent
-import PixivAPI
 
 
 def headers():
     return {
         'Referer': 'https://www.pixiv.net/',
         'User-Agent': UserAgent(verify_ssl=False).random,
-        'cookie': PixivAPI.config.data("headers", "Cookie"),
+        'cookie': Vars.cfg.data("headers", "Cookie"),
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
         'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',
@@ -15,7 +15,7 @@ def headers():
 
 
 def get(url, params=None, *args, **kwargs):
-    for retry in range(int(PixivAPI.config.data("headers", "retry"))):
+    for retry in range(int(Vars.cfg.data("headers", "retry"))):
         result = requests.get(url=url, headers=headers(), params=params)
         if result.status_code == 200:
             return result
@@ -23,7 +23,7 @@ def get(url, params=None, *args, **kwargs):
 
 
 def post(url, data=None, *args, **kwargs):
-    for retry in range(int(PixivAPI.config.data("headers", "retry"))):
+    for retry in range(int(Vars.cfg.data("headers", "retry"))):
         result = requests.post(url=url, headers=headers(), data=data)
         if result.status_code == 200:
             return result
@@ -31,7 +31,7 @@ def post(url, data=None, *args, **kwargs):
 
 
 def put(url, data=None, *args, **kwargs):
-    for retry in range(int(PixivAPI.config.data("headers", "retry"))):
+    for retry in range(int(Vars.cfg.data("headers", "retry"))):
         result = requests.put(url=url, headers=headers(), data=data)
         if result.status_code == 200:
             return result

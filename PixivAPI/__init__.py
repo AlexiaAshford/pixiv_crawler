@@ -1,7 +1,9 @@
-from config import *
+from instance import *
 import threading
 from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil
+
+Vars.cfg.load()
 
 
 def remove_str(content: str):
@@ -81,8 +83,6 @@ class PixivToken:
             print(f"token失效，尝试刷新refresh_token retry{index}")
             if retry >= int(max_retry) - 1:
                 return 403
-
-
 
 
 class PixivApp:

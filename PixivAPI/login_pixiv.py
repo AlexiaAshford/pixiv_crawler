@@ -1,7 +1,6 @@
 from base64 import urlsafe_b64encode
 from hashlib import sha256
-import PixivAPI
-from config import *
+from instance import *
 from secrets import token_urlsafe
 from urllib.parse import urlencode
 from webbrowser import open as open_url

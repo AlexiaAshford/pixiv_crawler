@@ -1,4 +1,4 @@
-from config import *
+from instance import *
 import PixivAPI
 
 
