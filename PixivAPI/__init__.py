@@ -1,30 +1,9 @@
 from setting import *
-import requests
 import threading
 from PixivApp import *
-from PixivAPI import login_pixiv
-from fake_useragent import UserAgent
+from PixivAPI import login_pixiv, HttpUtil
 
 config = set_config()
-
-
-def headers():
-    return {
-        'Referer': 'https://www.pixiv.net/',
-        'User-Agent': UserAgent(verify_ssl=False).random,
-        'cookie': config.data("headers", "Cookie"),
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',
-    }
-
-
-def get(url, params=None, max_retry=config.data("headers", "retry")):
-    for retry in range(int(max_retry)):
-        result = requests.get(url=url, headers=headers(), params=params)
-        if result.status_code == 200:
-            return result
-        print("插图下载失败，重新第{}次请求：".format(retry))
 
 
 def remove_str(content: str):
@@ -35,15 +14,6 @@ def remove_str(content: str):
 def rec_id(book_id):
     book_id = book_id if 'http' not in book_id else re.findall(r'/([0-9]+)/?', book_id)[0]
     return int(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
-
-
-def input_(prompt, default=None):
-    while True:
-        ret = input(prompt)
-        if ret != '':
-            return ret
-        elif default is not None:
-            return default
 
 
 def mkdir(file_path: str):
@@ -61,7 +31,7 @@ class Download:
             if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
                 time.sleep(random.random() * float(1.2))  # 随机延迟
                 with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
-                    file.write(get(response.image_urls['large']).content)
+                    file.write(HttpUtil.get(response.image_urls['large']).content)
                     print('成功下载图片：{}\n'.format(image_name))
             else:
                 print(f"{image_name} 已经下载过了\n")

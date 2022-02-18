@@ -6,6 +6,16 @@ import time
 import configparser
 from rich import print
 
+
+def input_(prompt, default=None):
+    while True:
+        ret = input(prompt)
+        if ret != '':
+            return ret
+        elif default is not None:
+            return default
+
+
 class Config:
 
     def __init__(self, filename):
@@ -39,7 +49,7 @@ class Config:
 
 
 def set_config():
-    conf = Config('config.ini')
+    conf = Config(os.path.join(os.getcwd(), 'config.ini'))
     conf.load()
     # +++++++++++++++++++++headers=======================
     if type(conf.data("headers", "User-Agent")) is not str:
