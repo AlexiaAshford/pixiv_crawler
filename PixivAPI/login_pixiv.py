@@ -1,6 +1,7 @@
 from base64 import urlsafe_b64encode
 from hashlib import sha256
 import PixivAPI
+from config import *
 from secrets import token_urlsafe
 from urllib.parse import urlencode
 from webbrowser import open as open_url
@@ -78,7 +79,7 @@ def save_token(response):
     if response.get("code") is None:
         access_token = response["access_token"]
         refresh_token = response["refresh_token"]
-        PixivAPI.config.save("user", "access_token", access_token)
-        PixivAPI.config.save("user", "refresh_token", refresh_token)
+        Vars.cfg.save("user", "access_token", access_token)
+        Vars.cfg.save("user", "refresh_token", refresh_token)
     else:
         print(response.get("message"))

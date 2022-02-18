@@ -59,7 +59,6 @@ def shell_search(png_name: str, target='partial_match_for_tags'):
 
 
 def shell_pixiv_token():
-    Vars.cfg.load()
     for retry in range(int(Vars.cfg.data("headers", "retry"))):
         if Vars.cfg.data("user", "access_token") != "":
             return True
@@ -102,6 +101,7 @@ def shell():
 
 
 if __name__ == '__main__':
+    set_config()
     shell_pixiv_token()
     new_file()
     shell()
