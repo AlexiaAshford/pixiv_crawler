@@ -8,21 +8,31 @@ max_retry = Vars.cfg.data("headers", "retry")
 
 
 class Download:
+
     @staticmethod
-    def save_image(image_id: int):
-        response = PixivApp.illustration_information(image_id)
-        if not response.get("message") and response.get("token") is None:
-            image_name = remove_str(response.title)
-            file_path = Vars.cfg.data("user", "save_file")
-            if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
-                time.sleep(random.random() * float(1.2))  # 随机延迟
-                with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
-                    file.write(HttpUtil.get(response.image_urls['large']).content)
-                    print('成功下载图片：{}\n'.format(image_name))
-            else:
-                print(f"{image_name} 已经下载过了\n")
+    def save_file(file_path: str, image_name: str, image_url: str):
+        if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
+            time.sleep(random.random() * float(1.2))  # 随机延迟
+            with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
+                file.write(HttpUtil.get(image_url).content)
+                print('成功下载图片：{}\n'.format(image_name))
         else:
-            print(response.get("message"), "token invalid")
+            print(f"{image_name} 已经下载过了\n")
+
+    @staticmethod
+    def save_image(image_id: str):
+        file_path = Vars.cfg.data("user", "save_file")
+        if "http" in image_id and len(image_id) > 20:
+            image_name = image_id.split("/")[-1].replace(".jpg", "")
+            Download.save_file(file_path, image_name, image_id)
+        else:
+            response = PixivApp.illustration_information(image_id)
+            if not response.get("message") and response.get("token") is None:
+                image_name = remove_str(response.title)
+                image_url = response.image_urls['large']
+                Download.save_file(file_path, image_name, image_url)
+            else:
+                print(response.get("message"), "token invalid")
 
     @staticmethod
     def threading_download(image_id_list: list):
@@ -36,11 +46,14 @@ class Download:
             nonlocal lock_tasks_list
 
             while image_id_list:
+                if not image_id_list and len(image_id_list) == 0:
+                    return
                 lock_tasks_list.acquire()
-                image_id = image_id_list.pop()
-                print("正在下载第{}张".format(image_id_len - len(image_id_list)))
+                image_id = image_id_list.pop(0) if image_id_list else False
                 lock_tasks_list.release()
-                Download.save_image(image_id)
+                print("正在下载第{}张".format(image_id_len - len(image_id_list)))
+                if type(image_id) is not bool:
+                    Download.save_image(str(image_id))
 
         threads_pool = []
         for _ in range(int(Vars.cfg.data("user", "max_thread"))):
@@ -120,18 +133,22 @@ class PixivApp:
 
     @staticmethod
     def search_information(png_name: str, search_target: str):
-        """搜搜插画 <class 'PixivApp.utils.JsonDict'>"""
+        """搜索插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivToken.instantiation_api().search_illust(
             word=png_name, search_target=search_target
         )
-        if response.error is None:
-            return list(set([data.id for data in response.illusts]))
-        return response.error
+        if response.error is not None:
+            return response.error
+        original_urls_list = [
+            url["image_urls"]["original"] for url in response.illusts[0].meta_pages
+        ]
+
+        if type(original_urls_list) is list and len(original_urls_list) != 0:
+            Download.threading_download(original_urls_list)
 
     @staticmethod
     def illustration_information(works_id: int):
         """插画信息 <class 'PixivApp.utils.JsonDict'>"""
-
         pixiv_app_api = PixivToken.instantiation_api()
         if pixiv_app_api == 403:
             return {"token": 403}
@@ -140,6 +157,7 @@ class PixivApp:
             tags_llist = [i['name'] for i in response.illust['tags']]
             print("插画名称: {}:".format(response.illust.title))
             print("插画ID: {}".format(response.illust.id))
+            print("作者ID: {}".format(response.illust.user['id']))
             print("作者名称: {}".format(response.illust.user['name']))
             print("插画标签: {}".format(', '.join(tags_llist)))
             print("发布时间: {}\n".format(response.illust.create_date))

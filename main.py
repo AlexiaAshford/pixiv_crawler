@@ -6,30 +6,36 @@ def new_file():
     PixivAPI.mkdir(Vars.cfg.data("user", "save_file"))
 
 
-def shell_illustration(inputs):
+def shell_download_author_works(author_id: str):
     start = time.time()
-    if type(inputs) is list and len(inputs) == 3 and inputs[2] == "all":
-        # 通过作者ID下载作者的作品集
-        image_id_list = PixivAPI.PixivApp.author_information(inputs[1])
-        if type(image_id_list) is list and len(image_id_list) != 0:
-            PixivAPI.Download.threading_download(image_id_list)
-            print(f'下载耗时:{round(time.time() - start, 2)} 秒')
-        else:
-            print("没有找到相关的信息，可能是输入的ID不正确")
-    else:
-        # 通过作品ID下载原图
-        image_id = PixivAPI.rec_id(inputs[1])
-        if type(image_id) is int and image_id != "":
-            PixivAPI.Download.save_image(image_id)
+    image_id_list = PixivAPI.PixivApp.author_information(author_id)
+    if type(image_id_list) is list and len(image_id_list) != 0:
+        PixivAPI.Download.threading_download(image_id_list)
         print(f'下载耗时:{round(time.time() - start, 2)} 秒')
+    else:
+        print("没有找到相关的信息，可能是输入的ID不正确")
+
+
+def shell_illustration(inputs):
+    if len(inputs) >= 2:
+        if type(inputs) is list and len(inputs) == 3 and inputs[2] == "a":
+            shell_download_author_works(inputs[1])  # 通过作者ID下载作者的作品集
+        else:
+            start = time.time()  # 通过作品ID下载原图
+            image_id = PixivAPI.rec_id(inputs[1])
+            if type(image_id) is int and image_id != "":
+                PixivAPI.Download.save_image(image_id)
+            print(f'下载耗时:{round(time.time() - start, 2)} 秒')
+    else:
+        print("你没有输入id或者链接")
 
 
 def shell_search(png_name: str, target='partial_match_for_tags'):
     response = PixivAPI.PixivApp.search_information(png_name, target)
-    if type(response) is list and len(response) != 0:
-        PixivAPI.Download.threading_download(response)
-    else:
-        print("没有搜索到相关信息")
+    # if type(response) is list and len(response) != 0:
+    #     PixivAPI.Download.threading_download(response)
+    # else:
+    #     print("没有搜索到相关信息")
 
 
 def shell_pixiv_token():
@@ -54,10 +60,7 @@ def shell():
         elif inputs[0] == 'h' or inputs[0] == 'help':
             print(Vars.cfg.data("user", "help"))
         elif inputs[0] == 'd' or inputs[0] == 'download':
-            if len(inputs) >= 2:
-                shell_illustration(inputs)
-            else:
-                print("你没有输入id或者链接")
+            shell_illustration(inputs)
         elif inputs[0] == 's' or inputs[0] == 'stars':
             PixivAPI.PixivApp.start_information()
         elif inputs[0] == 'n' or inputs[0] == 'name':
