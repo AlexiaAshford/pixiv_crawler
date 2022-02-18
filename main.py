@@ -50,29 +50,27 @@ def shell_recommend(inputs):
 
 def shell_illustration(inputs: list):
     start = time.time()
-    if len(inputs) == 2:
-        image_id = PixivAPI.rec_id(inputs[1])
-        if type(image_id) is int and image_id != "":
-            PixivAPI.Download.save_image(image_id)
-        print(f'下载耗时:{round(time.time() - start, 2)} 秒')
     if len(inputs) == 3 and inputs[2] == "all":
         response = PixivAPI.PixivApp.author_information(inputs[1])
         if type(response) is list and len(response) != 0:
             PixivAPI.Download.threading_download(response)
             print(f'下载耗时:{round(time.time() - start, 2)} 秒')
         else:
-            print(response)
+            print("输入的作者ID不正确")
     else:
-        print("你没有输入id或者链接")
+        image_id = PixivAPI.rec_id(inputs[1])
+        if type(image_id) is int and image_id != "":
+            PixivAPI.Download.save_image(image_id)
+        print(f'下载耗时:{round(time.time() - start, 2)} 秒')
 
 
 def shell_search(png_name: str, target='partial_match_for_tags'):
     response = PixivAPI.PixivApp.search_information(png_name, target)
     if type(response) is list or response == []:
-        for search_data in response:
-            image_id = search_data['id']
-            image_name = PixivAPI.remove_str(search_data['title'])
-            shell_illustration(image_id)
+        if type(response) is list and len(response) != 0:
+            PixivAPI.Download.threading_download(response)
+        else:
+            print("没有搜索到相关信息")
 
 
 def shell_pixiv_token():
@@ -97,7 +95,10 @@ def shell():
         elif inputs[0] == 'h' or inputs[0] == 'help':
             print(PixivAPI.config.data("user", "help"))
         elif inputs[0] == 'd' or inputs[0] == 'download':
-            shell_illustration(inputs)
+            if len(inputs) >= 2:
+                shell_illustration(inputs)
+            else:
+                print("你没有输入id或者链接")
         elif inputs[0] == 's' or inputs[0] == 'stars':
             shell_collection()
         elif inputs[0] == 'n' or inputs[0] == 'name':

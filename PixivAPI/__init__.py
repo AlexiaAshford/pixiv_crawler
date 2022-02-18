@@ -166,7 +166,7 @@ class PixivApp:
             word=png_name, search_target=search_target
         )
         if response.error is None:
-            return response.illusts
+            return list(set([data.id for data in response.illusts]))
         return response.error
 
     @staticmethod
