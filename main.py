@@ -58,19 +58,9 @@ def shell_recommend(inputs):
 
 def shell_download_author(author_id: str):
     response = PixivAPI.PixivApp.author_information(author_id)
-    if type(response) is list or response == []:
-        for index, values in enumerate(response):
-            author_name = values.user['name']
-            image_name = values.title
-            image_id = values.id
-            update = values.create_date
-            tags_llist = [i['name'] for i in values['tags']]
-            show_image_information(
-                index, update, author_name, image_name, image_id, tags_llist
-            )
-            shell_illustration(image_id)
+    if type(response) is list and len(response) != 0:
+        PixivAPI.Download.threading_download(response)
 
-    
 
 def shell_illustration(png_id: int):
     image_id = PixivAPI.rec_id(str(png_id))
@@ -107,7 +97,6 @@ def shell_pixiv_token():
             return True
         print("本地配置文件没有令牌，请登入网站获取code")
         PixivAPI.login_pixiv.login()
-
 
 
 def shell():

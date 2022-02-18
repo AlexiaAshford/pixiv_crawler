@@ -1,11 +1,14 @@
 import os
 import re
+import time
+
 from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
 import setting
 import requests
 from PixivApp import *
 from rich import print
+import threading
 
 config = setting.set_config()
 
@@ -56,10 +59,47 @@ def mkdir(file_path: str):
 
 class Download:
     @staticmethod
-    def download(png_url: str, png_name: str, file_path: str):
-        with open(os.path.join(file_path, f'{png_name}.png'), 'wb+') as file:
-            file.write(get(png_url).content)
-            print('成功下载图片：{}'.format(png_name))
+    def save_image(image_id: int):
+        response = PixivApp.illustration_information(image_id)
+        if response.get("message") is None:
+            image_url = response.image_urls['large']
+            image_name = remove_str(response.title)
+            file_path = config.data("user", "save_file")
+            if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
+                with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
+                    file.write(get(image_url).content)
+                    print('成功下载图片：{}'.format(image_name))
+            else:
+                print(f"{image_name} 已经下载过了")
+        else:
+            print(response.get("message"))
+
+    @staticmethod
+    def threading_download(image_id_list: list):
+        lock_tasks_list = threading.Lock()
+        threads_pool = []
+
+        # 生成下载队列.
+
+        def downloader():
+            """多线程下载函数"""
+            nonlocal lock_tasks_list
+
+            while image_id_list:
+                lock_tasks_list.acquire()
+                image_id = image_id_list.pop()
+                lock_tasks_list.release()
+
+                Download.save_image(image_id)
+
+        for _ in range(5):
+            th = threading.Thread(target=downloader)
+            threads_pool.append(th)
+            th.start()
+
+        # wait downloader
+        for th in threads_pool:
+            th.join()
 
 
 class PixivApp:
@@ -112,10 +152,10 @@ class PixivApp:
 
     @staticmethod
     def author_information(author_id: str):
-        """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
+        """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().user_illusts(author_id)
         if response.error is None:
-            return response.illusts
+            return [data.id for data in response.illusts]
         return response.error
 
     @staticmethod
