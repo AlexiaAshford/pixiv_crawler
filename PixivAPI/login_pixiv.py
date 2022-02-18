@@ -59,8 +59,6 @@ def login():
     save_token(response.json())
 
 
-
-
 def refresh(refresh_token):
     response = requests.post(
         AUTH_TOKEN_URL,
@@ -84,4 +82,3 @@ def save_token(response):
         PixivAPI.config.save("user", "refresh_token", refresh_token)
     else:
         print(response.get("message"))
-

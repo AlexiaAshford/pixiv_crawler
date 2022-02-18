@@ -1,26 +1,21 @@
-import os
-import re
-import time
-
+from setting import *
+import requests
+import threading
+from PixivApp import *
 from PixivAPI import login_pixiv
 from fake_useragent import UserAgent
-import setting
-import requests
-from PixivApp import *
-from rich import print
-import threading
 
-config = setting.set_config()
+config = set_config()
 
 
 def headers():
     return {
-        'User-Agent': UserAgent(verify_ssl=False).random,
         'Referer': 'https://www.pixiv.net/',
-        'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',
+        'User-Agent': UserAgent(verify_ssl=False).random,
+        'cookie': config.data("headers", "Cookie"),
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
-        'cookie': config.data("headers", "Cookie")
+        'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',
     }
 
 
@@ -33,9 +28,8 @@ def get(url, params=None, max_retry=config.data("headers", "retry")):
 
 
 def remove_str(content: str):
-    file_name = re.sub('[/:*?"<>|]', '-', content)  # 去掉非法字符
     res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-    return res_compile.sub("", file_name)
+    return res_compile.sub("", re.sub('[/:*?"<>|]', '-', content))
 
 
 def rec_id(book_id):
@@ -61,17 +55,18 @@ class Download:
     @staticmethod
     def save_image(image_id: int):
         response = PixivApp.illustration_information(image_id)
-        if response.get("message") is None:
+        if not response.get("message") and response.get("token") is None:
             image_name = remove_str(response.title)
             file_path = config.data("user", "save_file")
             if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
+                time.sleep(random.random() * float(1.2))  # 随机延迟
                 with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
                     file.write(get(response.image_urls['large']).content)
                     print('成功下载图片：{}\n'.format(image_name))
             else:
                 print(f"{image_name} 已经下载过了\n")
         else:
-            print(response.get("message"))
+            print(response.get("message"), "token invalid")
 
     @staticmethod
     def threading_download(image_id_list: list):
@@ -102,36 +97,46 @@ class Download:
             th.join()
 
 
-class PixivApp:
+class PixivToken:
     @staticmethod
-    def pixiv_app_api(max_retry=config.data("headers", "retry")):
-        """构造API接口类"""
+    def instantiation_api(max_retry=config.data("headers", "retry")):
+        instantiation = AppPixivAPI()
         for index, retry in enumerate(range(int(max_retry))):
-            app_pixiv = AppPixivAPI()
-            access_token = config.data("user", "access_token")
-            refresh_token = config.data("user", "refresh_token")
-            app_pixiv.set_auth(access_token=access_token, refresh_token=refresh_token)
-            if app_pixiv.illust_recommended().error is not None:
-                login_pixiv.refresh(refresh_token)
-                print("令牌失效，尝试刷新令牌:retry {}".format(index))
-            return app_pixiv
+            instantiation.set_auth(
+                access_token=config.data("user", "access_token"),
+                refresh_token=config.data("user", "refresh_token")
+            )
+            if instantiation.illust_recommended().error is None:
+                return instantiation
+
+            login_pixiv.refresh(config.data("user", "refresh_token"))
+            print(f"token失效，尝试刷新refresh_token retry{index}")
+            if retry >= int(max_retry) - 1:
+                return 403
+
+
+
+
+class PixivApp:
 
     @staticmethod
     def start_information():
         """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().illust_recommended()
+        response = PixivToken.instantiation_api().illust_recommended()
         if response.error is None:
-
             return response.illusts
         return response.error
 
     @staticmethod
     def recommend_information():
         """推荐插画 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().illust_recommended()
-        next_qs = PixivApp.pixiv_app_api().parse_qs(response.next_url)
+        pixiv_app_api = PixivToken.instantiation_api()
+        response = pixiv_app_api.illust_recommended()
+        next_qs = pixiv_app_api.parse_qs(response.next_url)
         while next_qs is not None:
-            response = PixivApp.pixiv_app_api().illust_recommended(**next_qs)
+            if pixiv_app_api == 403:
+                return "token invalid"
+            response = pixiv_app_api.illust_recommended(**next_qs)
             if response.error is not None:
                 return response.error
             image_id_list = list(set([data.id for data in response.illusts]))
@@ -140,11 +145,10 @@ class PixivApp:
             else:
                 print("Pixiv推荐插图下载完毕")
 
-
     @staticmethod
     def follow_information():
         """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().illust_follow()
+        response = PixivToken.instantiation_api().illust_follow()
         if response.error is None:
             return list(set([data.id for data in response.illusts]))
         return response.error
@@ -152,7 +156,7 @@ class PixivApp:
     @staticmethod
     def author_information(author_id: str):
         """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().user_illusts(author_id)
+        response = PixivToken.instantiation_api().user_illusts(author_id)
         if response.error is None:
             return list(set([data.id for data in response.illusts]))
         return response.error
@@ -160,7 +164,7 @@ class PixivApp:
     @staticmethod
     def search_information(png_name: str, search_target: str):
         """搜搜插画 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().search_illust(
+        response = PixivToken.instantiation_api().search_illust(
             word=png_name, search_target=search_target
         )
         if response.error is None:
@@ -170,7 +174,11 @@ class PixivApp:
     @staticmethod
     def illustration_information(works_id: int):
         """插画信息 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().illust_detail(works_id)
+
+        pixiv_app_api = PixivToken.instantiation_api()
+        if pixiv_app_api == 403:
+            return {"token": 403}
+        response = pixiv_app_api.illust_detail(works_id)
         if response.error is None:
             tags_llist = [i['name'] for i in response.illust['tags']]
             print("插画名称: {}:".format(response.illust.title))
