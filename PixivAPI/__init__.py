@@ -121,6 +121,7 @@ class PixivApp:
         """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
         if response.error is None:
+
             return response.illusts
         return response.error
 
@@ -139,7 +140,7 @@ class PixivApp:
         next_qs = PixivApp.pixiv_app_api().parse_qs(response.next_url)
         response2 = PixivApp.pixiv_app_api().illust_related(**next_qs)
         if response2.error is None:
-            return response2.illusts
+            return list(set([data.id for data in response.illusts]))
         return response2.error
 
     @staticmethod
@@ -147,7 +148,7 @@ class PixivApp:
         """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_follow()
         if response.error is None:
-            return response.illusts
+            return list(set([data.id for data in response.illusts]))
         return response.error
 
     @staticmethod

@@ -43,23 +43,18 @@ def shell_recommend(inputs):
         response = PixivAPI.PixivApp.about_recommend(image_id)
     else:
         response = PixivAPI.PixivApp.recommend_information()
-    if type(response) is list or response == []:
-        for index, values in enumerate(response):
-            author_name = values.user['name']
-            image_name = values.title
-            image_id = values.id
-            update = values.create_date
-            tags_llist = [tag['name'] for tag in values.tags]
-            show_image_information(
-                index, update, author_name, image_name, image_id, tags_llist
-            )
-            shell_illustration(image_id)
+    if type(response) is list or len(response):
+        PixivAPI.Download.threading_download(response)
+    else:
+        print(response)
 
 
 def shell_download_author(author_id: str):
     response = PixivAPI.PixivApp.author_information(author_id)
     if type(response) is list and len(response) != 0:
         PixivAPI.Download.threading_download(response)
+    else:
+        print(response)
 
 
 def shell_illustration(png_id: int):
