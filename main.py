@@ -23,19 +23,18 @@ def shell_illustration(inputs):
         else:
             start = time.time()  # 通过作品ID下载原图
             image_id = PixivAPI.rec_id(inputs[1])
-            if type(image_id) is int and image_id != "":
+            if image_id != "":
                 PixivAPI.Download.save_image(image_id)
             print(f'下载耗时:{round(time.time() - start, 2)} 秒')
     else:
         print("你没有输入id或者链接")
 
 
-def shell_search(png_name: str, target='partial_match_for_tags'):
-    response = PixivAPI.PixivApp.search_information(png_name, target)
-    # if type(response) is list and len(response) != 0:
-    #     PixivAPI.Download.threading_download(response)
-    # else:
-    #     print("没有搜索到相关信息")
+def shell_search(inputs: list, target=None):
+    if target is None:
+        target = 'partial_match_for_tags'
+    if len(inputs) >= 2:
+        PixivAPI.PixivApp.search_information(inputs[1], target)
 
 
 def shell_pixiv_token():

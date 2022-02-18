@@ -16,7 +16,7 @@ def remove_str(content: str):
 
 def rec_id(book_id):
     book_id = book_id if 'http' not in book_id else re.findall(r'/([0-9]+)/?', book_id)[0]
-    return int(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
+    return str(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
 
 
 def mkdir(file_path: str):
