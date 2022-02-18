@@ -3,6 +3,9 @@ from rich import print
 
 
 class Vars:
+    def __init__(self):
+        pass
+
     cfg = Config('Pixiv-Config.json', os.getcwd())
 
 
