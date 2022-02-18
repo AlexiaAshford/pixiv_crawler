@@ -140,7 +140,7 @@ class PixivApp:
         next_qs = PixivApp.pixiv_app_api().parse_qs(response.next_url)
         response2 = PixivApp.pixiv_app_api().illust_related(**next_qs)
         if response2.error is None:
-            return list(set([data.id for data in response.illusts]))
+            return list(set([data.id for data in response2.illusts]))
         return response2.error
 
     @staticmethod
