@@ -1,12 +1,9 @@
-import re
-import sys
-import time
-from rich import print
+from config import *
 import PixivAPI
 
 
 def new_file():
-    PixivAPI.mkdir(PixivAPI.config.data("user", "save_file"))
+    PixivAPI.mkdir(Vars.cfg.data("user", "save_file"))
 
 
 def show_image_information(
@@ -62,8 +59,9 @@ def shell_search(png_name: str, target='partial_match_for_tags'):
 
 
 def shell_pixiv_token():
-    for retry in range(int(PixivAPI.config.data("headers", "retry"))):
-        if PixivAPI.config.data("user", "access_token") != "":
+    Vars.cfg.load()
+    for retry in range(int(Vars.cfg.data("headers", "retry"))):
+        if Vars.cfg.data("user", "access_token") != "":
             return True
         print("本地配置文件没有令牌，请登入网站获取code")
         PixivAPI.login_pixiv.login()
@@ -75,13 +73,13 @@ def shell():
         inputs = sys.argv[1:]
     else:
         command_line = False
-        print(PixivAPI.config.data("user", "help"))
+        print(Vars.cfg.data("user", "help"))
         inputs = re.split('\\s+', PixivAPI.input_('>').strip())
     while True:
         if inputs[0] == 'q' or inputs[0] == 'quit':
             sys.exit("已退出程序")
         elif inputs[0] == 'h' or inputs[0] == 'help':
-            print(PixivAPI.config.data("user", "help"))
+            print(Vars.cfg.data("user", "help"))
         elif inputs[0] == 'd' or inputs[0] == 'download':
             if len(inputs) >= 2:
                 shell_illustration(inputs)

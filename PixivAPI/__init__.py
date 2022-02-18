@@ -1,9 +1,7 @@
-from setting import *
+from config import *
 import threading
 from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil
-
-config = set_config()
 
 
 def remove_str(content: str):
@@ -27,7 +25,7 @@ class Download:
         response = PixivApp.illustration_information(image_id)
         if not response.get("message") and response.get("token") is None:
             image_name = remove_str(response.title)
-            file_path = config.data("user", "save_file")
+            file_path = Vars.cfg.data("user", "save_file")
             if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
                 time.sleep(random.random() * float(1.2))  # 随机延迟
                 with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
@@ -57,7 +55,7 @@ class Download:
                 Download.save_image(image_id)
 
         threads_pool = []
-        for _ in range(int(config.data("user", "max_thread"))):
+        for _ in range(int(Vars.cfg.data("user", "max_thread"))):
             th = threading.Thread(target=downloader)
             threads_pool.append(th)
             th.start()
@@ -69,17 +67,17 @@ class Download:
 
 class PixivToken:
     @staticmethod
-    def instantiation_api(max_retry=config.data("headers", "retry")):
+    def instantiation_api(max_retry=Vars.cfg.data("headers", "retry")):
         instantiation = AppPixivAPI()
         for index, retry in enumerate(range(int(max_retry))):
             instantiation.set_auth(
-                access_token=config.data("user", "access_token"),
-                refresh_token=config.data("user", "refresh_token")
+                access_token=Vars.cfg.data("user", "access_token"),
+                refresh_token=Vars.cfg.data("user", "refresh_token")
             )
             if instantiation.illust_recommended().error is None:
                 return instantiation
 
-            login_pixiv.refresh(config.data("user", "refresh_token"))
+            login_pixiv.refresh(Vars.cfg.data("user", "refresh_token"))
             print(f"token失效，尝试刷新refresh_token retry{index}")
             if retry >= int(max_retry) - 1:
                 return 403
