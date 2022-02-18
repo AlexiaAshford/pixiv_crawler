@@ -6,7 +6,7 @@ class Vars:
     def __init__(self):
         pass
 
-    cfg = Config('Pixiv-Config.json', os.getcwd())
+    cfg = Config('Pixiv-Config.conf', os.getcwd())
 
 
 def input_(prompt, default=None):

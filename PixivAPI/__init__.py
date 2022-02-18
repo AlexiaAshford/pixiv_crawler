@@ -4,6 +4,7 @@ from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil
 
 Vars.cfg.load()
+max_retry = Vars.cfg.data("headers", "retry")
 
 
 def remove_str(content: str):
@@ -69,7 +70,7 @@ class Download:
 
 class PixivToken:
     @staticmethod
-    def instantiation_api(max_retry=Vars.cfg.data("headers", "retry")):
+    def instantiation_api():
         instantiation = AppPixivAPI()
         for index, retry in enumerate(range(int(max_retry))):
             instantiation.set_auth(
