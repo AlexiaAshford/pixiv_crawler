@@ -129,19 +129,17 @@ class PixivApp:
     def recommend_information():
         """推荐插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivApp.pixiv_app_api().illust_recommended()
-        if response.error is None:
-            return response.illusts
-        return response.error
-
-    @staticmethod
-    def about_recommend(works_id: int):
-        """插画相关推荐 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivApp.pixiv_app_api().illust_related(works_id)
         next_qs = PixivApp.pixiv_app_api().parse_qs(response.next_url)
-        response2 = PixivApp.pixiv_app_api().illust_related(**next_qs)
-        if response2.error is None:
-            return list(set([data.id for data in response2.illusts]))
-        return response2.error
+        while next_qs is not None:
+            response = PixivApp.pixiv_app_api().illust_recommended(**next_qs)
+            if response.error is not None:
+                return response.error
+            image_id_list = list(set([data.id for data in response.illusts]))
+            if type(image_id_list) is list and len(image_id_list) != 0:
+                Download.threading_download(image_id_list)
+            else:
+                print("Pixiv推荐插图下载完毕")
+
 
     @staticmethod
     def follow_information():
@@ -179,6 +177,6 @@ class PixivApp:
             print("插画ID: {}".format(response.illust.id))
             print("作者名称: {}".format(response.illust.user['name']))
             print("插画标签: {}".format(', '.join(tags_llist)))
-            print("发布时间: {}\n\n".format(response.illust.create_date))
+            print("发布时间: {}\n".format(response.illust.create_date))
             return response.illust
         return response.error

@@ -36,18 +36,6 @@ def shell_collection():
             shell_illustration(image_id)
 
 
-def shell_recommend(inputs):
-    if len(inputs) >= 2:
-        image_id = PixivAPI.rec_id(str(inputs[1]))
-        response = PixivAPI.PixivApp.about_recommend(image_id)
-    else:
-        response = PixivAPI.PixivApp.recommend_information()
-    if type(response) is list or len(response):
-        PixivAPI.Download.threading_download(response)
-    else:
-        print(response)
-
-
 def shell_illustration(inputs: list):
     start = time.time()
     if len(inputs) == 3 and inputs[2] == "all":
@@ -104,7 +92,7 @@ def shell():
         elif inputs[0] == 'n' or inputs[0] == 'name':
             shell_search(inputs[1])
         elif inputs[0] == 't' or inputs[0] == 'recommend':
-            shell_recommend(inputs)
+            PixivAPI.PixivApp.recommend_information()
         elif inputs[0] == 'f' or inputs[0] == 'follow':
             response = PixivAPI.PixivApp.follow_information()
             print(response)
