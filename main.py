@@ -8,6 +8,9 @@ def new_file():
 
 def shell_download_author_works(author_id: str):
     start = time.time()
+
+
+
     image_id_list = PixivAPI.PixivApp.author_information(author_id)
     if type(image_id_list) is list and len(image_id_list) != 0:
         PixivAPI.Download.threading_download(image_id_list)

@@ -14,8 +14,8 @@ def headers():
     }
 
 
-def get(url, params=None, *args, **kwargs):
-    for retry in range(int(Vars.cfg.data("headers", "retry"))):
+def get(url, params=None, max_retry=10, *args, **kwargs):
+    for retry in range(max_retry):
         result = requests.get(url=url, headers=headers(), params=params)
         if result.status_code == 200:
             return result

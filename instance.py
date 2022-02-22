@@ -9,6 +9,15 @@ class Vars:
     cfg = Config('Pixiv-Config.conf', os.getcwd())
 
 
+def str_mid(string: str, left: str, right: str, start=None, end=None):
+    pos1 = string.find(left, start, end)
+    if pos1 > -1:
+        pos2 = string.find(right, pos1 + len(left), end)
+        if pos2 > -1:
+            return string[pos1 + len(left): pos2]
+    return ''
+
+
 def remove_str(content: str):
     res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
     return res_compile.sub("", re.sub('[/:*?"<>|]', '-', content))

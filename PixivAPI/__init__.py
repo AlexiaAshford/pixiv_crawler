@@ -36,6 +36,8 @@ class Download:
 
     @staticmethod
     def threading_download(image_id_list: list):
+        if type(image_id_list[0]) is list:
+            image_id_list = [info[1] for info in image_id_list]
         image_id_len = len(image_id_list)
         lock_tasks_list = threading.Lock()
         print(f"开始下载，一共 {image_id_len} 张图片")
@@ -126,10 +128,11 @@ class PixivApp:
     @staticmethod
     def author_information(author_id: str):
         """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivToken.instantiation_api().user_illusts(author_id)
-        if response.error is None:
-            return list(set([data.id for data in response.illusts]))
-        return response.error
+        response = HttpUtil.get(f"https://rsshub.app/pixiv/user/{author_id}").text
+
+        html_list = re.compile(r'<!\[CDATA\[<p>(.*?)\" referrerpolicy', re.S).findall(response)
+        info_list = [info.split("</p><p><img src=\"") for info in html_list]
+        Download.threading_download(info_list)
 
     @staticmethod
     def search_information(png_name: str, search_target: str):
