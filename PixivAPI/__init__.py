@@ -1,12 +1,18 @@
-import json
-
 from instance import *
 import threading
 from PixivApp import *
-from PixivAPI import login_pixiv, HttpUtil
+from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 
 Vars.cfg.load()
 max_retry = Vars.cfg.data("headers", "retry")
+
+
+def get(url: str) -> dict:
+    return HttpUtil.get(url).json()
+
+
+def image(url: str) -> bytes:
+    return HttpUtil.get(url).content
 
 
 class Download:
@@ -16,7 +22,7 @@ class Download:
         if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
             time.sleep(random.random() * float(1.2))  # 随机延迟
             with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
-                file.write(HttpUtil.get(image_url).content)
+                file.write(image(image_url))
                 print('成功下载图片：{}\n'.format(image_name))
         else:
             print(f"{image_name} 已经下载过了\n")
@@ -37,11 +43,9 @@ class Download:
 
     @staticmethod
     def threading_download(image_id_list: list):
-        image_id_len = len(image_id_list)
         lock_tasks_list = threading.Lock()
-        print(f"开始下载，一共 {image_id_len} 张图片")
+        print(f"开始下载，一共 {len(image_id_list)} 张图片")
 
-        # 生成下载队列.
         def downloader():
             """多线程下载函数"""
             nonlocal lock_tasks_list
@@ -52,7 +56,6 @@ class Download:
                 lock_tasks_list.acquire()
                 image_id = image_id_list.pop(0) if image_id_list else False
                 lock_tasks_list.release()
-                print("正在下载第{}张".format(image_id_len - len(image_id_list)))
                 if type(image_id) is not bool:
                     Download.save_image(str(image_id))
 
@@ -90,12 +93,14 @@ class PixivApp:
     @staticmethod
     def illustration_information(works_id: int):
         """插画信息 <class 'PixivApp.utils.JsonDict'>"""
-        response = HttpUtil.get(f'https://api.obfs.dev/api/pixiv/illust?id={works_id}').json()
+        response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
         information = response["illust"]
         image_name = information['title']
         page_count = information['page_count']
 
-        tags_list = [data['translated_name'] for data in information['tags']]
+        tags_list = [
+            data['translated_name'] for data in information['tags'] if data['translated_name']
+        ]
         print("插画名称: {}:".format(image_name))
         print("插画ID: {}".format(information["id"]))
         print("作者ID: {}".format(information['user']["id"]))
@@ -148,14 +153,15 @@ class PixivApp:
     @staticmethod
     def author_information(author_id: str):
         """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
-        urls_list = [
-            f"https://api.obfs.dev/api/pixiv/member_illust?id={author_id}&page={page}"
-            for page in range(20)
-        ]
-        for url in urls_list:
-            response = HttpUtil.get(url).json()
+        image_list = [UrlConstant.AUTHOR_INFORMATION.format(author_id, page) for page in range(1, 20)]
+        for page, image_urL in enumerate(image_list):
+            response = get(image_urL)
+            if response.get("error") is not None:
+                print(f"作者作品集下载完成，一共{page}页")
+                return
             works_id_list = [data.get("id") for data in response.get("illusts")]
             Download.threading_download(works_id_list)
+
 
     @staticmethod
     def search_information(png_name: str, search_target: str):
@@ -171,4 +177,3 @@ class PixivApp:
 
         if type(original_urls_list) is list and len(original_urls_list) != 0:
             Download.threading_download(original_urls_list)
-
