@@ -30,11 +30,11 @@ def shell_illustration(inputs):
         print("你没有输入id或者链接")
 
 
-def shell_search(inputs: list, target=None):
-    if target is None:
-        target = 'partial_match_for_tags'
+def shell_search(inputs: list):
     if len(inputs) >= 2:
-        PixivAPI.PixivApp.search_information(inputs[1], target)
+        PixivAPI.PixivApp.search_information(inputs[1])
+    else:
+        print("没有输入搜索信息")
 
 
 def shell_pixiv_token():
@@ -63,7 +63,7 @@ def shell():
         elif inputs[0] == 's' or inputs[0] == 'stars':
             PixivAPI.PixivApp.start_information()
         elif inputs[0] == 'n' or inputs[0] == 'name':
-            shell_search(inputs[1])
+            shell_search(inputs)
         elif inputs[0] == 't' or inputs[0] == 'recommend':
             PixivAPI.PixivApp.recommend_information()
         elif inputs[0] == 'f' or inputs[0] == 'follow':

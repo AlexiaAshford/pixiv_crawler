@@ -75,5 +75,6 @@ def set_config():
                       "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
                       "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
                       "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
-                      "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名"
+                      "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
+                      "f | follow\t\t\t\t\t\t\t--- 下载账号关注的画师作品"
                       )
