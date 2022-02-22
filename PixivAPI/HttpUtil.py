@@ -19,7 +19,7 @@ def get(url, params=None, max_retry=10, *args, **kwargs):
         result = requests.get(url=url, headers=headers(), params=params)
         if result.status_code == 200:
             return result
-        print("插图下载失败，重新第{}次请求：".format(retry))
+        print("{}请求失败，第{}次重新请求：".format(url, retry))
 
 
 def post(url, data=None, *args, **kwargs):
@@ -27,7 +27,7 @@ def post(url, data=None, *args, **kwargs):
         result = requests.post(url=url, headers=headers(), data=data)
         if result.status_code == 200:
             return result
-        print("插图下载失败，重新第{}次请求：".format(retry))
+        print("{}请求失败，第{}次重新请求：".format(url, retry))
 
 
 def put(url, data=None, *args, **kwargs):
@@ -35,4 +35,4 @@ def put(url, data=None, *args, **kwargs):
         result = requests.put(url=url, headers=headers(), data=data)
         if result.status_code == 200:
             return result
-        print("插图下载失败，重新第{}次请求：".format(retry))
+        print("{}请求失败，第{}次重新请求：".format(url, retry))
