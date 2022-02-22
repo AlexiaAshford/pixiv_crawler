@@ -1,3 +1,5 @@
+import json
+
 from instance import *
 import threading
 from PixivApp import *
@@ -26,18 +28,15 @@ class Download:
             image_name = image_id.split("/")[-1].replace(".jpg", "")
             Download.save_file(file_path, image_name, image_id)
         else:
-            response = PixivApp.illustration_information(image_id)
-            if not response.get("message") and response.get("token") is None:
-                image_name = remove_str(response.title)
-                image_url = response.image_urls['large']
+            image_url, image_name = PixivApp.illustration_information(image_id)
+            if type(image_url) is str:
                 Download.save_file(file_path, image_name, image_url)
-            else:
-                print(response.get("message"), "token invalid")
+                return
+            for index, url in enumerate(image_url):
+                Download.save_file(file_path, image_name + f'_{index}', url)
 
     @staticmethod
     def threading_download(image_id_list: list):
-        if type(image_id_list[0]) is list:
-            image_id_list = [info[1] for info in image_id_list]
         image_id_len = len(image_id_list)
         lock_tasks_list = threading.Lock()
         print(f"开始下载，一共 {image_id_len} 张图片")
@@ -89,6 +88,27 @@ class PixivToken:
 class PixivApp:
 
     @staticmethod
+    def illustration_information(works_id: int):
+        """插画信息 <class 'PixivApp.utils.JsonDict'>"""
+        response = HttpUtil.get(f'https://api.obfs.dev/api/pixiv/illust?id={works_id}').json()
+        information = response["illust"]
+        image_name = information['title']
+        page_count = information['page_count']
+
+        tags_list = [data['translated_name'] for data in information['tags']]
+        print("插画名称: {}:".format(image_name))
+        print("插画ID: {}".format(information["id"]))
+        print("作者ID: {}".format(information['user']["id"]))
+        print("作者名称: {}".format(information['user']["name"]))
+        print("插画标签: {}".format(', '.join(tags_list)))
+        print("画集数量: {}".format(page_count))
+        print("发布时间: {}\n".format(information["create_date"]))
+        if page_count == 1:
+            return information['meta_single_page']['original_image_url'], image_name
+        img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
+        return img_url_list, image_name
+
+    @staticmethod
     def start_information():
         """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivToken.instantiation_api().illust_recommended()
@@ -128,11 +148,14 @@ class PixivApp:
     @staticmethod
     def author_information(author_id: str):
         """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
-        response = HttpUtil.get(f"https://rsshub.app/pixiv/user/{author_id}").text
-
-        html_list = re.compile(r'<!\[CDATA\[<p>(.*?)\" referrerpolicy', re.S).findall(response)
-        info_list = [info.split("</p><p><img src=\"") for info in html_list]
-        Download.threading_download(info_list)
+        urls_list = [
+            f"https://api.obfs.dev/api/pixiv/member_illust?id={author_id}&page={page}"
+            for page in range(20)
+        ]
+        for url in urls_list:
+            response = HttpUtil.get(url).json()
+            works_id_list = [data.get("id") for data in response.get("illusts")]
+            Download.threading_download(works_id_list)
 
     @staticmethod
     def search_information(png_name: str, search_target: str):
@@ -149,20 +172,3 @@ class PixivApp:
         if type(original_urls_list) is list and len(original_urls_list) != 0:
             Download.threading_download(original_urls_list)
 
-    @staticmethod
-    def illustration_information(works_id: int):
-        """插画信息 <class 'PixivApp.utils.JsonDict'>"""
-        pixiv_app_api = PixivToken.instantiation_api()
-        if pixiv_app_api == 403:
-            return {"token": 403}
-        response = pixiv_app_api.illust_detail(works_id)
-        if response.error is None:
-            tags_llist = [i['name'] for i in response.illust['tags']]
-            print("插画名称: {}:".format(response.illust.title))
-            print("插画ID: {}".format(response.illust.id))
-            print("作者ID: {}".format(response.illust.user['id']))
-            print("作者名称: {}".format(response.illust.user['name']))
-            print("插画标签: {}".format(', '.join(tags_llist)))
-            print("发布时间: {}\n".format(response.illust.create_date))
-            return response.illust
-        return response.error
