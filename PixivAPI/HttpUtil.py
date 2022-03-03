@@ -13,6 +13,7 @@ def MaxRetry(func, max_retry=5):
                 return response
             else:
                 print("尝试第:{}次".format(retry + 1))
+                time.sleep(retry * 0.5)
     return wrapper
 
 

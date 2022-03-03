@@ -2,10 +2,6 @@ from instance import *
 import PixivAPI
 
 
-def new_file():
-    PixivAPI.mkdir(Vars.cfg.data("user", "save_file"))
-
-
 def shell_download_author_works(author_id: str):
     image_id_list = PixivAPI.PixivApp.author_information(author_id)
     if type(image_id_list) is list and len(image_id_list) != 0:
@@ -71,6 +67,8 @@ def shell():
             sys.exit("已退出程序")
         elif inputs[0] == 'h' or inputs[0] == 'help':
             print(Vars.cfg.data("user", "help"))
+        elif inputs[0] == 'l' or inputs[0] == 'login':
+            shell_pixiv_token()
         elif inputs[0] == 'd' or inputs[0] == 'download':
             shell_illustration(inputs)
         elif inputs[0] == 's' or inputs[0] == 'stars':
@@ -92,6 +90,6 @@ def shell():
 
 if __name__ == '__main__':
     set_config()
+    PixivAPI.mkdir(Vars.cfg.data("user", "save_file"))
     shell_pixiv_token()
-    new_file()
     shell()

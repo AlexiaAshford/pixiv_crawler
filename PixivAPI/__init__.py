@@ -1,5 +1,6 @@
 from instance import *
 import threading
+import functools
 from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 
@@ -10,6 +11,20 @@ save_name = Vars.cfg.data("user", "save_file")
 
 def get(url: str) -> dict:
     return HttpUtil.get(url).json()
+
+
+def obf_api(url: str):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            web_site = "https://api.obfs.dev/api/pixiv/"
+            api_url = web_site + url.replace(web_site, '')
+            print(api_url)
+            response = get(api_url)
+            print(response)
+            return func(response, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def image(url: str) -> bytes:
@@ -198,4 +213,3 @@ class PixivApp:
                 next_page = pixiv_app_api.parse_qs(response.next_url)
             else:
                 return "Pixiv排行榜插图下载完毕"
-
