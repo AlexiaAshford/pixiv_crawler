@@ -100,14 +100,12 @@ class PixivApp:
         image_name = remove_str(information['title'])
         page_count = information['page_count']
         author_id = str(information['user']["id"])
-        tags_list = [
-            data['translated_name'] for data in information['tags'] if data['translated_name']
-        ]
+
         print("插画名称: {}:".format(image_name))
         print("插画ID: {}".format(information["id"]))
         print("作者ID: {}".format(author_id))
         print("作者名称: {}".format(information['user']["name"]))
-        print("插画标签: {}".format(', '.join(tags_list)))
+        print("插画标签: {}".format(list_derivation(information['tags'], "translated_name")))
         print("画集数量: {}".format(page_count))
         print("发布时间: {}\n".format(information["create_date"]))
         if page_count == 1:
@@ -150,6 +148,7 @@ class PixivApp:
         """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivToken.instantiation_api().illust_follow()
         if response.error is None:
+            print(response)
             return list(set([data.id for data in response.illusts]))
         return response.error
 
@@ -178,3 +177,26 @@ class PixivApp:
             else:
                 Download.threading_download(images_list)
             page += 1
+
+    @staticmethod
+    def rank_information(today: str):
+        yesterday = (today - datetime.timedelta(days=+1)).strftime("%Y-%m-%d")  # 过去一周排行
+        pixiv_app_api = PixivToken.instantiation_api()
+        # 作品排行
+        # mode: [day, week, month, day_male, day_female, week_original, week_rookie, day_manga]
+        # date: '2016-08-01'
+        # mode (Past): [day, week, month, day_male, day_female, week_original, week_rookie,
+        #               day_r18, day_male_r18, day_female_r18, week_r18, week_r18g]
+        response = pixiv_app_api.illust_ranking('week', date=yesterday)
+        next_qs = pixiv_app_api.parse_qs(response.next_url)
+        while next_qs is not None:
+            response = pixiv_app_api.illust_ranking('week', date=yesterday)
+            if response.error is not None:
+                print(response.error)
+                return response.error
+            image_id_list = list(set([data.id for data in response.illusts]))
+            if type(image_id_list) is list and len(image_id_list) != 0:
+                Download.threading_download(image_id_list)
+            else:
+                print("Pixiv推荐插图下载完毕")
+

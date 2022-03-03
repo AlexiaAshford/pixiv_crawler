@@ -37,11 +37,20 @@ def shell_search(inputs: list):
         print("没有输入搜索信息")
 
 
+def shell_download_rank():
+    start = time.time()
+    try:
+        PixivAPI.PixivApp.rank_information(today=datetime.datetime.now())
+    except Exception as error:
+        print(error)
+    print(f'排行榜下载耗时:{round(time.time() - start, 2)} 秒')
+
+
 def shell_pixiv_token():
     for retry in range(int(Vars.cfg.data("headers", "retry"))):
         if Vars.cfg.data("user", "access_token") != "":
             return True
-        print("本地配置文件没有令牌，请登入网站获取code")
+        print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
         PixivAPI.login_pixiv.login()
 
 
@@ -66,9 +75,11 @@ def shell():
             shell_search(inputs)
         elif inputs[0] == 't' or inputs[0] == 'recommend':
             PixivAPI.PixivApp.recommend_information()
+        elif inputs[0] == 'r' or inputs[0] == 'rank':
+            shell_download_rank()
         elif inputs[0] == 'f' or inputs[0] == 'follow':
             response = PixivAPI.PixivApp.follow_information()
-            print(response)
+            # print(response)
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:
