@@ -8,7 +8,6 @@ import configparser
 from rich import print
 
 
-
 class Config:
 
     def __init__(self, filename: str, main_path: str):

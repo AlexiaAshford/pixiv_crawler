@@ -181,8 +181,8 @@ class PixivApp:
 
     @staticmethod
     def rank_information():
+        """作品排行 <class 'PixivApp.utils.JsonDict'>"""
         pixiv_app_api = PixivToken.instantiation_api()
-        # 作品排行
         # mode: [day, week, month, day_male, day_female, week_original, week_rookie, day_manga]
         # date: '2016-08-01'
         # mode (Past): [day, week, month, day_male, day_female, week_original, week_rookie,

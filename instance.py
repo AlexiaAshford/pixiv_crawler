@@ -2,6 +2,7 @@ from setting import *
 from rich import print
 import datetime
 
+
 class Vars:
     def __init__(self):
         pass
@@ -83,12 +84,15 @@ def set_config():
     if type(Vars.cfg.data("user", "refresh_token")) is not str:
         Vars.cfg.save("user", "refresh_token", "")
     if type(Vars.cfg.data("user", "help")) is not str:
-        Vars.cfg.save("user", "help",
-                      "输入首字母\nh | help\t\t\t\t\t\t--- 显示说明\n"
-                      "q | quit\t\t\t\t\t\t--- 退出正在运作的程序\n"
-                      "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
-                      "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
-                      "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
-                      "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
-                      "f | follow\t\t\t\t\t\t--- 下载账号关注的画师作品"
-                      )
+        Vars.cfg.save(
+            "user", "help",
+            "输入首字母\n"
+            "h | help\t\t\t\t\t\t--- 显示说明\n"
+            "q | quit\t\t\t\t\t\t--- 退出正在运作的程序\n"
+            "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
+            "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
+            "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
+            "r | rank\t\t\t\t\t\t--- 下载排行榜作品\n"
+            "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
+            "f | follow\t\t\t\t\t\t--- 下载关注的画师作品"
+        )

@@ -1,11 +1,9 @@
 # -*- coding:utf-8 -*-
-
 import re
 import sys
-from .api import BasePixivAPI  # nopep8
-from .utils import PixivError  # nopep8
+from .api import BasePixivAPI
+from .utils import PixivError
 import urllib.parse as up
-
 from requests.structures import CaseInsensitiveDict
 
 
@@ -79,23 +77,20 @@ class AppPixivAPI(BasePixivAPI):
             'user_id': user_id,
             'filter': filter,
         }
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 用户作品列表
     ## type: [illust, manga]
     def user_illusts(self, user_id, type='illust', filter='for_ios', offset=None, req_auth=True):
         url = '%s/v1/user/illusts' % self.hosts
-        params = {
-            'user_id': user_id,
-            'filter': filter,
-        }
+        params = {'user_id': user_id, 'filter': filter}
         if type is not None:
             params['type'] = type
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 用户收藏作品列表
     # tag: 从 user_bookmark_tags_illust 获取的收藏标签
@@ -111,8 +106,8 @@ class AppPixivAPI(BasePixivAPI):
             params['max_bookmark_id'] = max_bookmark_id
         if tag:
             params['tag'] = tag
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     def user_related(self, seed_user_id, filter='for_ios', offset=None, req_auth=True):
         url = '%s/v1/user/related' % self.hosts
@@ -121,8 +116,8 @@ class AppPixivAPI(BasePixivAPI):
             'offset': offset if offset else 0,  # Pixiv warns to put seed_user_id at the end -> put offset here
             'seed_user_id': seed_user_id
         }
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 关注用户的新作
     # restrict: [public, private]
@@ -133,8 +128,8 @@ class AppPixivAPI(BasePixivAPI):
         }
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 作品详情 (类似PAPI.works()，iOS中未使用)
     def illust_detail(self, illust_id, req_auth=True):
@@ -142,8 +137,8 @@ class AppPixivAPI(BasePixivAPI):
         params = {
             'illust_id': illust_id,
         }
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 作品评论
     def illust_comments(self, illust_id, offset=None, include_total_comments=None, req_auth=True):
@@ -155,8 +150,8 @@ class AppPixivAPI(BasePixivAPI):
             params['offset'] = offset
         if include_total_comments:
             params['include_total_comments'] = self.format_bool(include_total_comments)
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 相关作品列表
     def illust_related(self, illust_id, filter='for_ios', seed_illust_ids=None, offset=None,
@@ -171,8 +166,8 @@ class AppPixivAPI(BasePixivAPI):
             params['seed_illust_ids[]'] = [seed_illust_ids]
         elif isinstance(seed_illust_ids, list):
             params['seed_illust_ids[]'] = seed_illust_ids
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 插画推荐 (Home - Main)
     # content_type: [illust, manga]
@@ -207,8 +202,8 @@ class AppPixivAPI(BasePixivAPI):
         if include_privacy_policy:
             params['include_privacy_policy'] = include_privacy_policy
 
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 作品排行
     # mode: [day, week, month, day_male, day_female, week_original, week_rookie, day_manga]
