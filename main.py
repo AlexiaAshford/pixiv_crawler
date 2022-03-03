@@ -7,29 +7,27 @@ def new_file():
 
 
 def shell_download_author_works(author_id: str):
-    start = time.time()
     image_id_list = PixivAPI.PixivApp.author_information(author_id)
     if type(image_id_list) is list and len(image_id_list) != 0:
         PixivAPI.Download.threading_download(image_id_list)
-        print(f'下载耗时:{round(time.time() - start, 2)} 秒')
     else:
         print("没有找到相关的信息，可能是输入的ID不正确")
 
 
+@count_time
 def shell_illustration(inputs):
     if len(inputs) >= 2:
         if type(inputs) is list and len(inputs) == 3 and inputs[2] == "a":
             shell_download_author_works(inputs[1])  # 通过作者ID下载作者的作品集
         else:
-            start = time.time()  # 通过作品ID下载原图
-            image_id = PixivAPI.rec_id(inputs[1])
+            image_id = PixivAPI.rec_id(inputs[1])  # 通过作品ID下载原图
             if image_id != "":
                 PixivAPI.Download.save_image(image_id)
-            print(f'下载耗时:{round(time.time() - start, 2)} 秒')
     else:
         print("你没有输入id或者链接")
 
 
+@count_time
 def shell_search(inputs: list):
     if len(inputs) >= 2:
         PixivAPI.PixivApp.search_information(inputs[1])
@@ -37,19 +35,19 @@ def shell_search(inputs: list):
         print("没有输入搜索信息")
 
 
+@count_time
 def shell_download_follow_author():
     author_id_list = PixivAPI.PixivApp.follow_information()
     for author_id in author_id_list:
         shell_download_author_works(author_id)
 
 
+@count_time
 def shell_download_rank():
-    start = time.time()
     try:
         print(PixivAPI.PixivApp.rank_information())
     except Exception as error:
         print(error)
-    print(f'排行榜下载耗时:{round(time.time() - start, 2)} 秒')
 
 
 def shell_pixiv_token():

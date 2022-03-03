@@ -1,5 +1,6 @@
 from instance import *
 import threading
+import functools
 from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 

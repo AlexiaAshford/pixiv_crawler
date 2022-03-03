@@ -1,6 +1,5 @@
 from setting import *
 from rich import print
-import datetime
 
 
 class Vars:
@@ -8,6 +7,16 @@ class Vars:
         pass
 
     cfg = Config('Pixiv-Config.conf', os.getcwd())
+
+
+def count_time(func):
+    def wrapper(*arg, **kwargs):
+        start_time = time.time()
+        result = func(*arg, **kwargs)
+        print(f"下载耗时:{time.time() - start_time:.2f}s")
+        return result
+
+    return wrapper
 
 
 def str_mid(string: str, left: str, right: str, start=None, end=None):
