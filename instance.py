@@ -33,6 +33,11 @@ def mkdir(file_path: str):
         os.mkdir(file_path)
 
 
+def makedirs(file_path: str):
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
+
+
 def input_(prompt, default=None):
     while True:
         ret = input(prompt)
@@ -76,5 +81,5 @@ def set_config():
                       "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
                       "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
                       "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
-                      "f | follow\t\t\t\t\t\t\t--- 下载账号关注的画师作品"
+                      "f | follow\t\t\t\t\t\t--- 下载账号关注的画师作品"
                       )

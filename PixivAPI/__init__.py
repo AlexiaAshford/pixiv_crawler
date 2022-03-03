@@ -23,7 +23,6 @@ class Download:
             time.sleep(random.random() * float(1.2))  # 随机延迟
             with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
                 file.write(image(image_url))
-                print('成功下载图片：{}\n'.format(image_name))
         else:
             print(f"{image_name} 已经下载过了\n")
 
@@ -34,12 +33,16 @@ class Download:
             image_name = image_id.split("/")[-1].replace(".jpg", "")
             Download.save_file(file_path, image_name, image_id)
         else:
-            image_url, image_name = PixivApp.illustration_information(image_id)
+            image_url, image_name, author_id = PixivApp.illustration_information(image_id)
+            save_path = os.path.join(Vars.cfg.data("user", "save_file"), str(author_id))
             if type(image_url) is str:
-                Download.save_file(file_path, image_name, image_url)
+                mkdir(save_path)
+                Download.save_file(save_path, image_name, image_url)
                 return
             for index, url in enumerate(image_url):
-                Download.save_file(file_path, image_name + f'_{index}', url)
+                save_page_file = os.path.join(save_path, image_name)
+                makedirs(save_page_file)
+                Download.save_file(save_page_file, index, url)
 
     @staticmethod
     def threading_download(image_id_list: list):
@@ -97,21 +100,22 @@ class PixivApp:
         information = response["illust"]
         image_name = remove_str(information['title'])
         page_count = information['page_count']
-
+        author_id = information['user']["id"]
         tags_list = [
             data['translated_name'] for data in information['tags'] if data['translated_name']
         ]
         print("插画名称: {}:".format(image_name))
         print("插画ID: {}".format(information["id"]))
-        print("作者ID: {}".format(information['user']["id"]))
+        print("作者ID: {}".format(author_id))
         print("作者名称: {}".format(information['user']["name"]))
         print("插画标签: {}".format(', '.join(tags_list)))
         print("画集数量: {}".format(page_count))
         print("发布时间: {}\n".format(information["create_date"]))
         if page_count == 1:
-            return information['meta_single_page']['original_image_url'], image_name
-        img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
-        return img_url_list, image_name
+            return information['meta_single_page']['original_image_url'], image_name, author_id
+        else:
+            img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
+            return img_url_list, image_name, author_id
 
     @staticmethod
     def start_information():
