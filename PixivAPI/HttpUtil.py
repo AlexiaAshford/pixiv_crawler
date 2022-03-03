@@ -33,7 +33,8 @@ def get(api_url: str, params=None, *args, **kwargs):
         response = requests.get(api_url, headers=headers(), params=params)
         if response.status_code == 200:
             return response
-        return False
+        else:
+            return False
     except (OSError, TimeoutError, IOError) as error:
         print("\nGet url:{} Error:{}".format(api_url, error))
         return False
@@ -45,7 +46,8 @@ def post(api_url: str, data=None, *args, **kwargs):
         response = requests.post(api_url, headers=headers(), params=data)
         if response.status_code == 200:
             return response
-        return False
+        else:
+            return False
     except (OSError, TimeoutError, IOError) as error:
         print("\nGet url:{} Error:{}".format(api_url, error))
         return False
@@ -57,7 +59,8 @@ def put(api_url: str, data=None, *args, **kwargs):
         response = requests.put(api_url, headers=headers(), params=data)
         if response.status_code == 200:
             return response
-        return False
+        else:
+            return False
     except (OSError, TimeoutError, IOError) as error:
         print("\nGet url:{} Error:{}".format(api_url, error))
         return False
