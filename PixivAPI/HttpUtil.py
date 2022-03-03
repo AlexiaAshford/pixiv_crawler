@@ -1,6 +1,19 @@
 import requests
 from instance import *
+import functools
 from fake_useragent import UserAgent
+
+
+def MaxRetry(func, max_retry=5):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for retry in range(max_retry):
+            response = func(*args, **kwargs)
+            if not isinstance(response, bool):
+                return response
+            else:
+                print("尝试第:{}次".format(retry + 1))
+    return wrapper
 
 
 def headers():
@@ -14,25 +27,37 @@ def headers():
     }
 
 
-def get(url, params=None, max_retry=10, *args, **kwargs):
-    for retry in range(max_retry):
-        result = requests.get(url=url, headers=headers(), params=params)
-        if result.status_code == 200:
-            return result
-        print("{}请求失败，第{}次重新请求：".format(url, retry))
+@MaxRetry
+def get(api_url: str, params=None, *args, **kwargs):
+    try:
+        response = requests.get(api_url, headers=headers(), params=params)
+        if response.status_code == 200:
+            return response
+        return False
+    except (OSError, TimeoutError, IOError) as error:
+        print("\nGet url:{} Error:{}".format(api_url, error))
+        return False
 
 
-def post(url, data=None, *args, **kwargs):
-    for retry in range(int(Vars.cfg.data("headers", "retry"))):
-        result = requests.post(url=url, headers=headers(), data=data)
-        if result.status_code == 200:
-            return result
-        print("{}请求失败，第{}次重新请求：".format(url, retry))
+@MaxRetry
+def post(api_url: str, data=None, *args, **kwargs):
+    try:
+        response = requests.post(api_url, headers=headers(), params=data)
+        if response.status_code == 200:
+            return response
+        return False
+    except (OSError, TimeoutError, IOError) as error:
+        print("\nGet url:{} Error:{}".format(api_url, error))
+        return False
 
 
-def put(url, data=None, *args, **kwargs):
-    for retry in range(int(Vars.cfg.data("headers", "retry"))):
-        result = requests.put(url=url, headers=headers(), data=data)
-        if result.status_code == 200:
-            return result
-        print("{}请求失败，第{}次重新请求：".format(url, retry))
+@MaxRetry
+def put(api_url: str, data=None, *args, **kwargs):
+    try:
+        response = requests.put(api_url, headers=headers(), params=data)
+        if response.status_code == 200:
+            return response
+        return False
+    except (OSError, TimeoutError, IOError) as error:
+        print("\nGet url:{} Error:{}".format(api_url, error))
+        return False
