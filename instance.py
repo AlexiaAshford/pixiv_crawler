@@ -28,6 +28,11 @@ def rec_id(book_id):
     return str(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
 
 
+def index_title(division_index: int, image_name: str):
+    print(division_index, image_name)
+    return str(division_index).rjust(4, "0") + '-' + str(image_name)
+
+
 def mkdir(file_path: str):
     if not os.path.exists(file_path):
         os.mkdir(file_path)

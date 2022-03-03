@@ -5,6 +5,7 @@ from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 
 Vars.cfg.load()
 max_retry = Vars.cfg.data("headers", "retry")
+save_name = Vars.cfg.data("user", "save_file")
 
 
 def get(url: str) -> dict:
@@ -32,22 +33,20 @@ class Download:
         if "http" in image_id and len(image_id) > 20:
             image_name = image_id.split("/")[-1].replace(".jpg", "")
             Download.save_file(file_path, image_name, image_id)
-        else:
-            image_url, image_name, author_id = PixivApp.illustration_information(image_id)
-            save_path = os.path.join(Vars.cfg.data("user", "save_file"), str(author_id))
-            if type(image_url) is str:
-                mkdir(save_path)
-                Download.save_file(save_path, image_name, image_url)
-                return
-            for index, url in enumerate(image_url):
-                save_page_file = os.path.join(save_path, image_name)
-                makedirs(save_page_file)
-                Download.save_file(save_page_file, index, url)
+            return False
+        image_url, image_name, author_id = PixivApp.illustration_information(image_id)
+        out_image_path = os.path.join(save_name, author_id, image_name)
+        makedirs(out_image_path)
+        if type(image_url) is str:
+            Download.save_file(out_image_path, image_name, image_url)
+            return
+        for index, url in enumerate(image_url):
+            image_page_name = index_title(index, image_name)
+            Download.save_file(out_image_path, image_page_name, url)
 
     @staticmethod
     def threading_download(image_id_list: list):
         lock_tasks_list = threading.Lock()
-        print(f"开始下载，一共 {len(image_id_list)} 张图片")
 
         def downloader():
             """多线程下载函数"""
@@ -55,12 +54,12 @@ class Download:
 
             while image_id_list:
                 if not image_id_list and len(image_id_list) == 0:
-                    return
-                lock_tasks_list.acquire()
-                image_id = image_id_list.pop(0) if image_id_list else False
-                lock_tasks_list.release()
-                if type(image_id) is not bool:
-                    Download.save_image(str(image_id))
+                    break
+                else:
+                    lock_tasks_list.acquire()
+                    image_id = image_id_list.pop(0) if image_id_list else False
+                    lock_tasks_list.release()
+                    Download.save_image(str(image_id)) if type(image_id) is not bool else ""
 
         threads_pool = []
         for _ in range(int(Vars.cfg.data("user", "max_thread"))):
@@ -100,7 +99,7 @@ class PixivApp:
         information = response["illust"]
         image_name = remove_str(information['title'])
         page_count = information['page_count']
-        author_id = information['user']["id"]
+        author_id = str(information['user']["id"])
         tags_list = [
             data['translated_name'] for data in information['tags'] if data['translated_name']
         ]
