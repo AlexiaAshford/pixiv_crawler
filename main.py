@@ -37,10 +37,16 @@ def shell_search(inputs: list):
         print("没有输入搜索信息")
 
 
+def shell_download_follow_author():
+    author_id_list = PixivAPI.PixivApp.follow_information()
+    for author_id in author_id_list:
+        shell_download_author_works(author_id)
+
+
 def shell_download_rank():
     start = time.time()
     try:
-        PixivAPI.PixivApp.rank_information()
+        print(PixivAPI.PixivApp.rank_information())
     except Exception as error:
         print(error)
     print(f'排行榜下载耗时:{round(time.time() - start, 2)} 秒')
@@ -78,8 +84,7 @@ def shell():
         elif inputs[0] == 'r' or inputs[0] == 'rank':
             shell_download_rank()
         elif inputs[0] == 'f' or inputs[0] == 'follow':
-            response = PixivAPI.PixivApp.follow_information()
-            # print(response)
+            shell_download_follow_author()
         else:
             print(inputs[0], "为无效指令")
         if command_line is True:

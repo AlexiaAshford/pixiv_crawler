@@ -2,14 +2,9 @@
 
 import re
 import sys
-
 from .api import BasePixivAPI  # nopep8
 from .utils import PixivError  # nopep8
-
-if sys.version_info >= (3, 0):
-    import urllib.parse as up
-else:
-    import urlparse as up
+import urllib.parse as up
 
 from requests.structures import CaseInsensitiveDict
 
@@ -66,38 +61,15 @@ class AppPixivAPI(BasePixivAPI):
     def parse_qs(cls, next_url):
         if not next_url:
             return None
-
         result_qs = {}
         query = up.urlparse(next_url).query
-
-        if sys.version_info >= (3, 0):
-            for key, value in up.parse_qs(query).items():
-                # merge seed_illust_ids[] liked PHP params to array
-                if '[' in key and key.endswith(']'):
-                    # keep the origin sequence, just ignore array length
-                    result_qs[key.split('[')[0]] = value
-                else:
-                    result_qs[key] = value[-1]
-
-        else:
-            # Python2 unquote may return utf8 instead of unicode
-            def safe_unquote(s):
-                return up.unquote(s.encode('utf8')).decode('utf8')
-
-            for kv in query.split('&'):
-                # split than unquote() to k,v strings
-                k, v = map(safe_unquote, kv.split('='))
-
-                # merge seed_illust_ids[] liked PHP params to array
-                matched = re.match('(?P<key>[\w]*)\[(?P<idx>[\w]*)\]', k)
-                if matched:
-                    mk = matched.group('key')
-                    marray = result_qs.get(mk, [])
-                    # keep the origin sequence, just ignore group('idx')
-                    result_qs[mk] = marray + [v]
-                else:
-                    result_qs[k] = v
-
+        for key, value in up.parse_qs(query).items():
+            # merge seed_illust_ids[] liked PHP params to array
+            if '[' in key and key.endswith(']'):
+                # keep the origin sequence, just ignore array length
+                result_qs[key.split('[')[0]] = value
+            else:
+                result_qs[key] = value[-1]
         return result_qs
 
     # 用户详情
@@ -253,17 +225,15 @@ class AppPixivAPI(BasePixivAPI):
             params['date'] = date
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 趋势标签 (Search - tags)
     def trending_tags_illust(self, filter='for_ios', req_auth=True):
         url = '%s/v1/trending-tags/illust' % self.hosts
-        params = {
-            'filter': filter,
-        }
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        params = {'filter': filter}
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 搜索 (Search)
     # search_target - 搜索类型
@@ -291,8 +261,8 @@ class AppPixivAPI(BasePixivAPI):
             params['duration'] = duration
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 搜索小说 (Search Novel)
     # search_target - 搜索类型
@@ -335,8 +305,8 @@ class AppPixivAPI(BasePixivAPI):
             params['duration'] = duration
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 作品收藏详情
     def illust_bookmark_detail(self, illust_id, req_auth=True):
@@ -344,8 +314,8 @@ class AppPixivAPI(BasePixivAPI):
         params = {
             'illust_id': illust_id,
         }
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 新增收藏
     def illust_bookmark_add(self, illust_id, restrict='public', tags=None, req_auth=True):
@@ -360,8 +330,8 @@ class AppPixivAPI(BasePixivAPI):
         if tags:
             data['tags[]'] = tags
 
-        r = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 删除收藏
     def illust_bookmark_delete(self, illust_id, req_auth=True):
@@ -369,8 +339,8 @@ class AppPixivAPI(BasePixivAPI):
         data = {
             'illust_id': illust_id,
         }
-        r = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 关注用户
     def user_follow_add(self, user_id, restrict='public', req_auth=True):
@@ -379,17 +349,15 @@ class AppPixivAPI(BasePixivAPI):
             'user_id': user_id,
             'restrict': restrict
         }
-        r = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 取消关注用户
     def user_follow_delete(self, user_id, req_auth=True):
         url = '%s/v1/user/follow/delete' % self.hosts
-        data = {
-            'user_id': user_id
-        }
-        r = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
-        return self.parse_result(r)
+        data = {'user_id': user_id}
+        response = self.no_auth_requests_call('POST', url, data=data, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 用户收藏标签列表
     def user_bookmark_tags_illust(self, restrict='public', offset=None, req_auth=True):
@@ -399,8 +367,8 @@ class AppPixivAPI(BasePixivAPI):
         }
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # Following用户列表
     def user_following(self, user_id, restrict='public', offset=None, req_auth=True):
@@ -412,126 +380,98 @@ class AppPixivAPI(BasePixivAPI):
         if offset:
             params['offset'] = offset
 
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # Followers用户列表
     def user_follower(self, user_id, filter='for_ios', offset=None, req_auth=True):
         url = '%s/v1/user/follower' % self.hosts
-        params = {
-            'user_id': user_id,
-            'filter': filter,
-        }
+        params = {'user_id': user_id, 'filter': filter}
         if offset:
             params['offset'] = offset
 
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 好P友
     def user_mypixiv(self, user_id, offset=None, req_auth=True):
         url = '%s/v1/user/mypixiv' % self.hosts
-        params = {
-            'user_id': user_id,
-        }
+        params = {'user_id': user_id}
         if offset:
             params['offset'] = offset
 
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 黑名单用户
     def user_list(self, user_id, filter='for_ios', offset=None, req_auth=True):
         url = '%s/v2/user/list' % self.hosts
-        params = {
-            'user_id': user_id,
-            'filter': filter,
-        }
+        params = {'user_id': user_id, 'filter': filter}
         if offset:
             params['offset'] = offset
 
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 获取ugoira信息
     def ugoira_metadata(self, illust_id, req_auth=True):
         url = '%s/v1/ugoira/metadata' % self.hosts
-        params = {
-            'illust_id': illust_id,
-        }
+        params = {'illust_id': illust_id}
 
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 用户小说列表
     def user_novels(self, user_id, filter='for_ios', offset=None, req_auth=True):
         url = '%s/v1/user/novels' % self.hosts
-        params = {
-            'user_id': user_id,
-            'filter': filter,
-        }
+        params = {'user_id': user_id, 'filter': filter}
         if offset:
             params['offset'] = offset
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 小说系列详情
     def novel_series(self, series_id, filter='for_ios', last_order=None, req_auth=True):
         url = '%s/v2/novel/series' % self.hosts
-        params = {
-            'series_id': series_id,
-            'filter': filter,
-        }
+        params = {'series_id': series_id, 'filter': filter}
         if last_order:
             params['last_order'] = last_order
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 小说详情
     def novel_detail(self, novel_id, req_auth=True):
         url = '%s/v2/novel/detail' % self.hosts
-        params = {
-            'novel_id': novel_id,
-        }
-
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        params = {'novel_id': novel_id}
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 小说正文
     def novel_text(self, novel_id, req_auth=True):
         url = '%s/v1/novel/text' % self.hosts
-        params = {
-            'novel_id': novel_id,
-        }
-
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        params = {'novel_id': novel_id}
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 大家的新作
     # content_type: [illust, manga]
     def illust_new(self, content_type="illust", filter='for_ios', max_illust_id=None, req_auth=True):
         url = '%s/v1/illust/new' % self.hosts
-        params = {
-            'content_type': content_type,
-            'filter': filter,
-        }
+        params = {'content_type': content_type, 'filter': filter}
         if max_illust_id:
             params['max_illust_id'] = max_illust_id
-        r = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
-        return self.parse_result(r)
+        response = self.no_auth_requests_call('GET', url, params=params, req_auth=req_auth)
+        return self.parse_result(response)
 
     # 特辑详情 (无需登录，调用Web API)
     def showcase_article(self, showcase_id):
         url = 'https://www.pixiv.net/ajax/showcase/article'
         # Web API，伪造Chrome的User-Agent
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 '
-                          + '(KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/63.0.3239.132 Safari/537.36',
             'Referer': 'https://www.pixiv.net',
         }
-        params = {
-            'article_id': showcase_id,
-        }
-
-        r = self.no_auth_requests_call('GET', url, headers=headers, params=params, req_auth=False)
-        return self.parse_result(r)
+        params = {'article_id': showcase_id}
+        response = self.no_auth_requests_call('GET', url, headers=headers, params=params, req_auth=False)
+        return self.parse_result(response)

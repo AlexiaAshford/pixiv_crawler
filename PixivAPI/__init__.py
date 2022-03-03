@@ -148,9 +148,10 @@ class PixivApp:
         """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
         response = PixivToken.instantiation_api().illust_follow()
         if response.error is None:
-            print(response)
-            return list(set([data.id for data in response.illusts]))
-        return response.error
+            return list(set([illusts.user['id'] for illusts in response.illusts]))
+        else:
+            print(response.error)
+            return response.error
 
     @staticmethod
     def author_information(author_id: str):
