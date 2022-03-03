@@ -179,24 +179,22 @@ class PixivApp:
             page += 1
 
     @staticmethod
-    def rank_information(today: str):
-        yesterday = (today - datetime.timedelta(days=+1)).strftime("%Y-%m-%d")  # 过去一周排行
+    def rank_information():
         pixiv_app_api = PixivToken.instantiation_api()
         # 作品排行
         # mode: [day, week, month, day_male, day_female, week_original, week_rookie, day_manga]
         # date: '2016-08-01'
         # mode (Past): [day, week, month, day_male, day_female, week_original, week_rookie,
         #               day_r18, day_male_r18, day_female_r18, week_r18, week_r18g]
-        response = pixiv_app_api.illust_ranking('week', date=yesterday)
-        next_qs = pixiv_app_api.parse_qs(response.next_url)
-        while next_qs is not None:
-            response = pixiv_app_api.illust_ranking('week', date=yesterday)
+        next_page = {"mode": "day"}
+        while next_page:
+            response = pixiv_app_api.illust_ranking(**next_page)
             if response.error is not None:
-                print(response.error)
                 return response.error
             image_id_list = list(set([data.id for data in response.illusts]))
             if type(image_id_list) is list and len(image_id_list) != 0:
                 Download.threading_download(image_id_list)
+                next_page = pixiv_app_api.parse_qs(response.next_url)
             else:
-                print("Pixiv推荐插图下载完毕")
+                return "Pixiv排行榜插图下载完毕"
 

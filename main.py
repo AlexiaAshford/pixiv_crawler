@@ -40,7 +40,7 @@ def shell_search(inputs: list):
 def shell_download_rank():
     start = time.time()
     try:
-        PixivAPI.PixivApp.rank_information(today=datetime.datetime.now())
+        PixivAPI.PixivApp.rank_information()
     except Exception as error:
         print(error)
     print(f'排行榜下载耗时:{round(time.time() - start, 2)} 秒')
