@@ -5,7 +5,6 @@ from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 
 Vars.cfg.load()
-max_retry = Vars.cfg.data("headers", "retry")
 save_name = Vars.cfg.data("user", "save_file")
 
 
@@ -63,10 +62,8 @@ class Download:
     def threading_download(image_id_list: list):
         lock_tasks_list = threading.Lock()
 
-        def downloader():
-            """多线程下载函数"""
+        def downloader():  # 多线程闭包下载函数
             nonlocal lock_tasks_list
-
             while image_id_list:
                 if not image_id_list and len(image_id_list) == 0:
                     break
@@ -89,9 +86,9 @@ class Download:
 
 class PixivToken:
     @staticmethod
-    def instantiation_api():
+    def instantiation_api(max_retry=Vars.cfg.data("headers", "retry")):
         instantiation = AppPixivAPI()
-        for index, retry in enumerate(range(int(max_retry))):
+        for index, retry in enumerate(range(max_retry)):
             instantiation.set_auth(
                 access_token=Vars.cfg.data("user", "access_token"),
                 refresh_token=Vars.cfg.data("user", "refresh_token")
@@ -101,7 +98,7 @@ class PixivToken:
 
             login_pixiv.refresh(Vars.cfg.data("user", "refresh_token"))
             print(f"token失效，尝试刷新refresh_token retry{index}")
-            if retry >= int(max_retry) - 1:
+            if retry >= max_retry - 1:
                 return 403
 
 

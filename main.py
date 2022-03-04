@@ -4,7 +4,7 @@ import PixivAPI
 
 def shell_download_author_works(author_id: str):
     image_id_list = PixivAPI.PixivApp.author_information(author_id)
-    if type(image_id_list) is list and len(image_id_list) != 0:
+    if isinstance(image_id_list, list) and len(image_id_list) != 0:
         PixivAPI.Download.threading_download(image_id_list)
     else:
         print("没有找到相关的信息，可能是输入的ID不正确")
@@ -13,7 +13,7 @@ def shell_download_author_works(author_id: str):
 @count_time
 def shell_illustration(inputs):
     if len(inputs) >= 2:
-        if type(inputs) is list and len(inputs) == 3 and inputs[2] == "a":
+        if isinstance(inputs, list) and len(inputs) == 3 and inputs[2] == "a":
             shell_download_author_works(inputs[1])  # 通过作者ID下载作者的作品集
         else:
             image_id = PixivAPI.rec_id(inputs[1])  # 通过作品ID下载原图
@@ -55,7 +55,7 @@ def shell_pixiv_token():
 
 
 def shell():
-    if len(sys.argv) > 1 and type(sys.argv) is list:
+    if len(sys.argv) > 1 and isinstance(sys.argv, list):
         command_line = True
         inputs = sys.argv[1:]
     else:

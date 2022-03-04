@@ -24,8 +24,11 @@ class Config:
 
     def data(self, key, value):
         try:
+            result = self.config.get(key, value)
+            if result.isdigit():
+                return self.config.getint(key, value)
             return self.config.get(key, value)
-        except:
+        except Exception:
             print("No section or Option!", key, value)
 
     def save(self, config_key, save_key, save_data):

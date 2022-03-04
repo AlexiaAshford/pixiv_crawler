@@ -73,26 +73,26 @@ def set_config():
         Vars.cfg.save(
             "headers", "User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"
         )
-    if type(Vars.cfg.data("headers", "Cookie")) is not str:
+    if not isinstance(Vars.cfg.data("headers", "Cookie"), str):
         Vars.cfg.save("headers", "Cookie", "")
-    if type(Vars.cfg.data("headers", "retry")) is not str:
+    if not isinstance(Vars.cfg.data("headers", "retry"), str):
         Vars.cfg.save("headers", "retry", "5")
-    if type(Vars.cfg.data("headers", "referer")) is not str:
+    if not isinstance(Vars.cfg.data("headers", "referer"), str):
         Vars.cfg.save(
             "headers", "referer", "https://www.pixiv.net/ranking.php?mode=daily&content=illust"
         )
     # +++++++++++++++++++++user=======================
-    if type(Vars.cfg.data("user", "max_thread")) is not str:
+    if not isinstance(Vars.cfg.data("user", "max_thread"), str):
         Vars.cfg.save("user", "max_thread", "5")
-    if type(Vars.cfg.data("user", "save_file")) is not str:
+    if not isinstance(Vars.cfg.data("user", "save_file"), str):
         Vars.cfg.save("user", "save_file", "pixiv")
-    if type(Vars.cfg.data("user", "out_file")) is not str:
+    if not isinstance(Vars.cfg.data("user", "out_file"), str):
         Vars.cfg.save("user", "out_file", "downloaded")
-    if type(Vars.cfg.data("user", "access_token")) is not str:
+    if not isinstance(Vars.cfg.data("user", "access_token"), str):
         Vars.cfg.save("user", "access_token", "")
-    if type(Vars.cfg.data("user", "refresh_token")) is not str:
+    if not isinstance(Vars.cfg.data("user", "refresh_token"), str):
         Vars.cfg.save("user", "refresh_token", "")
-    if type(Vars.cfg.data("user", "help")) is not str:
+    if not isinstance(Vars.cfg.data("user", "help"), str):
         Vars.cfg.save(
             "user", "help",
             "输入首字母\n"
@@ -103,5 +103,5 @@ def set_config():
             "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
             "r | rank\t\t\t\t\t\t--- 下载排行榜作品\n"
             "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
-            "f | follow\t\t\t\t\t\t--- 下载关注的画师作品"
+            "f | follow\t\t\t\t\t--- 下载关注的画师作品"
         )
