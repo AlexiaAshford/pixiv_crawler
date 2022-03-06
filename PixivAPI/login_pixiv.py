@@ -72,10 +72,5 @@ def refresh(refresh_token):
 
 
 def save_token(response):
-    if response.get("code") is None:
-        access_token = response["access_token"]
-        refresh_token = response["refresh_token"]
-        Vars.cfg.save("user", "access_token", access_token)
-        Vars.cfg.save("user", "refresh_token", refresh_token)
-    else:
-        print(response.get("message"))
+    Vars.cfg.save("user", "access_token", response["access_token"])
+    Vars.cfg.save("user", "refresh_token", response["refresh_token"])

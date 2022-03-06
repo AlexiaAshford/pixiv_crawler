@@ -75,7 +75,6 @@ def shell_pixiv_token():
             print("输入code无效，请重新尝试获取！")
 
 
-
 def shell():
     if len(sys.argv) > 1 and isinstance(sys.argv, list):
         command_line = True

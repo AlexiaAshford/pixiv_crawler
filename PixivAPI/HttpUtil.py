@@ -29,39 +29,39 @@ def headers():
 
 
 @MaxRetry
-def get(api_url: str, params=None, *args, **kwargs):
+def get(api_url: str, params=None, **kwargs):
     try:
-        response = requests.get(api_url, headers=headers(), params=params)
+        response = requests.get(api_url, headers=headers(), params=params, **kwargs)
         if response.status_code == 200:
             return response
         else:
             return False
-    except (OSError, TimeoutError, IOError) as error:
+    except requests.exceptions.RequestException as error:
         print("\nGet url:{} Error:{}".format(api_url, error))
         return False
 
 
 @MaxRetry
-def post(api_url: str, data=None, *args, **kwargs):
+def post(api_url: str, data=None, **kwargs):
     try:
-        response = requests.post(api_url, headers=headers(), params=data)
+        response = requests.post(api_url, headers=headers(), params=data, **kwargs)
         if response.status_code == 200:
             return response
         else:
             return False
-    except (OSError, TimeoutError, IOError) as error:
+    except requests.exceptions.RequestException as error:
         print("\nGet url:{} Error:{}".format(api_url, error))
         return False
 
 
 @MaxRetry
-def put(api_url: str, data=None, *args, **kwargs):
+def put(api_url: str, data=None, **kwargs):
     try:
-        response = requests.put(api_url, headers=headers(), params=data)
+        response = requests.put(api_url, headers=headers(), params=data, **kwargs)
         if response.status_code == 200:
             return response
         else:
             return False
-    except (OSError, TimeoutError, IOError) as error:
+    except requests.exceptions.RequestException as error:
         print("\nGet url:{} Error:{}".format(api_url, error))
         return False

@@ -3,10 +3,8 @@ from rich import print
 
 
 class Vars:
-    def __init__(self):
-        pass
-
     cfg = Config('Pixiv-Config.conf', os.getcwd())
+    images_info = None
 
 
 def count_time(func):
