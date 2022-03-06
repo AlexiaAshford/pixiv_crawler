@@ -62,11 +62,18 @@ def shell_read_text_id(inputs):
 
 
 def shell_pixiv_token():
-    for retry in range(int(Vars.cfg.data("headers", "retry"))):
+    for retry in range(Vars.cfg.data("headers", "retry")):
         if Vars.cfg.data("user", "access_token") != "":
             return True
-        print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
-        PixivAPI.login_pixiv.login()
+        else:
+            print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
+            code_verifier = PixivAPI.login_pixiv.open_browser()
+            code = PixivAPI.input_('code:').strip()
+            result = PixivAPI.login_pixiv.login(code_verifier, code)
+            if result is None:
+                return
+            print("输入code无效，请重新尝试获取！")
+
 
 
 def shell():
@@ -107,6 +114,5 @@ def shell():
 
 if __name__ == '__main__':
     set_config()
-    PixivAPI.mkdir(Vars.cfg.data("user", "save_file"))
     shell_pixiv_token()
     shell()

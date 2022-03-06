@@ -103,5 +103,8 @@ def set_config():
             "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
             "r | rank\t\t\t\t\t\t--- 下载排行榜作品\n"
             "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
+            "u | read text pid\t\t\t\t\t--- 读取本地文本里的pid批量下载\n"
             "f | follow\t\t\t\t\t\t--- 下载关注的画师作品"
         )
+
+    mkdir(Vars.cfg.data("user", "save_file"))
