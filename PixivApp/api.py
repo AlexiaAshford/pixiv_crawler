@@ -4,10 +4,8 @@ import json
 import os
 import shutil
 from datetime import datetime
-
 import cloudscraper
 from requests.structures import CaseInsensitiveDict
-
 from .utils import PixivError, JsonDict
 
 

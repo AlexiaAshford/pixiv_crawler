@@ -46,6 +46,21 @@ def shell_download_rank():
         print(error)
 
 
+@count_time
+def shell_read_text_id(inputs):
+    list_file_name = inputs[1] + '.txt' if len(inputs) >= 2 else 'list.txt'
+    try:
+        list_file_input = open(list_file_name, 'r', encoding='utf-8')
+    except OSError:
+        print(f"{list_file_name}文件不存在")
+        return
+    image_id_list = [
+        re.sub("^\\s*([0-9]{1,8}).*$\\n?", "\\1", line)
+        for line in list_file_input.readlines() if re.match("^\\s*([0-9]{1,7}).*$", line)
+    ]
+    PixivAPI.Download.threading_download(image_id_list)
+
+
 def shell_pixiv_token():
     for retry in range(int(Vars.cfg.data("headers", "retry"))):
         if Vars.cfg.data("user", "access_token") != "":
@@ -77,6 +92,8 @@ def shell():
             shell_search(inputs)
         elif inputs[0] == 't' or inputs[0] == 'recommend':
             PixivAPI.PixivApp.recommend_information()
+        elif inputs[0] == 'u' or inputs[0] == 'update':
+            shell_read_text_id(inputs)
         elif inputs[0] == 'r' or inputs[0] == 'rank':
             shell_download_rank()
         elif inputs[0] == 'f' or inputs[0] == 'follow':

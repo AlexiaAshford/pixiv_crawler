@@ -18,10 +18,8 @@ def obf_api(url: str):
         def wrapper(*args, **kwargs):
             web_site = "https://api.obfs.dev/api/pixiv/"
             api_url = web_site + url.replace(web_site, '')
-            print(api_url)
-            response = get(api_url)
-            print(response)
-            return func(response, *args, **kwargs)
+            # response = get(api_url)
+            return func(*args, **kwargs)
         return wrapper
     return decorator
 
@@ -48,15 +46,17 @@ class Download:
             image_name = image_id.split("/")[-1].replace(".jpg", "")
             Download.save_file(file_path, image_name, image_id)
             return False
-        image_url, image_name, author_id = PixivApp.illustration_information(image_id)
-        out_image_path = os.path.join(save_name, author_id, image_name)
-        makedirs(out_image_path)
-        if type(image_url) is str:
-            Download.save_file(out_image_path, image_name, image_url)
-            return
-        for index, url in enumerate(image_url):
-            image_page_name = index_title(index, image_name)
-            Download.save_file(out_image_path, image_page_name, url)
+        info_list = PixivApp.illustration_information(image_id)
+        if isinstance(info_list, list) and not isinstance(info_list, bool):
+            image_url, image_name, author_id = info_list
+            out_image_path = os.path.join(save_name, author_id, image_name)
+            makedirs(out_image_path)
+            if type(image_url) is str:
+                Download.save_file(out_image_path, image_name, image_url)
+                return
+            for index, url in enumerate(image_url):
+                image_page_name = index_title(index, image_name)
+                Download.save_file(out_image_path, image_page_name, url)
 
     @staticmethod
     def threading_download(image_id_list: list):
@@ -108,23 +108,26 @@ class PixivApp:
     def illustration_information(works_id: int):
         """插画信息 <class 'PixivApp.utils.JsonDict'>"""
         response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
-        information = response["illust"]
-        image_name = remove_str(information['title'])
-        page_count = information['page_count']
-        author_id = str(information['user']["id"])
-
-        print("插画名称: {}:".format(image_name))
-        print("插画ID: {}".format(information["id"]))
-        print("作者ID: {}".format(author_id))
-        print("作者名称: {}".format(information['user']["name"]))
-        print("插画标签: {}".format(list_derivation(information['tags'], "translated_name")))
-        print("画集数量: {}".format(page_count))
-        print("发布时间: {}\n".format(information["create_date"]))
-        if page_count == 1:
-            return information['meta_single_page']['original_image_url'], image_name, author_id
+        if response.get('error') is not None:
+            print("image: {}\tmsg:{}".format(works_id, response.get('error').get("user_message")))
+            return False
         else:
+            information = response["illust"]
+            image_name = remove_str(information['title'])
+            page_count = information['page_count']
+            author_id = str(information['user']["id"])
+
+            print("插画名称: {}:".format(image_name))
+            print("插画ID: {}".format(information["id"]))
+            print("作者ID: {}".format(author_id))
+            print("作者名称: {}".format(information['user']["name"]))
+            print("插画标签: {}".format(list_derivation(information['tags'], "translated_name")))
+            print("画集数量: {}".format(page_count))
+            print("发布时间: {}\n".format(information["create_date"]))
+            if page_count == 1:
+                return [information['meta_single_page']['original_image_url'], image_name, author_id]
             img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
-            return img_url_list, image_name, author_id
+            return [img_url_list, image_name, author_id]
 
     @staticmethod
     def start_information():

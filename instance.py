@@ -103,5 +103,5 @@ def set_config():
             "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
             "r | rank\t\t\t\t\t\t--- 下载排行榜作品\n"
             "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
-            "f | follow\t\t\t\t\t--- 下载关注的画师作品"
+            "f | follow\t\t\t\t\t\t--- 下载关注的画师作品"
         )
