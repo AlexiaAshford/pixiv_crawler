@@ -104,30 +104,39 @@ class PixivToken:
 
 class PixivApp:
 
+
     @staticmethod
-    def illustration_information(works_id: int):
-        """插画信息 <class 'PixivApp.utils.JsonDict'>"""
+    def images_information(works_id):
         response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
         if response.get('error') is not None:
             print("image: {}\tmsg:{}".format(works_id, response.get('error').get("user_message")))
             return False
-        else:
-            information = response["illust"]
-            image_name = remove_str(information['title'])
-            page_count = information['page_count']
-            author_id = str(information['user']["id"])
+        return response["illust"]
 
-            print("插画名称: {}:".format(image_name))
-            print("插画ID: {}".format(information["id"]))
-            print("作者ID: {}".format(author_id))
-            print("作者名称: {}".format(information['user']["name"]))
-            print("插画标签: {}".format(list_derivation(information['tags'], "translated_name")))
-            print("画集数量: {}".format(page_count))
-            print("发布时间: {}\n".format(information["create_date"]))
-            if page_count == 1:
-                return [information['meta_single_page']['original_image_url'], image_name, author_id]
-            img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
-            return [img_url_list, image_name, author_id]
+    # @staticmethod
+    # def illustration_information(works_id: int):
+    #     """插画信息 <class 'PixivApp.utils.JsonDict'>"""
+    #     response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
+    #     if response.get('error') is not None:
+    #         print("image: {}\tmsg:{}".format(works_id, response.get('error').get("user_message")))
+    #         return False
+    #     else:
+    #         information = response["illust"]
+    #         image_name = remove_str(information['title'])
+    #         page_count = information['page_count']
+    #         author_id = str(information['user']["id"])
+    #
+    #         print("插画名称: {}:".format(image_name))
+    #         print("插画ID: {}".format(information["id"]))
+    #         print("作者ID: {}".format(author_id))
+    #         print("作者名称: {}".format(information['user']["name"]))
+    #         print("插画标签: {}".format(list_derivation(information['tags'], "translated_name")))
+    #         print("画集数量: {}".format(page_count))
+    #         print("发布时间: {}\n".format(information["create_date"]))
+    #         if page_count == 1:
+    #             return [information['meta_single_page']['original_image_url'], image_name, author_id]
+    #         img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
+    #         return [img_url_list, image_name, author_id]
 
     @staticmethod
     def start_information():
@@ -169,16 +178,11 @@ class PixivApp:
             return response.error
 
     @staticmethod
-    def author_information(author_id: str):
+    def author_information(author_id: str, page: int):
         """作者作品集 <class 'PixivApp.utils.JsonDict'>"""
-        image_list = [UrlConstant.AUTHOR_INFORMATION.format(author_id, page) for page in range(1, 20)]
-        for page, image_urL in enumerate(image_list):
-            response = get(image_urL)
-            if response.get("error") is not None:
-                print(f"作者作品集下载完成，一共{page}页")
-                return
-            works_id_list = [data.get("id") for data in response.get("illusts")]
-            Download.threading_download(works_id_list)
+        response = get(UrlConstant.AUTHOR_INFORMATION.format(author_id, page))
+        if response.get("illusts") and response.get("error") is None:
+            return [data.get("id") for data in response.get("illusts")]
 
     @staticmethod
     def search_information(png_name: str):

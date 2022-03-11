@@ -5,7 +5,7 @@ from rich import print
 class Vars:
     cfg = Config('Pixiv-Config.conf', os.getcwd())
     images_info = None
-
+    images_info_list = None
 
 def count_time(func):
     def wrapper(*arg, **kwargs):

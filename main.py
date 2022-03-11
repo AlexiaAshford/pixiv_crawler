@@ -1,24 +1,40 @@
+import download
 from instance import *
+from rich.progress import track
 import PixivAPI
 
 
+def get_image_info(works_id: int):
+    Vars.images_info = PixivAPI.PixivApp.images_information(works_id)
+    if isinstance(Vars.images_info, dict):
+        Vars.images_info = download.ImageInfo(Vars.images_info)
+        Vars.images_info.show_images_information()
+        if Vars.images_info.page_count == 1:
+            Vars.images_info.save_image(Vars.images_info.original_url)
+        else:
+            Vars.images_info.save_image(Vars.images_info.original_url_list)
+
+
 def shell_download_author_works(author_id: str):
-    image_id_list = PixivAPI.PixivApp.author_information(author_id)
-    if isinstance(image_id_list, list) and len(image_id_list) != 0:
-        PixivAPI.Download.threading_download(image_id_list)
-    else:
-        print("没有找到相关的信息，可能是输入的ID不正确")
+    for index, page in enumerate(range(20), start=1):
+        image_id_list = PixivAPI.PixivApp.author_information(author_id, index)
+        if isinstance(image_id_list, list) and len(image_id_list) != 0:
+            Vars.images_info_list = [
+                download.ImageInfo(PixivAPI.PixivApp.images_information(image_id))
+                for image_id in track(image_id_list, description="作者插画集加载中...")
+            ]
+            download.threading_download()
+        else:
+            print("作者插画集下载完毕！")
 
 
-@count_time
+# @count_time
 def shell_illustration(inputs):
     if len(inputs) >= 2:
         if isinstance(inputs, list) and len(inputs) == 3 and inputs[2] == "a":
             shell_download_author_works(inputs[1])  # 通过作者ID下载作者的作品集
         else:
-            image_id = PixivAPI.rec_id(inputs[1])  # 通过作品ID下载原图
-            if image_id != "":
-                PixivAPI.Download.save_image(image_id)
+            get_image_info(PixivAPI.rec_id(inputs[1]))
     else:
         print("你没有输入id或者链接")
 
