@@ -12,6 +12,7 @@ def shell_download_author_works(author_id: str):
                 download.ImageInfo(PixivAPI.PixivApp.images_information(image_id))
                 for image_id in track(image_id_list, description="作者插画集加载中...")
             ]
+            print("本页一共:", len(image_id_list), "插画，开始下载")
             download.threading_download()
         else:
             print("作者插画集下载完毕！")
@@ -39,10 +40,19 @@ def shell_illustration(inputs):
 
 @count_time
 def shell_search(inputs: list):
-    if len(inputs) >= 2:
-        PixivAPI.PixivApp.search_information(inputs[1])
-    else:
-        print("没有输入搜索信息")
+    if len(inputs) < 2:
+        print("没有输入搜索信息"); return
+    for index, page in enumerate(range(20), start=1):
+        image_id_list = PixivAPI.PixivApp.search_information(inputs[1], index)
+        if isinstance(image_id_list, list) and len(image_id_list) != 0:
+            Vars.images_info_list = [
+                download.ImageInfo(PixivAPI.PixivApp.images_information(image_id))
+                for image_id in track(image_id_list, description=f"{page}页 插画集加载中...")
+            ]
+            print("本页一共:", len(image_id_list), "插画，开始下载")
+            download.threading_download()
+        else:
+            print("搜索画集下载完毕！")
 
 
 @count_time

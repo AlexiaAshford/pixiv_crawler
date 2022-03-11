@@ -185,18 +185,11 @@ class PixivApp:
             return [data.get("id") for data in response.get("illusts")]
 
     @staticmethod
-    def search_information(png_name: str):
+    def search_information(png_name: str, page: int):
         """搜索插画 <class 'PixivApp.utils.JsonDict'>"""
-        page = 1
-        while True:
-            response = get(UrlConstant.SEARCH_INFORMATION(png_name, page))
-            images_list = [illusts['id'] for illusts in response['illusts']]
-            if type(images_list) is not list or len(images_list) == 0:
-                print("搜索内容下载完毕")
-                break
-            else:
-                Download.threading_download(images_list)
-            page += 1
+        response = get(UrlConstant.SEARCH_INFORMATION(png_name, page))
+        if response.get("illusts") and response.get("error") is None:
+            return [data.get("id") for data in response.get("illusts")]
 
     @staticmethod
     def rank_information():
