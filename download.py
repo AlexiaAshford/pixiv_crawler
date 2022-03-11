@@ -43,15 +43,14 @@ class ImageInfo:
             for index, url in enumerate(image_url_list):
                 image_page_name = index_title(index, self.image_name)
                 if self.save_file(image_page_name, url):
-                    print("<{}>下载成功".format(self.image_name))
+                    print("<{}>\t下载成功".format(self.image_name))
                 else:
-                    print(f"<{self.image_name}> 已经下载过了\n")
+                    print(f"<{self.image_name}>\t已经下载过了\n")
         else:
             if self.save_file(self.image_name, image_url_list):
-                print(f"<{self.image_name}>下载成功")
+                print(f"<{self.image_name}>\t下载成功")
             else:
-                print(f"<{self.image_name}> 已经下载过了\n")
-            
+                print(f"<{self.image_name}>\t已经下载过了\n")
 
 
 def threading_download():
