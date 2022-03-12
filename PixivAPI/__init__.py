@@ -206,7 +206,7 @@ class PixivApp:
                 return response.error
             image_id_list = list(set([data.id for data in response.illusts]))
             if type(image_id_list) is list and len(image_id_list) != 0:
-                Download.threading_download(image_id_list)
+                print(image_id_list)
                 next_page = pixiv_app_api.parse_qs(response.next_url)
             else:
                 return "Pixiv排行榜插图下载完毕"
