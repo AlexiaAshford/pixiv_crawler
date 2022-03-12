@@ -53,21 +53,23 @@ class ImageInfo:
 
 
 def threading_download():
-    lock_tasks_list = threading.Lock()
+    lock_tasks_list, show_tasks = threading.Lock(), threading.Lock()
 
     def downloader():  # 多线程闭包下载函数
-        nonlocal lock_tasks_list
+        nonlocal lock_tasks_list, show_tasks
         while Vars.images_info_list:
-            if not Vars.images_info_list: break
             lock_tasks_list.acquire()
-            Vars.images_info = Vars.images_info_list.pop()
+            Vars.images_info = Vars.images_info_list.pop(0) if Vars.images_info_list else None
             lock_tasks_list.release()
-            Vars.images_info.show_images_information()
-            
-            if Vars.images_info.page_count == 1:
-                Vars.images_info.save_image(Vars.images_info.original_url)
-            else:
-                Vars.images_info.save_image(Vars.images_info.original_url_list)
+
+            if Vars.images_info is not None:
+                show_tasks.acquire()
+                Vars.images_info.show_images_information()
+                if Vars.images_info.page_count == 1:
+                    Vars.images_info.save_image(Vars.images_info.original_url)
+                else:
+                    Vars.images_info.save_image(Vars.images_info.original_url_list)
+                show_tasks.release()
 
     threads_pool = []
     for _ in range(int(Vars.cfg.data("user", "max_thread"))):

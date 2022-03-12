@@ -66,8 +66,7 @@ def shell_download_follow_author():
 
 @count_time
 def shell_download_rank():
-    pixiv_app_api = PixivAPI.PixivToken.instantiation_api()
-    next_page, Vars.images_info_list = {"mode": "day"}, list()
+    pixiv_app_api, next_page = PixivAPI.PixivToken.instantiation_api(), {"mode": "day"}
     while next_page:
         response_ranking = pixiv_app_api.illust_ranking(**next_page)
         if response_ranking.error is not None:
@@ -90,14 +89,16 @@ def shell_download_rank():
 def shell_read_text_id(inputs):
     list_file_name = inputs[1] + '.txt' if len(inputs) >= 2 else 'list.txt'
     try:
-        list_file_input = open(list_file_name, 'r', encoding='utf-8').readlines()
-        image_id_list = [line for line in list_file_input if re.match("^\\s*([0-9]{1,8}).*$", line)]
+        image_id_list = [
+            re.sub("^\\s*([0-9]{1,8}).*$\\n?", "\\1", line) for line in
+            open(list_file_name, 'r', encoding='utf-8').readlines() if re.match("^\\s*([0-9]{1,8}).*$", line)
+        ]
+        print("一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            Vars.images_info_list = [
-                download.ImageInfo(PixivAPI.PixivApp.images_information(image_id))
-                for image_id in track(image_id_list, description="插画集加载中...")
-            ]
-            print("一共:", len(image_id_list), "幅插画，开始下载")
+            for image_id in track(image_id_list, description=f"排行榜插画集加载中..."):
+                Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
+                if isinstance(Vars.images_info, dict):
+                    Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
             download.threading_download()
     except OSError:
         print(f"{list_file_name}文件不存在")
