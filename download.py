@@ -23,12 +23,10 @@ class ImageInfo:
         print("插画标签: {}".format(self.tag_name))
         print("画集数量: {}".format(self.page_count))
         print("发布时间: {}\n".format(self.create_date))
-        makedirs(os.path.join(
-            Vars.cfg.data("user", "save_file"), self.author_id, self.image_name
-        ))
 
     def save_file(self, image_name: str, image_url: str):
         out_dir = os.path.join(Vars.cfg.data("user", "save_file"), self.author_id, self.image_name)
+        makedirs(out_dir)
         if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
             time.sleep(random.random() * float(1.2))  # 随机延迟
             with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
