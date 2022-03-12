@@ -67,19 +67,19 @@ def shell_download_follow_author():
 @count_time
 def shell_download_rank():
     pixiv_app_api = PixivAPI.PixivToken.instantiation_api()
-    next_page = {"mode": "day"}
+    next_page, Vars.images_info_list = {"mode": "day"}, list()
     while next_page:
         response_ranking = pixiv_app_api.illust_ranking(**next_page)
         if response_ranking.error is not None:
             print(response_ranking.error)
             break
         image_id_list = list(set([data.id for data in response_ranking.illusts]))
+        print("本页一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            Vars.images_info_list = [
-                download.ImageInfo(PixivAPI.PixivApp.images_information(image_id))
-                for image_id in track(image_id_list, description=f"排行榜插画集加载中...")
-            ]
-            print("本页一共:", len(image_id_list), "幅插画，开始下载")
+            for image_id in track(image_id_list, description=f"排行榜插画集加载中..."):
+                Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
+                if isinstance(Vars.images_info, dict):
+                    Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
             download.threading_download()
             next_page = pixiv_app_api.parse_qs(response_ranking.next_url)
         else:

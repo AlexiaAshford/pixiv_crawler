@@ -1,6 +1,5 @@
 from PixivAPI import HttpUtil
 from instance import *
-import PixivAPI
 import threading
 
 
@@ -43,14 +42,14 @@ class ImageInfo:
             for index, url in enumerate(image_url_list):
                 image_page_name = index_title(index, self.image_name)
                 if self.save_file(image_page_name, url):
-                    print("<{}>\t下载成功".format(self.image_name))
+                    print("\n<{}>\t下载成功\n".format(self.image_name))
                 else:
-                    print(f"<{self.image_name}>\t已经下载过了\n")
+                    print(f"\n<{self.image_name}>\t已经下载过了\n")
         else:
             if self.save_file(self.image_name, image_url_list):
-                print(f"<{self.image_name}>\t下载成功")
+                print(f"\n<{self.image_name}>\t下载成功\n")
             else:
-                print(f"<{self.image_name}>\t已经下载过了\n")
+                print(f"\n<{self.image_name}>\t已经下载过了\n")
 
 
 def threading_download():
@@ -61,13 +60,14 @@ def threading_download():
         while Vars.images_info_list:
             if not Vars.images_info_list: break
             lock_tasks_list.acquire()
-            image_info = Vars.images_info_list.pop(0) if Vars.images_info_list else False
-            image_info.show_images_information()
+            Vars.images_info = Vars.images_info_list.pop()
             lock_tasks_list.release()
-            if image_info.page_count == 1:
-                image_info.save_image(image_info.original_url)
+            Vars.images_info.show_images_information()
+            
+            if Vars.images_info.page_count == 1:
+                Vars.images_info.save_image(Vars.images_info.original_url)
             else:
-                image_info.save_image(image_info.original_url_list)
+                Vars.images_info.save_image(Vars.images_info.original_url_list)
 
     threads_pool = []
     for _ in range(int(Vars.cfg.data("user", "max_thread"))):
