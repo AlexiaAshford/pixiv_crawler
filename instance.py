@@ -23,8 +23,12 @@ class Msg:
 
 
 class YamlData:
-    def __init__(self, file):
-        self.file_path = os.path.join(os.getcwd(), file)
+    def __init__(self, file_path=None, file_dir=None):
+        if file_dir is not None:
+            self.file_dir = os.path.join(os.getcwd(), file_dir)
+            if not os.path.exists(self.file_dir):
+                os.mkdir(self.file_dir)
+        self.file_path = os.path.join(os.getcwd(), file_path)
         self.data = {}
 
     def load(self):
