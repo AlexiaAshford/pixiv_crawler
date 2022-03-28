@@ -1,11 +1,63 @@
-from setting import *
+import os
+import random
+import re
+import sys
+import time
 from rich import print
+from rich import print
+import yaml
+
+class Msg:
+    msg_help = [
+        "输入首字母",
+        "h | help\t\t\t\t\t\t--- 显示说明",
+        "q | quit\t\t\t\t\t\t--- 退出正在运作的程序",
+        "d | picture\t\t\t\t\t--- 输入id或url下载插画",
+        "t | recommend\t\t\t\t\t--- 下载pixiv推荐插画",
+        "s | start\t\t\t\t\t\t--- 下载账号收藏插画",
+        "r | rank\t\t\t\t\t\t--- 下载排行榜作品",
+        "n | tag name\t\t\t\t\t--- 输入插画名或者表情名",
+        "u | read text pid\t\t\t\t\t--- 读取本地文本里的pid批量下载",
+        "f | follow\t\t\t\t\t\t--- 下载关注的画师作品",
+    ]
+
+class YamlData:
+    def __init__(self, file):
+        self.file_path = os.path.join(os.getcwd(), file)
+        self.data = {}
+
+    def load(self):
+        try:
+            with open(file=self.file_path, mode="r", encoding='utf-8') as f:
+                self.data = yaml.load(f, Loader=yaml.FullLoader)
+                if self.data is None:
+                    self.data = {}
+        except FileNotFoundError:
+            with open(self.file_path, 'w', encoding='utf-8'):
+                self.data = {}
+
+    def save(self):
+        with open(file=self.file_path, mode="w", encoding='utf-8') as f:
+            yaml.safe_dump(self.data, f, default_flow_style=False, allow_unicode=True)
+
+
+def mkdir(path: str):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+
+def write_file(file_dir: str, m: str, content: str = ""):
+    if m == "r":
+        return open(file_dir, "r", encoding='utf-8').read()
+    with open(file_dir, m, encoding='utf-8', newline="") as f:
+        f.write(content)
 
 
 class Vars:
-    cfg = Config('Pixiv-Config.conf', os.getcwd())
+    cfg = YamlData('pixiv-config.conf')
     images_info = None
     images_info_list = list()
+
 
 def count_time(func):
     def wrapper(*arg, **kwargs):
@@ -66,43 +118,48 @@ def list_derivation(list_, key2):
 
 def set_config():
     Vars.cfg.load()
-    # +++++++++++++++++++++headers=======================
-    if type(Vars.cfg.data("headers", "User-Agent")) is not str:
-        Vars.cfg.save(
-            "headers", "User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"
-        )
-    if not isinstance(Vars.cfg.data("headers", "Cookie"), str):
-        Vars.cfg.save("headers", "Cookie", "")
-    if not isinstance(Vars.cfg.data("headers", "retry"), str):
-        Vars.cfg.save("headers", "retry", "5")
-    if not isinstance(Vars.cfg.data("headers", "referer"), str):
-        Vars.cfg.save(
-            "headers", "referer", "https://www.pixiv.net/ranking.php?mode=daily&content=illust"
-        )
-    # +++++++++++++++++++++user=======================
-    if not isinstance(Vars.cfg.data("user", "max_thread"), str):
-        Vars.cfg.save("user", "max_thread", "5")
-    if not isinstance(Vars.cfg.data("user", "save_file"), str):
-        Vars.cfg.save("user", "save_file", "pixiv")
-    if not isinstance(Vars.cfg.data("user", "out_file"), str):
-        Vars.cfg.save("user", "out_file", "downloaded")
-    if not isinstance(Vars.cfg.data("user", "access_token"), str):
-        Vars.cfg.save("user", "access_token", "")
-    if not isinstance(Vars.cfg.data("user", "refresh_token"), str):
-        Vars.cfg.save("user", "refresh_token", "")
-    if not isinstance(Vars.cfg.data("user", "help"), str):
-        Vars.cfg.save(
-            "user", "help",
-            "输入首字母\n"
-            "h | help\t\t\t\t\t\t--- 显示说明\n"
-            "q | quit\t\t\t\t\t\t--- 退出正在运作的程序\n"
-            "d | picture\t\t\t\t\t\t--- 输入id或url下载插画\n"
-            "t | recommend\t\t\t\t\t\t--- 下载pixiv推荐插画\n"
-            "s | start\t\t\t\t\t\t--- 下载账号收藏插画\n"
-            "r | rank\t\t\t\t\t\t--- 下载排行榜作品\n"
-            "n | tag name\t\t\t\t\t\t--- 输入插画名或者表情名\n"
-            "u | read text pid\t\t\t\t\t--- 读取本地文本里的pid批量下载\n"
-            "f | follow\t\t\t\t\t\t--- 下载关注的画师作品"
-        )
+    config_change = False
+    if type(Vars.cfg.data.get('max_thread')) is not int:
+        Vars.cfg.data['max_thread'] = 5
+        config_change = True
 
-    mkdir(Vars.cfg.data("user", "save_file"))
+    if Vars.cfg.data.get('save_file') is not str:
+        Vars.cfg.data['save_file'] = 'image_file'
+        config_change = True
+
+    if Vars.cfg.data.get('out_file') is not str:
+        Vars.cfg.data['out_file'] = 'downloaded'
+        config_change = True
+
+    if type(Vars.cfg.data.get('access_token')) is not str:
+        Vars.cfg.data['access_token'] = ""
+        config_change = True
+
+    if type(Vars.cfg.data.get('refresh_token')) is not str:
+        Vars.cfg.data['refresh_token'] = ""
+        config_change = True
+
+    if type(Vars.cfg.data.get('referer')) is not str:
+        Vars.cfg.data['words'] = "https://www.pixiv.net/ranking.php?mode=daily&content=illust"
+        config_change = True
+
+    if type(Vars.cfg.data.get('max_retry')) is not int:
+        Vars.cfg.data['max_retry'] = 5
+        config_change = True
+
+    if type(Vars.cfg.data.get('WebUrl')) is not str or Vars.cfg.data.get('WebUrl') == "":
+        Vars.cfg.data['WebUrl'] = "https://book.sfacg.com/Novel/"
+        config_change = True
+
+    if type(Vars.cfg.data.get('collection')) is not bool or Vars.cfg.data.get('collection') == "":
+        Vars.cfg.data['collection'] = False
+        config_change = True
+
+    if type(Vars.cfg.data.get('Cookie')) is not str or Vars.cfg.data.get('Cookie') == "":
+        Vars.cfg.data['Cookie'] = ""
+        config_change = True
+
+    if config_change:
+        Vars.cfg.save()
+
+    mkdir(Vars.cfg.data.get('save_file'))

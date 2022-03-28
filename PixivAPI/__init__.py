@@ -1,11 +1,7 @@
 from instance import *
-import threading
 import functools
 from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
-
-Vars.cfg.load()
-save_name = Vars.cfg.data("user", "save_file")
 
 
 def get(url: str) -> dict:
@@ -39,66 +35,66 @@ class Download:
         else:
             print(f"{image_name} 已经下载过了\n")
 
-    @staticmethod
-    def save_image(image_id: str):
-        file_path = Vars.cfg.data("user", "save_file")
-        if "http" in image_id and len(image_id) > 20:
-            image_name = image_id.split("/")[-1].replace(".jpg", "")
-            Download.save_file(file_path, image_name, image_id)
-            return False
-        info_list = PixivApp.illustration_information(image_id)
-        if isinstance(info_list, list) and not isinstance(info_list, bool):
-            image_url, image_name, author_id = info_list
-            out_image_path = os.path.join(save_name, author_id, image_name)
-            makedirs(out_image_path)
-            if type(image_url) is str:
-                Download.save_file(out_image_path, image_name, image_url)
-                return
-            for index, url in enumerate(image_url):
-                image_page_name = index_title(index, image_name)
-                Download.save_file(out_image_path, image_page_name, url)
+    # @staticmethod
+    # def save_image(image_id: str):
+    #     file_path = Vars.cfg.data.get("save_file")
+    #     if "http" in image_id and len(image_id) > 20:
+    #         image_name = image_id.split("/")[-1].replace(".jpg", "")
+    #         Download.save_file(file_path, image_name, image_id)
+    #         return False
+    #     info_list = PixivApp.illustration_information(image_id)
+    #     if isinstance(info_list, list) and not isinstance(info_list, bool):
+    #         image_url, image_name, author_id = info_list
+    #         out_image_path = os.path.join(save_name, author_id, image_name)
+    #         makedirs(out_image_path)
+    #         if type(image_url) is str:
+    #             Download.save_file(out_image_path, image_name, image_url)
+    #             return
+    #         for index, url in enumerate(image_url):
+    #             image_page_name = index_title(index, image_name)
+    #             Download.save_file(out_image_path, image_page_name, url)
 
-    @staticmethod
-    def threading_download(image_id_list: list):
-        lock_tasks_list = threading.Lock()
-
-        def downloader():  # 多线程闭包下载函数
-            nonlocal lock_tasks_list
-            while image_id_list:
-                if not image_id_list and len(image_id_list) == 0:
-                    break
-                else:
-                    lock_tasks_list.acquire()
-                    image_id = image_id_list.pop(0) if image_id_list else False
-                    lock_tasks_list.release()
-                    Download.save_image(str(image_id)) if type(image_id) is not bool else ""
-
-        threads_pool = []
-        for _ in range(int(Vars.cfg.data("user", "max_thread"))):
-            th = threading.Thread(target=downloader)
-            threads_pool.append(th)
-            th.start()
-
-        # wait downloader
-        for th in threads_pool:
-            th.join()
+    # @staticmethod
+    # def threading_download(image_id_list: list):
+    #     lock_tasks_list = threading.Lock()
+    #
+    #     def downloader():  # 多线程闭包下载函数
+    #         nonlocal lock_tasks_list
+    #         while image_id_list:
+    #             if not image_id_list and len(image_id_list) == 0:
+    #                 break
+    #             else:
+    #                 lock_tasks_list.acquire()
+    #                 image_id = image_id_list.pop(0) if image_id_list else False
+    #                 lock_tasks_list.release()
+    #                 Download.save_image(str(image_id)) if type(image_id) is not bool else ""
+    #
+    #     threads_pool = []
+    #     for _ in range(Vars.cfg.data.get("max_thread")):
+    #         th = threading.Thread(target=downloader)
+    #         threads_pool.append(th)
+    #         th.start()
+    #
+    #     # wait downloader
+    #     for th in threads_pool:
+    #         th.join()
 
 
 class PixivToken:
     @staticmethod
-    def instantiation_api(max_retry=Vars.cfg.data("headers", "retry")):
+    def instantiation_api():
         instantiation = AppPixivAPI()
-        for index, retry in enumerate(range(max_retry)):
+        for index, retry in enumerate(range(Vars.cfg.data.get("max_retry"))):
             instantiation.set_auth(
-                access_token=Vars.cfg.data("user", "access_token"),
-                refresh_token=Vars.cfg.data("user", "refresh_token")
+                access_token=Vars.cfg.data.get("access_token"),
+                refresh_token=Vars.cfg.data.get("refresh_token")
             )
             if instantiation.illust_recommended().error is None:
                 return instantiation
 
-            login_pixiv.refresh(Vars.cfg.data("user", "refresh_token"))
+            login_pixiv.refresh(Vars.cfg.data.get("refresh_token"))
             print(f"token失效，尝试刷新refresh_token retry{index}")
-            if retry >= max_retry - 1:
+            if retry >= Vars.cfg.data.get("max_retry") - 1:
                 return 403
 
 
@@ -138,34 +134,34 @@ class PixivApp:
     #         img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
     #         return [img_url_list, image_name, author_id]
 
-    @staticmethod
-    def start_information():
-        """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivToken.instantiation_api().illust_recommended()
-        if response.error is None:
-            image_id_list = list(set([data.id for data in response.illusts]))
-            if type(image_id_list) is list and len(image_id_list) != 0:
-                Download.threading_download(image_id_list)
-        else:
-            print(response.error)
-
-    @staticmethod
-    def recommend_information():
-        """推荐插画 <class 'PixivApp.utils.JsonDict'>"""
-        pixiv_app_api = PixivToken.instantiation_api()
-        response = pixiv_app_api.illust_recommended()
-        next_qs = pixiv_app_api.parse_qs(response.next_url)
-        while next_qs is not None:
-            if pixiv_app_api == 403:
-                return "token invalid"
-            response = pixiv_app_api.illust_recommended(**next_qs)
-            if response.error is not None:
-                return response.error
-            image_id_list = list(set([data.id for data in response.illusts]))
-            if type(image_id_list) is list and len(image_id_list) != 0:
-                Download.threading_download(image_id_list)
-            else:
-                print("Pixiv推荐插图下载完毕")
+    # @staticmethod
+    # def start_information():
+    #     """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
+    #     response = PixivToken.instantiation_api().illust_recommended()
+    #     if response.error is None:
+    #         image_id_list = list(set([data.id for data in response.illusts]))
+    #         if type(image_id_list) is list and len(image_id_list) != 0:
+    #             Download.threading_download(image_id_list)
+    #     else:
+    #         print(response.error)
+    #
+    # @staticmethod
+    # def recommend_information():
+    #     """推荐插画 <class 'PixivApp.utils.JsonDict'>"""
+    #     pixiv_app_api = PixivToken.instantiation_api()
+    #     response = pixiv_app_api.illust_recommended()
+    #     next_qs = pixiv_app_api.parse_qs(response.next_url)
+    #     while next_qs is not None:
+    #         if pixiv_app_api == 403:
+    #             return "token invalid"
+    #         response = pixiv_app_api.illust_recommended(**next_qs)
+    #         if response.error is not None:
+    #             return response.error
+    #         image_id_list = list(set([data.id for data in response.illusts]))
+    #         if type(image_id_list) is list and len(image_id_list) != 0:
+    #             Download.threading_download(image_id_list)
+    #         else:
+    #             print("Pixiv推荐插图下载完毕")
 
     @staticmethod
     def follow_information():

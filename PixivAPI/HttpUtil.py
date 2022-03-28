@@ -21,7 +21,7 @@ def headers():
     return {
         'Referer': 'https://www.pixiv.net/',
         'User-Agent': UserAgent(verify_ssl=False).random,
-        'cookie': Vars.cfg.data("headers", "Cookie"),
+        'cookie': Vars.cfg.data.get("Cookie"),
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
         'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',

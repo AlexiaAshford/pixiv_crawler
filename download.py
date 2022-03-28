@@ -27,7 +27,7 @@ class ImageInfo:
     def save_file(self, image_name: str, image_url: str):
         save_type = False
         if save_type:
-            out_dir = os.path.join(Vars.cfg.data("user", "save_file"), self.author_id, self.image_name)
+            out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_id, self.image_name)
             makedirs(out_dir)
             if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
                 time.sleep(random.random() * float(1.2))  # 随机延迟
@@ -37,7 +37,7 @@ class ImageInfo:
             else:
                 return False
         else:
-            out_dir = os.path.join(Vars.cfg.data("user", "save_file"), self.author_id)
+            out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_id)
             makedirs(out_dir)
             if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
                 time.sleep(random.random() * float(1.2))  # 随机延迟
@@ -82,7 +82,7 @@ def threading_download():
                 show_tasks.release()
 
     threads_pool = []
-    for _ in range(int(Vars.cfg.data("user", "max_thread"))):
+    for _ in range(Vars.cfg.data.get("max_thread")):
         th = threading.Thread(target=downloader)
         threads_pool.append(th)
         th.start()

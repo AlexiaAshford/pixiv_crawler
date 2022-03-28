@@ -4,40 +4,39 @@ import random
 import re
 import sys
 import time
-import configparser
 from rich import print
 
+import os
+import yaml
 
-class Config:
 
-    def __init__(self, filename: str, main_path: str):
-        self.filename = filename
-        self.config = configparser.ConfigParser()
+class YamlData:
+    def __init__(self, file):
+        self.file_path = os.path.join(os.getcwd(), file)
+        self.data = {}
 
     def load(self):
         try:
-            self.config.read(self.filename, encoding="utf-8-sig")
-        except configparser.ParsingError as error:
-            print("ERROR:{}".format(error))
-            with open(self.filename, 'w') as configfile:
-                configfile.write("")
+            with open(file=self.file_path, mode="r", encoding='utf-8') as f:
+                self.data = yaml.load(f, Loader=yaml.FullLoader)
+                if self.data is None:
+                    self.data = {}
+        except FileNotFoundError:
+            with open(self.file_path, 'w', encoding='utf-8'):
+                self.data = {}
 
-    def data(self, key, value):
-        try:
-            result = self.config.get(key, value)
-            if result.isdigit():
-                return self.config.getint(key, value)
-            return self.config.get(key, value)
-        except Exception:
-            print("No section or Option!", key, value)
+    def save(self):
+        with open(file=self.file_path, mode="w", encoding='utf-8') as f:
+            yaml.safe_dump(self.data, f, default_flow_style=False, allow_unicode=True)
 
-    def save(self, config_key, save_key, save_data):
-        if not self.config.has_section(config_key):
-            # 增加section
-            self.config.add_section(config_key)
 
-        # 增加key-value
-        self.config.set(config_key, save_key, save_data)
-        # 将配置写入文件
-        with open(self.filename, 'w', encoding="utf-8") as configfile:
-            self.config.write(configfile)
+def mkdir(path: str):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+
+def write_file(file_dir: str, m: str, content: str = ""):
+    if m == "r":
+        return open(file_dir, "r", encoding='utf-8').read()
+    with open(file_dir, m, encoding='utf-8', newline="") as f:
+        f.write(content)

@@ -104,8 +104,8 @@ def shell_read_text_id(inputs):
 
 
 def shell_pixiv_token():
-    for retry in range(Vars.cfg.data("headers", "retry")):
-        if Vars.cfg.data("user", "access_token") != "":
+    for retry in range(Vars.cfg.data.get("max_retry")):
+        if Vars.cfg.data.get("max_retry") != "":
             return True
         else:
             print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
@@ -123,13 +123,15 @@ def shell():
         inputs = sys.argv[1:]
     else:
         command_line = False
-        print(Vars.cfg.data("user", "help"))
+        for msg_help in Msg.msg_help:
+            print('[帮助]', msg_help)
         inputs = re.split('\\s+', PixivAPI.input_('>').strip())
     while True:
         if inputs[0] == 'q' or inputs[0] == 'quit':
             sys.exit("已退出程序")
         elif inputs[0] == 'h' or inputs[0] == 'help':
-            print(Vars.cfg.data("user", "help"))
+            for msg_help in Msg.msg_help:
+                print('[帮助]', msg_help)
         elif inputs[0] == 'l' or inputs[0] == 'login':
             shell_pixiv_token()
         elif inputs[0] == 'd' or inputs[0] == 'download':
