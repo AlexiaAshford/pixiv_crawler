@@ -25,15 +25,27 @@ class ImageInfo:
         print("发布时间: {}\n".format(self.create_date))
 
     def save_file(self, image_name: str, image_url: str):
-        out_dir = os.path.join(Vars.cfg.data("user", "save_file"), self.author_id, self.image_name)
-        makedirs(out_dir)
-        if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
-            time.sleep(random.random() * float(1.2))  # 随机延迟
-            with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
-                file.write(HttpUtil.get(image_url).content)
-                return True
+        save_type = False
+        if save_type:
+            out_dir = os.path.join(Vars.cfg.data("user", "save_file"), self.author_id, self.image_name)
+            makedirs(out_dir)
+            if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
+                time.sleep(random.random() * float(1.2))  # 随机延迟
+                with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
+                    file.write(HttpUtil.get(image_url).content)
+                    return True
+            else:
+                return False
         else:
-            return False
+            out_dir = os.path.join(Vars.cfg.data("user", "save_file"), self.author_id)
+            makedirs(out_dir)
+            if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
+                time.sleep(random.random() * float(1.2))  # 随机延迟
+                with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
+                    file.write(HttpUtil.get(image_url).content)
+                    return True
+            else:
+                return False
 
     def save_image(self, image_url_list):
         if isinstance(image_url_list, list):

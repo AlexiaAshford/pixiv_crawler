@@ -7,15 +7,14 @@ import PixivAPI
 def shell_download_author_works(author_id: str):
     for index, page in enumerate(range(20), start=1):
         image_id_list = PixivAPI.PixivApp.author_information(author_id, index)
-        print("本页一共:", len(image_id_list), "幅插画，开始下载")
+        # print("本页一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
             for image_id in track(image_id_list, description=f"作者插画集加载中..."):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
             download.threading_download()
-        else:
-            print("作者插画集下载完毕！")
+        else: break
 
 
 @count_time
