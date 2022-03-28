@@ -90,14 +90,35 @@ def threading_download():
     for th in threads_pool:
         th.join()
 
-# def get_image_info(works_id: int):
-#     Vars.images_info = PixivAPI.PixivApp.images_information(works_id)
-#     if isinstance(Vars.images_info, dict):
-#         Vars.images_info = ImageInfo(Vars.images_info)
-#         show_images_information()
-#         if Vars.images_info.page_count == 1:
-#             Vars.images_info.save_image(Vars.images_info.original_url)
-#         Vars.images_info.save_image(Vars.images_info.original_url_list)
 
+class ThreadDownload:
+    def __init__(self, image_info):
+        self.image_info_lis = image_info
+        self.current_progress = 0
+        self.threading_list = list()
+        self.pool_sema = threading.BoundedSemaphore(32)
 
-# get_image_info("91042462")
+    def threading_downloader(self):
+        if len(self.image_info_lis) == 0:
+            print('下载列表为空！')
+
+        for index, images_info in enumerate(self.image_info_lis):
+            thread = threading.Thread(target=self.download_images, args=(images_info,))
+            self.threading_list.append(thread)
+
+        for thread in self.threading_list:
+            thread.start()
+
+        for thread in self.threading_list:
+            thread.join()
+
+    def download_images(self, images_info):
+        self.pool_sema.acquire()
+        Vars.images_info = images_info
+        if Vars.images_info is not None:
+            Vars.images_info.show_images_information()
+            if Vars.images_info.page_count == 1:
+                Vars.images_info.save_image(Vars.images_info.original_url)
+            else:
+                Vars.images_info.save_image(Vars.images_info.original_url_list)
+        self.pool_sema.release()
