@@ -27,7 +27,6 @@ class ImageInfo:
     def save_file(self, image_name: str, image_url: str):
         if Vars.cfg.data.get('save_type'):
             out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_id, self.image_name)
-            makedirs(out_dir)
             if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
                 time.sleep(random.random() * float(1.2))  # 随机延迟
                 with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
@@ -37,7 +36,7 @@ class ImageInfo:
                 return False
         else:
             out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_id)
-            makedirs(out_dir)
+
             if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
                 time.sleep(random.random() * float(1.2))  # 随机延迟
                 with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
@@ -50,15 +49,17 @@ class ImageInfo:
         if isinstance(image_url_list, list):
             for index, url in enumerate(image_url_list):
                 image_page_name = index_title(index, self.image_name)
-                if self.save_file(image_page_name, url):
-                    print("\n<{}>\t下载成功\n".format(self.image_name))
-                else:
-                    print(f"\n<{self.image_name}>\t已经下载过了\n")
+                self.save_file(image_page_name, url)
+                # if self.save_file(image_page_name, url):
+                #     print("\n<{}>\t下载成功".format(self.image_name))
+                # else:
+                #     print(f"\n<{self.image_name}>\t已经下载过了\n")
         else:
-            if self.save_file(self.image_name, image_url_list):
-                print(f"\n<{self.image_name}>\t下载成功\n")
-            else:
-                print(f"\n<{self.image_name}>\t已经下载过了\n")
+            self.save_file(self.image_name, image_url_list)
+            # if self.save_file(self.image_name, image_url_list):
+            #     print(f"\n<{self.image_name}>\t下载成功")
+            # else:
+            #     print(f"\n<{self.image_name}>\t已经下载过了\n")
 
 
 def threading_download():
@@ -73,7 +74,7 @@ def threading_download():
 
             if Vars.images_info is not None:
                 show_tasks.acquire()
-                Vars.images_info.show_images_information()
+                # Vars.images_info.show_images_information()
                 if Vars.images_info.page_count == 1:
                     Vars.images_info.save_image(Vars.images_info.original_url)
                 else:
@@ -92,17 +93,17 @@ def threading_download():
 
 
 class ThreadDownload:
-    def __init__(self, image_info):
-        self.image_info_lis = image_info
-        self.current_progress = 0
+    def __init__(self):
         self.threading_list = list()
-        self.pool_sema = threading.BoundedSemaphore(32)
+        self.current_progress = 1
+        self.threading_length = len(Vars.images_info_list)
+        self.pool_sema = threading.BoundedSemaphore(8)
 
     def threading_downloader(self):
-        if len(self.image_info_lis) == 0:
+        if len(Vars.images_info_list) == 0:
             print('下载列表为空！')
 
-        for index, images_info in enumerate(self.image_info_lis):
+        for index, images_info in enumerate(Vars.images_info_list):
             thread = threading.Thread(target=self.download_images, args=(images_info,))
             self.threading_list.append(thread)
 
@@ -111,14 +112,18 @@ class ThreadDownload:
 
         for thread in self.threading_list:
             thread.join()
+        self.current_progress = 0
 
     def download_images(self, images_info):
         self.pool_sema.acquire()
         Vars.images_info = images_info
         if Vars.images_info is not None:
-            Vars.images_info.show_images_information()
+            makedirs(os.path.join(Vars.cfg.data.get("save_file"), Vars.images_info.author_id))
             if Vars.images_info.page_count == 1:
                 Vars.images_info.save_image(Vars.images_info.original_url)
             else:
                 Vars.images_info.save_image(Vars.images_info.original_url_list)
+        print("{}/{} name:{}".format(
+            self.current_progress, self.threading_length, Vars.images_info.image_name), end='\r')
+        self.current_progress += 1
         self.pool_sema.release()

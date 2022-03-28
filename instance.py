@@ -101,7 +101,7 @@ def mkdir(file_path: str):
 
 def makedirs(file_path: str):
     if not os.path.exists(file_path):
-        os.makedirs(file_path)
+        os.mkdir(file_path)
 
 
 def input_(prompt, default=None):

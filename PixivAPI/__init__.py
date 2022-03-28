@@ -20,8 +20,8 @@ class Download:
             time.sleep(random.random() * float(1.2))  # 随机延迟
             with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
                 file.write(image(image_url))
-        else:
-            print(f"{image_name} 已经下载过了\n")
+        # else:
+        #     print(f"{image_name} 已经下载过了\n")
 
     @staticmethod
     def save_image(image_id: str):

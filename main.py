@@ -13,7 +13,7 @@ def shell_download_author_works(author_id: str):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            download.threading_download()
+            download.ThreadDownload().threading_downloader()
         else: break
 
 
@@ -50,7 +50,8 @@ def shell_search(inputs: list):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            download.threading_download()
+            
+            download.ThreadDownload().threading_downloader()
         else:
             print("搜索画集下载完毕！")
 
@@ -78,7 +79,7 @@ def shell_download_rank():
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            download.threading_download()
+            download.ThreadDownload().threading_downloader()
             next_page = pixiv_app_api.parse_qs(response_ranking.next_url)
         else:
             print("Pixiv排行榜插图下载完毕")
@@ -98,7 +99,7 @@ def shell_read_text_id(inputs):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            download.threading_download()
+            download.ThreadDownload().threading_downloader()
     except OSError:
         print(f"{list_file_name}文件不存在")
 
