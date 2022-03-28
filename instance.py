@@ -4,8 +4,8 @@ import re
 import sys
 import time
 from rich import print
-from rich import print
 import yaml
+
 
 class Msg:
     msg_help = [
@@ -20,6 +20,7 @@ class Msg:
         "u | read text pid\t\t\t\t\t--- 读取本地文本里的pid批量下载",
         "f | follow\t\t\t\t\t\t--- 下载关注的画师作品",
     ]
+
 
 class YamlData:
     def __init__(self, file):
@@ -54,7 +55,7 @@ def write_file(file_dir: str, m: str, content: str = ""):
 
 
 class Vars:
-    cfg = YamlData('pixiv-config.conf')
+    cfg = YamlData('pixiv-config.yaml')
     images_info = None
     images_info_list = list()
 
