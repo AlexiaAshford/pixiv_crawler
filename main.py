@@ -105,7 +105,7 @@ def shell_read_text_id(inputs):
 
 def shell_pixiv_token():
     for retry in range(Vars.cfg.data.get("max_retry")):
-        if Vars.cfg.data.get("max_retry") != "":
+        if Vars.cfg.data.get("refresh_token") != "":
             return True
         else:
             print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")

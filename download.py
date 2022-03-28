@@ -25,8 +25,7 @@ class ImageInfo:
         print("发布时间: {}\n".format(self.create_date))
 
     def save_file(self, image_name: str, image_url: str):
-        save_type = False
-        if save_type:
+        if Vars.cfg.data.get('save_type'):
             out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_id, self.image_name)
             makedirs(out_dir)
             if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):

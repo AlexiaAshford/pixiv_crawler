@@ -8,18 +8,6 @@ def get(url: str) -> dict:
     return HttpUtil.get(url).json()
 
 
-# def obf_api(url: str):
-#     def decorator(func):
-#         @functools.wraps(func)
-#         def wrapper(*args, **kwargs):
-#             web_site = "https://api.obfs.dev/api/pixiv/"
-#             api_url = web_site + url.replace(web_site, '')
-#             # response = get(api_url)
-#             return func(*args, **kwargs)
-#         return wrapper
-#     return decorator
-
-
 def image(url: str) -> bytes:
     return HttpUtil.get(url).content
 

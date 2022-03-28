@@ -132,6 +132,10 @@ def set_config():
         Vars.cfg.data['out_file'] = 'downloaded'
         config_change = True
 
+    if type(Vars.cfg.data.get('save_type')) is not bool:
+        Vars.cfg.data['save_type'] = False
+        config_change = True
+
     if type(Vars.cfg.data.get('access_token')) is not str:
         Vars.cfg.data['access_token'] = ""
         config_change = True

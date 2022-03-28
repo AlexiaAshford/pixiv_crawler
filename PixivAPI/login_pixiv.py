@@ -72,5 +72,6 @@ def refresh(refresh_token):
 
 
 def save_token(response):
-    Vars.cfg.save("user", "access_token", response["access_token"])
-    Vars.cfg.save("user", "refresh_token", response["refresh_token"])
+    Vars.cfg.data["access_token"] = response["access_token"]
+    Vars.cfg.data["refresh_token"] = response["refresh_token"]
+    Vars.cfg.save()
