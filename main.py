@@ -9,7 +9,7 @@ def shell_download_author_works(author_id: str):
     for index, page in enumerate(range(20), start=1):
         image_id_list = PixivAPI.PixivApp.author_information(author_id, index)
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            download.ThreadGetImagesInfo().get_images_info(image_id_list)
+            download.ThreadGetImagesInfo.get_images_info(image_id_list)
             download.ThreadDownload().threading_downloader()
         else:
             break

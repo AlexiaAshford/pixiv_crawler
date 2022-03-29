@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import PixivAPI
 from PixivAPI import HttpUtil
 from instance import *
@@ -80,30 +82,15 @@ class ThreadDownload:
 
 
 class ThreadGetImagesInfo:
-    def __init__(self):
-        self.threading_list = list()
-        self.current_progress = 1
-        self.threading_length = len(Vars.images_info_list)
-        self.pool_sema = threading.Semaphore(8)
-
-    def threading_images_info(self, image_id):
-        self.pool_sema.acquire()
+    @staticmethod
+    def threading_images_info(image_id):
         Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
-        for max_retry in range(Vars.cfg.data.get("max_retry")):
-            if Vars.images_info is not None and isinstance(Vars.images_info, dict):
-                Vars.images_info_list.append(ImageInfo(Vars.images_info))
-                self.pool_sema.release()
-                break
-        self.pool_sema.release()
+        if Vars.images_info is not None and isinstance(Vars.images_info, dict):
+            Vars.images_info_list.append(ImageInfo(Vars.images_info))
 
-    def get_images_info(self, images_id_list):
-        for image_id in images_id_list:
-            thread = threading.Thread(target=self.threading_images_info, args=(image_id,))
-            self.threading_list.append(thread)
+    @staticmethod
+    def get_images_info(images_id_list):
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            for image_id in images_id_list:
+                executor.submit(ThreadGetImagesInfo.threading_images_info, image_id)
 
-        for thread in self.threading_list:
-            thread.start()
-
-        for thread in self.threading_list:
-            thread.join()
-        ThreadDownload().threading_downloader()

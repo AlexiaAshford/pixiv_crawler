@@ -12,7 +12,6 @@ def MaxRetry(func, max_retry=5):
             if not isinstance(response, bool):
                 return response
             else:
-                print("尝试第:{}次".format(retry + 1))
                 time.sleep(retry * 0.5)
     return wrapper
 
@@ -37,7 +36,6 @@ def get(api_url: str, params=None, **kwargs):
         else:
             return False
     except requests.exceptions.RequestException as error:
-        print("\nGet url:{} Error:{}".format(api_url, error))
         return False
 
 

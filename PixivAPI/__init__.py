@@ -35,24 +35,18 @@ class PixivApp:
     @staticmethod
     def images_information(works_id):
         response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
-        if response.get('error') is not None:
-            print("image: {}\tmsg:{}".format(works_id, response.get('error').get("user_message")))
-            return False
-        return response["illust"]
+        if response.get('error') is None:
+            return response["illust"]
 
     @staticmethod
     def illustration_information(works_id: int):
         """插画信息 <class 'PixivApp.utils.JsonDict'>"""
         response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
-        if response.get('error') is not None:
-            print("image: {}\tmsg:{}".format(works_id, response.get('error').get("user_message")))
-            return False
-        else:
+        if response.get('error') is None:
             information = response["illust"]
             image_name = remove_str(information['title'])
             page_count = information['page_count']
             author_id = str(information['user']["id"])
-
             print("插画名称: {}:".format(image_name))
             print("插画ID: {}".format(information["id"]))
             print("作者ID: {}".format(author_id))
