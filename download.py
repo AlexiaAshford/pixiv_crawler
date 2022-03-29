@@ -78,12 +78,23 @@ class ThreadDownload:
         self.current_progress += 1
         self.pool_sema.release()
 
+
+class ThreadGetImagesInfo:
+    def __init__(self):
+        self.threading_list = list()
+        self.current_progress = 1
+        self.threading_length = len(Vars.images_info_list)
+        self.pool_sema = threading.Semaphore(8)
+
     def threading_images_info(self, image_id):
+        self.pool_sema.acquire()
         Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
         for max_retry in range(Vars.cfg.data.get("max_retry")):
-            if Vars.images_info is not None:
+            if Vars.images_info is not None and isinstance(Vars.images_info, dict):
                 Vars.images_info_list.append(ImageInfo(Vars.images_info))
+                self.pool_sema.release()
                 break
+        self.pool_sema.release()
 
     def get_images_info(self, images_id_list):
         for image_id in images_id_list:

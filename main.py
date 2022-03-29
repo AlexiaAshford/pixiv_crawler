@@ -1,7 +1,6 @@
 import sys
 import download
 from instance import *
-from concurrent.futures import ThreadPoolExecutor
 from rich.progress import track
 import PixivAPI
 
@@ -9,14 +8,11 @@ import PixivAPI
 def shell_download_author_works(author_id: str):
     for index, page in enumerate(range(20), start=1):
         image_id_list = PixivAPI.PixivApp.author_information(author_id, index)
-        # print("本页一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            for image_id in track(image_id_list, description=f"作者插画集加载中..."):
-                Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
-                if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
+            download.ThreadGetImagesInfo().get_images_info(image_id_list)
             download.ThreadDownload().threading_downloader()
-        else: break
+        else:
+            break
 
 
 @count_time
@@ -52,7 +48,7 @@ def shell_search(inputs: list):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            
+
             download.ThreadDownload().threading_downloader()
         else:
             print("搜索画集下载完毕！")
@@ -123,11 +119,10 @@ def shell_pixiv_token():
 def shell_download_stars():
     start_information = PixivAPI.PixivApp.start_information()
     if start_information.error is None:
-        threading_pool = download.ThreadDownload()
         images_id_list = list(set([data.id for data in start_information.illusts]))
         if len(images_id_list) != 0:
-            threading_pool.get_images_info(images_id_list)
-            threading_pool.threading_downloader()
+            download.ThreadGetImagesInfo().get_images_info(images_id_list)
+            download.ThreadDownload().threading_downloader()
         else:
             print("没有可下载的插画！")
     else:
