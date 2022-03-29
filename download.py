@@ -31,7 +31,6 @@ class ImageInfo:
             out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_name)
         YamlData("", out_dir)
         if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
-            time.sleep(random.random() * float(1.2))  # 随机延迟
             with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
                 file.write(HttpUtil.get(image_url).content)
 

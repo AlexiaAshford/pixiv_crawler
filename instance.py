@@ -1,7 +1,5 @@
 import os
-import random
 import re
-import sys
 import time
 from rich import print
 import yaml
@@ -154,14 +152,6 @@ def set_config():
 
     if type(Vars.cfg.data.get('max_retry')) is not int:
         Vars.cfg.data['max_retry'] = 5
-        config_change = True
-
-    if type(Vars.cfg.data.get('WebUrl')) is not str or Vars.cfg.data.get('WebUrl') == "":
-        Vars.cfg.data['WebUrl'] = "https://book.sfacg.com/Novel/"
-        config_change = True
-
-    if type(Vars.cfg.data.get('collection')) is not bool or Vars.cfg.data.get('collection') == "":
-        Vars.cfg.data['collection'] = False
         config_change = True
 
     if type(Vars.cfg.data.get('Cookie')) is not str or Vars.cfg.data.get('Cookie') == "":

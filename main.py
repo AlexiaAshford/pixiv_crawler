@@ -1,3 +1,4 @@
+import sys
 import download
 from instance import *
 from rich.progress import track

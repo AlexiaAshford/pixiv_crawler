@@ -17,7 +17,6 @@ class Download:
     @staticmethod
     def save_file(file_path: str, image_name: str, image_url: str):
         if not os.path.exists(os.path.join(file_path, f'{image_name}.png')):
-            time.sleep(random.random() * float(1.2))  # 随机延迟
             with open(os.path.join(file_path, f'{image_name}.png'), 'wb+') as file:
                 file.write(image(image_url))
         # else:
