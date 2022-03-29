@@ -1,6 +1,7 @@
 import sys
 import download
 from instance import *
+from concurrent.futures import ThreadPoolExecutor
 from rich.progress import track
 import PixivAPI
 
@@ -119,6 +120,20 @@ def shell_pixiv_token():
             print("输入code无效，请重新尝试获取！")
 
 
+def shell_download_stars():
+    start_information = PixivAPI.PixivApp.start_information()
+    if start_information.error is None:
+        threading_pool = download.ThreadDownload()
+        images_id_list = list(set([data.id for data in start_information.illusts]))
+        if len(images_id_list) != 0:
+            threading_pool.get_images_info(images_id_list)
+            threading_pool.threading_downloader()
+        else:
+            print("没有可下载的插画！")
+    else:
+        print(start_information.error)
+
+
 def shell():
     if len(sys.argv) > 1 and isinstance(sys.argv, list):
         command_line = True
@@ -139,7 +154,7 @@ def shell():
         elif inputs[0] == 'd' or inputs[0] == 'download':
             shell_illustration(inputs)
         elif inputs[0] == 's' or inputs[0] == 'stars':
-            PixivAPI.PixivApp.start_information()
+            shell_download_stars()
         elif inputs[0] == 'n' or inputs[0] == 'name':
             shell_search(inputs)
         elif inputs[0] == 't' or inputs[0] == 'recommend':

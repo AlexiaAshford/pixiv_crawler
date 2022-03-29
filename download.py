@@ -1,3 +1,4 @@
+import PixivAPI
 from PixivAPI import HttpUtil
 from instance import *
 import threading
@@ -37,9 +38,9 @@ class ImageInfo:
     def save_image(self, image_url_list):
         if isinstance(image_url_list, list):
             for index, url in enumerate(image_url_list):
-                self.save_file(self.author_id+"-"+index_title(index, self.image_name), url)
+                self.save_file(self.author_id + "-" + index_title(index, self.image_name), url)
         else:
-            self.save_file(self.author_id+"-"+self.image_name, image_url_list)
+            self.save_file(self.author_id + "-" + self.image_name, image_url_list)
 
 
 class ThreadDownload:
@@ -76,3 +77,22 @@ class ThreadDownload:
             self.current_progress, self.threading_length, Vars.images_info.image_name), end='\r')
         self.current_progress += 1
         self.pool_sema.release()
+
+    def threading_images_info(self, image_id):
+        Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
+        for max_retry in range(Vars.cfg.data.get("max_retry")):
+            if Vars.images_info is not None:
+                Vars.images_info_list.append(ImageInfo(Vars.images_info))
+                break
+
+    def get_images_info(self, images_id_list):
+        for image_id in images_id_list:
+            thread = threading.Thread(target=self.threading_images_info, args=(image_id,))
+            self.threading_list.append(thread)
+
+        for thread in self.threading_list:
+            thread.start()
+
+        for thread in self.threading_list:
+            thread.join()
+        ThreadDownload().threading_downloader()

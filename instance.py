@@ -44,10 +44,6 @@ class YamlData:
             yaml.safe_dump(self.data, f, default_flow_style=False, allow_unicode=True)
 
 
-def mkdir(path: str):
-    if not os.path.exists(path):
-        os.mkdir(path)
-
 
 def write_file(file_dir: str, m: str, content: str = ""):
     if m == "r":
@@ -72,15 +68,6 @@ def count_time(func):
     return wrapper
 
 
-def str_mid(string: str, left: str, right: str, start=None, end=None):
-    pos1 = string.find(left, start, end)
-    if pos1 > -1:
-        pos2 = string.find(right, pos1 + len(left), end)
-        if pos2 > -1:
-            return string[pos1 + len(left): pos2]
-    return ''
-
-
 def remove_str(content: str):
     res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
     return res_compile.sub("", re.sub('[/:*?"<>|]', '-', content))
@@ -92,13 +79,7 @@ def rec_id(book_id: str):
 
 
 def index_title(division_index: int, image_name: str):
-    print(division_index, image_name)
     return str(division_index).rjust(4, "0") + '-' + str(image_name)
-
-
-def mkdir(file_path: str):
-    if not os.path.exists(file_path):
-        os.mkdir(file_path)
 
 
 def makedirs(file_path: str):
@@ -160,5 +141,5 @@ def set_config():
 
     if config_change:
         Vars.cfg.save()
-
-    mkdir(Vars.cfg.data.get('save_file'))
+    if not os.path.exists(Vars.cfg.data.get('save_file')):
+        os.mkdir(Vars.cfg.data.get('save_file'))
