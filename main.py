@@ -1,8 +1,26 @@
+import json
 import sys
 import download
 from instance import *
 from rich.progress import track
 import PixivAPI
+
+
+def update():
+    download_test = False
+    response = PixivAPI.get("https://raw.githubusercontent.com/Elaina-Alex/pixiv_crawler/main/update.json")
+    if not os.path.exists('update.json'):
+        json.dump(response, open('update.json', 'w'))
+        download_test = True
+    data = json.loads(open('update.json', 'r').read())
+    if data['version'] < response['version']:
+        download_test = True
+    if download_test:
+        with open(data['name'] + ".exe", 'wb') as file:
+            file.write(PixivAPI.HttpUtil.get(response['download_url']).content)
+        print(data['name'] + ".exe", "下载完毕")
+        json.dump(response, open('update.json', 'w'))
+        sys.exit()
 
 
 def shell_download_author_works(author_id: str):
@@ -170,4 +188,5 @@ def shell():
 if __name__ == '__main__':
     set_config()
     shell_pixiv_token()
+    update()
     shell()
