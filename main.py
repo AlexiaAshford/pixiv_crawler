@@ -14,10 +14,11 @@ def update():
         download_test = True
     data = json.loads(open('update.json', 'r').read())
     if data['version'] < response['version']:
+        print("检测到有新版本", response['version'], "尝试自动更新")
         download_test = True
-    if download_test:
+    if download_test or not os.path.exists(data['name'] + ".exe"):
         with open(data['name'] + ".exe", 'wb') as file:
-            file.write(PixivAPI.HttpUtil.get(response['download_url']).content)
+            file.write(PixivAPI.HttpUtil.get(response['download_url'].format(response['version'],)).content)
         print(data['name'] + ".exe", "下载完毕")
         json.dump(response, open('update.json', 'w'))
         sys.exit()
