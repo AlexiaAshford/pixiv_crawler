@@ -83,24 +83,11 @@ def shell_search(inputs: list):
 
 @count_time
 def shell_download_follow_author():
-    #  'user': {
-    #             'id': 16034374,
-    #             'name': '绊',
-    #             'account': 'x1097520624',
-    #             'profile_image_urls': {
-    #                 'medium': 'https://i.pximg.net/user-profile/img/2021/07/09/14/12/26/21007355_c69a77fcfeeb1a0fe30f75fcc4e98123_170.jpg'
-    #             },
-    #             'is_followed': True
-    #         },
-    #         'illusts': [
-    #             {
     follow_information_list = PixivAPI.PixivApp.follow_information()
     if isinstance(follow_information_list, list):
         print("共有", len(follow_information_list), "个关注")
         for follow_information in follow_information_list:
             print("开始下载", follow_information['user']['name'], "的作品")
-            print("作者序号:", follow_information['user']['id'])
-            print("一共", len(follow_information['illusts']), "幅作品")
             for illusts in follow_information['illusts']:
                 Vars.images_info = download.ImageInfo(illusts)
                 Vars.images_info.show_images_information()
@@ -108,11 +95,7 @@ def shell_download_follow_author():
                     Vars.images_info.save_image(Vars.images_info.original_url)
                 else:
                     Vars.images_info.save_image(Vars.images_info.original_url_list)
-            # shell_download_author_works(follow_information['user']['id'])
-        # for index, author_id in enumerate(response, start=1):
-        #     print("开始下载第", index, "个作者的作品集")
-        #     shell_download_author_works(author_id)
-
+            print(follow_information['user']['name'], "的作品下载完毕")
 
 
 @count_time
@@ -174,16 +157,17 @@ def shell_test_pixiv_token():
 
 
 def shell_download_stars():
-    start_information = PixivAPI.PixivApp.start_information()
-    if start_information.error is None:
-        images_id_list = list(set([data.id for data in start_information.illusts]))
-        if len(images_id_list) != 0:
-            download.ThreadGetImagesInfo().get_images_info(images_id_list)
-            download.ThreadDownload().threading_downloader()
-        else:
-            print("没有可下载的插画！")
-    else:
-        print(start_information.error)
+    start_information_list = PixivAPI.PixivApp.start_information()
+    if isinstance(start_information_list, list):
+        for illusts in start_information_list:
+            Vars.images_info = download.ImageInfo(illusts)
+            Vars.images_info.show_images_information()
+            if Vars.images_info.page_count == 1:
+                Vars.images_info.save_image(Vars.images_info.original_url)
+            else:
+                Vars.images_info.save_image(Vars.images_info.original_url_list)
+            print(illusts['user']['name'], "的作品下载完毕")
+
 
 
 def shell():

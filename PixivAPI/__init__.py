@@ -60,9 +60,18 @@ class PixivApp:
             return [img_url_list, image_name, author_id]
 
     @staticmethod
-    def start_information():
-        """收藏插画 <class 'PixivApp.utils.JsonDict'>"""
-        return PixivToken.instantiation_api().illust_recommended()
+    def start_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
+        """收藏插画 """
+        if user_id is None:
+            user_id = Vars.cfg.data['user_info']['id']
+        params = {"filter": "for_android", "user_id": user_id, "restrict": restrict}
+
+        for retry in range(1, max_retry):
+            response = HttpUtil.get_api(api_url=UrlConstant.BOOKMARK_INFORMATION, params=params)
+            if response.get('illusts') is not None:
+                return response["illusts"]
+            else:
+                print("Retry:{} follow_infor error:{}".format(retry, response.get("error").get("message")))
 
     @staticmethod
     def recommend_information():
@@ -78,7 +87,7 @@ class PixivApp:
 
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
-        """获取指定 user_id 关注画师信息"""
+        """获取指定 user_id 关注的所有画师信息"""
         if user_id is None:
             user_id = Vars.cfg.data['user_info']['id']
         params = {"filter": "for_android", "user_id": user_id, "restrict": restrict}

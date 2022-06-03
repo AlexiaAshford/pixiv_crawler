@@ -14,7 +14,7 @@ class ImageInfo:
         self.page_count = result_info['page_count']
         self.image_name = remove_str(result_info['title'])
         self.create_date = result_info['create_date']
-        self.tag_name = list_derivation(result_info['tags'], "translated_name")
+        self.tag_name = list_derivation(result_info['tags'], "name")
         self.original_url = result_info.get('meta_single_page', {}).get('original_image_url')
         self.original_url_list = [url['image_urls']["original"] for url in result_info.get('meta_pages')]
 
@@ -25,6 +25,11 @@ class ImageInfo:
         print("作者序号: {}".format(self.author_id))
         print("插画标签: {}".format(self.tag_name))
         print("画集数量: {}".format(self.page_count))
+        if self.page_count == 1:
+            print("插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", self.original_url)))
+        else:
+            for original_url in self.original_url_list:
+                print("插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", original_url)))
         print("发布时间: {}\n".format(self.create_date))
 
     def save_file(self, image_name: str, image_url: str):
@@ -93,4 +98,3 @@ class ThreadGetImagesInfo:
         with ThreadPoolExecutor(max_workers=5) as executor:
             for image_id in images_id_list:
                 executor.submit(ThreadGetImagesInfo.threading_images_info, image_id)
-
