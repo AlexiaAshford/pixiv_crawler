@@ -44,11 +44,12 @@ def login(code_verifier, code_information: str):
         },
         headers={"User-Agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"},
     ).json()
+
     if response.get("errors") is not None:
         print("errors:", response['errors']['system']['message'])
-        return False
     else:
         save_token(response)
+        return True
 
 
 def refresh(refresh_token):
@@ -72,6 +73,12 @@ def refresh(refresh_token):
 
 
 def save_token(response):
+    Vars.cfg.data["user_info"] = {
+        'id': response["user"]["id"],
+        'name': response["user"]["name"],
+        'account': response["user"]["account"],
+        'mail_address': response["user"]["mail_address"],
+    }
     Vars.cfg.data["access_token"] = response["access_token"]
     Vars.cfg.data["refresh_token"] = response["refresh_token"]
     Vars.cfg.save()

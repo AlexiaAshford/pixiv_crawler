@@ -74,16 +74,21 @@ class PixivApp:
             response = pixiv_app_api.illust_recommended(**next_qs)
             if response.error is None:
                 return list(set([data.id for data in response.illusts]))
-            print("error: ",  response.error)
+            print("error: ", response.error)
 
     @staticmethod
-    def follow_information():
-        """关注用户信息 <class 'PixivApp.utils.JsonDict'>"""
-        response = PixivToken.instantiation_api().illust_follow()
-        if response.error is None:
-            return list(set([illusts.user['id'] for illusts in response.illusts]))
-        else:
-            return response.error
+    def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
+        """获取指定 user_id 关注画师信息"""
+        if user_id is None:
+            user_id = Vars.cfg.data['user_info']['id']
+        params = {"filter": "for_android", "user_id": user_id, "restrict": restrict}
+
+        for retry in range(1, max_retry):
+            response = HttpUtil.get_api(api_url=UrlConstant.FOLLOWING_INFORMATION, params=params)
+            if response.get('user_previews') is not None:
+                return response["user_previews"]
+            else:
+                print("Retry:{} follow_infor error:{}".format(retry, response.get("error").get("message")))
 
     @staticmethod
     def author_information(author_id: str, page: int):

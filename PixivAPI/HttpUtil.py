@@ -1,6 +1,7 @@
 import requests
 from instance import *
 import functools
+import PixivAPI.UrlConstant as UrlConstant
 from fake_useragent import UserAgent
 
 
@@ -13,6 +14,7 @@ def MaxRetry(func, max_retry=5):
                 return response
             else:
                 time.sleep(retry * 0.5)
+
     return wrapper
 
 
@@ -27,6 +29,15 @@ def headers():
     }
 
 
+def android_app():
+    return {
+        'Host': 'app-api.pixiv.net ',
+        'user-agent': 'PixivAndroidApp/6.46.0',
+        'authorization': "Bearer " + Vars.cfg.data.get("access_token"),
+        'app-version': '6.46.0 ',
+    }
+
+
 @MaxRetry
 def get(api_url: str, params=None, **kwargs):
     try:
@@ -37,6 +48,19 @@ def get(api_url: str, params=None, **kwargs):
             return False
     except requests.exceptions.RequestException as error:
         return False
+
+
+def get_api(api_url: str, params: dict = None, return_type: str = "json", **kwargs):
+    try:
+        api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, "")
+        if return_type == "json":
+            return requests.get(api_url, headers=android_app(), params=params, **kwargs).json()
+        if return_type == "content":
+            return requests.get(api_url, headers=android_app(), params=params, **kwargs).content
+        if return_type == "text":
+            return requests.get(api_url, headers=android_app(), params=params, **kwargs).text
+    except requests.exceptions.RequestException as error:
+        print("HttpUtil.get error:", error)
 
 
 @MaxRetry

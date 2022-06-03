@@ -83,10 +83,36 @@ def shell_search(inputs: list):
 
 @count_time
 def shell_download_follow_author():
-    author_id_list = PixivAPI.PixivApp.follow_information()
-    print("一共关注了{}名作者，开始下载插画集！".format(len(author_id_list)))
-    for index, author_id in enumerate(author_id_list, start=1):
-        shell_download_author_works(author_id)
+    #  'user': {
+    #             'id': 16034374,
+    #             'name': '绊',
+    #             'account': 'x1097520624',
+    #             'profile_image_urls': {
+    #                 'medium': 'https://i.pximg.net/user-profile/img/2021/07/09/14/12/26/21007355_c69a77fcfeeb1a0fe30f75fcc4e98123_170.jpg'
+    #             },
+    #             'is_followed': True
+    #         },
+    #         'illusts': [
+    #             {
+    follow_information_list = PixivAPI.PixivApp.follow_information()
+    if isinstance(follow_information_list, list):
+        print("共有", len(follow_information_list), "个关注")
+        for follow_information in follow_information_list:
+            print("开始下载", follow_information['user']['name'], "的作品")
+            print("作者序号:", follow_information['user']['id'])
+            print("一共", len(follow_information['illusts']), "幅作品")
+            for illusts in follow_information['illusts']:
+                Vars.images_info = download.ImageInfo(illusts)
+                Vars.images_info.show_images_information()
+                if Vars.images_info.page_count == 1:
+                    Vars.images_info.save_image(Vars.images_info.original_url)
+                else:
+                    Vars.images_info.save_image(Vars.images_info.original_url_list)
+            # shell_download_author_works(follow_information['user']['id'])
+        # for index, author_id in enumerate(response, start=1):
+        #     print("开始下载第", index, "个作者的作品集")
+        #     shell_download_author_works(author_id)
+
 
 
 @count_time
@@ -129,18 +155,22 @@ def shell_read_text_id(inputs):
         print(f"{list_file_name}文件不存在")
 
 
-def shell_pixiv_token():
+def shell_test_pixiv_token():
     for retry in range(Vars.cfg.data.get("max_retry")):
         if Vars.cfg.data.get("refresh_token") != "":
+            return True
+        if Vars.cfg.data.get("user_info") is not None:
             return True
         else:
             print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
             code_verifier = PixivAPI.login_pixiv.open_browser()
             code = PixivAPI.input_('code:').strip()
-            result = PixivAPI.login_pixiv.login(code_verifier, code)
-            if result is None:
-                return
-            print("输入code无效，请重新尝试获取！")
+            response = PixivAPI.login_pixiv.login(code_verifier, code)
+            if response is True:
+                print(f"code:{code} 信息验证成功！")
+                return True
+            else:
+                print(f"输入code:{code} 无效，请重新尝试获取！还剩余{Vars.cfg.data['max_retry'] - retry - 1}次机会")
 
 
 def shell_download_stars():
@@ -172,7 +202,7 @@ def shell():
             for msg_help in Msg.msg_help:
                 print('[帮助]', msg_help)
         elif inputs[0] == 'l' or inputs[0] == 'login':
-            shell_pixiv_token()
+            shell_test_pixiv_token()
         elif inputs[0] == 'd' or inputs[0] == 'download':
             shell_illustration(inputs)
         elif inputs[0] == 's' or inputs[0] == 'stars':
@@ -196,6 +226,6 @@ def shell():
 
 if __name__ == '__main__':
     set_config()
-    update()
-    shell_pixiv_token()
+    # update()
+    shell_test_pixiv_token()
     shell()

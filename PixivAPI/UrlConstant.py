@@ -1,6 +1,8 @@
 IMAGE_INFORMATION = "https://api.obfs.dev/api/pixiv/illust?id={}"
 AUTHOR_INFORMATION = "https://api.obfs.dev/api/pixiv/member_illust?id={}&page={}"
 FAVORITE_INFORMATION = "https://api.obfs.dev/api/pixiv/favorite?id={}"
+FOLLOWING_INFORMATION = "user/following"
+PIXIV_HOST = "https://app-api.pixiv.net/v1/"
 
 
 def RANK_INFORMATION(page: int, mode="week") -> str:

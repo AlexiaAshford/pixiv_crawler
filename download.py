@@ -20,9 +20,9 @@ class ImageInfo:
 
     def show_images_information(self):
         print("插画名称: {}:".format(self.image_name))
-        print("插画ID: {}".format(self.image_id))
-        print("作者ID: {}".format(self.author_id))
+        print("插画序号: {}".format(self.image_id))
         print("作者名称: {}".format(self.author_name))
+        print("作者序号: {}".format(self.author_id))
         print("插画标签: {}".format(self.tag_name))
         print("画集数量: {}".format(self.page_count))
         print("发布时间: {}\n".format(self.create_date))
