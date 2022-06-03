@@ -47,6 +47,7 @@ def get(api_url: str, params=None, **kwargs):
         else:
             return False
     except requests.exceptions.RequestException as error:
+        print("\nGet url:{} Error:{}".format(api_url, error))
         return False
 
 

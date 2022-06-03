@@ -1,6 +1,6 @@
 import json
 import sys
-import download
+import Image
 from instance import *
 from rich.progress import track
 import PixivAPI
@@ -36,8 +36,8 @@ def shell_download_author_works(author_id: str):
     for index, page in enumerate(range(20), start=1):
         image_id_list = PixivAPI.PixivApp.author_information(author_id, index)
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            download.ThreadGetImagesInfo.get_images_info(image_id_list)
-            download.ThreadDownload().threading_downloader()
+            Image.ThreadGetImagesInfo.get_images_info(image_id_list)
+            Image.ThreadDownload().threading_downloader()
         else:
             break
 
@@ -50,7 +50,7 @@ def shell_illustration(inputs):
         else:
             Vars.images_info = PixivAPI.PixivApp.images_information(PixivAPI.rec_id(inputs[1]))
             if isinstance(Vars.images_info, dict):
-                Vars.images_info = download.ImageInfo(Vars.images_info)
+                Vars.images_info = Image.ImageInfo(Vars.images_info)
                 Vars.images_info.show_images_information()
                 if Vars.images_info.page_count == 1:
                     Vars.images_info.save_image(Vars.images_info.original_url)
@@ -74,9 +74,9 @@ def shell_search(inputs: list):
             for image_id in track(image_id_list, description=f"插画集加载中..."):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
+                    Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
 
-            download.ThreadDownload().threading_downloader()
+            Image.ThreadDownload().threading_downloader()
         else:
             print("搜索画集下载完毕！")
 
@@ -89,7 +89,7 @@ def shell_download_follow_author():
         for follow_information in follow_information_list:
             print("开始下载", follow_information['user']['name'], "的作品")
             for illusts in follow_information['illusts']:
-                Vars.images_info = download.ImageInfo(illusts)
+                Vars.images_info = Image.ImageInfo(illusts)
                 Vars.images_info.show_images_information()
                 if Vars.images_info.page_count == 1:
                     Vars.images_info.save_image(Vars.images_info.original_url)
@@ -112,8 +112,8 @@ def shell_download_rank():
             for image_id in track(image_id_list, description=f"排行榜插画集加载中..."):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            download.ThreadDownload().threading_downloader()
+                    Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
+            Image.ThreadDownload().threading_downloader()
             next_page = pixiv_app_api.parse_qs(response_ranking.next_url)
         else:
             print("Pixiv排行榜插图下载完毕")
@@ -132,8 +132,8 @@ def shell_read_text_id(inputs):
             for image_id in track(image_id_list, description=f"本地插画集加载中..."):
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(download.ImageInfo(Vars.images_info))
-            download.ThreadDownload().threading_downloader()
+                    Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
+            Image.ThreadDownload().threading_downloader()
     except OSError:
         print(f"{list_file_name}文件不存在")
 
@@ -160,7 +160,7 @@ def shell_download_stars():
     start_information_list = PixivAPI.PixivApp.start_information()
     if isinstance(start_information_list, list):
         for illusts in start_information_list:
-            Vars.images_info = download.ImageInfo(illusts)
+            Vars.images_info = Image.ImageInfo(illusts)
             Vars.images_info.show_images_information()
             if Vars.images_info.page_count == 1:
                 Vars.images_info.save_image(Vars.images_info.original_url)
