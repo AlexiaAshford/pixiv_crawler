@@ -118,14 +118,23 @@ class PixivApp:
             return [data.get("id") for data in response.get("illusts")]
 
     @staticmethod
-    def rank_information(mode: str = "day", max_retry: int = 5) -> list:  # 作品排行
-        """mode: [day, week, month, day_male, day_female, week_original, week_rookie,day_manga
-            day_r18, day_male_r18, day_female_r18, week_r18, week_r18g]"""
-        params = {"filter": "for_android", "mode": mode}
-        for retry in range(1, max_retry):
-            response = HttpUtil.get_api(api_url=UrlConstant.RANKING_INFORMATION, params=params)
-            if response.get('illusts') is not None:
-                return response["illusts"]
-            else:
-                print("rank_information error:{}".format(retry, response.get("error").get("message")))
-                refresh_pixiv_token()
+    def rank_information(max_page: int = 100, max_retry: int = 5) -> list:  # 作品排行信息
+        mode_list = ["day", "week", "month", "day_male", "day_female", "week_original", "week_rookie", "day_manga",
+                     "day_r18", "day_male_r18", "day_female_r18", "week_r18", "week_r18g"]
+        for index, mode in enumerate(mode_list):
+            print("index:", index, "\t\tmode_name:", mode)
+        mode_type = mode_list[input_int(">", len(mode_list))]
+        for page in range(1, max_page):
+            params = {
+                "filter": "for_android",
+                "offset": 2 * 30,
+                "mode": mode_type,
+                "data": str(time.strftime("%Y-%m-%d", time.localtime())),
+            }
+            for retry in range(1, max_retry):
+                response = HttpUtil.get_api(api_url=UrlConstant.RANKING_INFORMATION, params=params)
+                if response.get('illusts') is not None:
+                    return response["illusts"]
+                else:
+                    print("rank_information error:{}".format(retry, response.get("error").get("message")))
+                    refresh_pixiv_token()

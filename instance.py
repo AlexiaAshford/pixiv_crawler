@@ -96,6 +96,22 @@ def input_str(prompt, default=None):
             return default
 
 
+def input_int(prompt: str, max_number: int = None):
+    while True:
+        ret = input(prompt)
+        if ret.isdigit():
+            if max_number is None:
+                return int(ret)
+            if max_number is not None and int(ret) < max_number:
+                return int(ret)
+            else:
+                print(f"输入数字 {ret} 需要小于索引 {max_number} ")
+                continue
+        else:
+            if ret.strip() != '':
+                print(f"输入的内容 {ret} 不是数字，请重新输入")
+
+
 def set_config():
     Vars.cfg.load()
     config_change = False

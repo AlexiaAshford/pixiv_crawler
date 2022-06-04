@@ -97,13 +97,16 @@ def shell_download_follow_author():
 @count_time
 def shell_download_rank():
     response_list = PixivAPI.PixivApp.rank_information()
-    if isinstance(response_list, list) and len(response_list) != 0:
+    if not isinstance(response_list, list):
+        print("排行榜下载失败")
+    elif len(response_list) == 0:
+        print("排行榜获取完毕！")
+    else:
         threading_image_pool = complex_image.Complex()
         for illusts in response_list:
             threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
         threading_image_pool.start_download_threading()
-    else:
-        print("ERROR:", response_list)
+
 
 
 @count_time

@@ -13,8 +13,6 @@
 
 ### 目前 Pixiv 不支持login api进行账号登入，只能从web获取
 
-## Pixiv API  感谢项目 [pixivpy](https://github.com/upbit/pixivpy) 提供
-
 ## 运行脚本
 
 ```bash
@@ -37,7 +35,6 @@ n | tag name           --- 输入插画名或者标签名批量下载
 - **登入账号** ``` -l / --login```
 - **下载插画** ``` -d / --download <image_id> ```
 - **作者画集** ``` -a / --author <author_id> ```
-- **更改线程** ``` -a / --max ```
 - **更改线程** ``` -m / --max ```
 - **下载收藏** ``` -s / --start ```
 - **推荐插画** ``` -r / --recommend```
