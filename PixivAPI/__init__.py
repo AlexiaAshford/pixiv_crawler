@@ -12,25 +12,23 @@ def image(url: str) -> bytes:
     return HttpUtil.get(url).content
 
 
-class PixivToken:
-    @staticmethod
-    def instantiation_api():
-        instantiation = AppPixivAPI()
-        for index, retry in enumerate(range(Vars.cfg.data.get("max_retry"))):
-            instantiation.set_auth(
-                access_token=Vars.cfg.data.get("access_token"),
-                refresh_token=Vars.cfg.data.get("refresh_token")
-            )
-            if instantiation.illust_recommended().error is None:
-                return instantiation
-
-            login_pixiv.refresh(Vars.cfg.data.get("refresh_token"))
-            print(f"token失效，尝试刷新refresh_token retry{index}")
-            if retry >= Vars.cfg.data.get("max_retry") - 1:
-                return 403
+def refresh_pixiv_token():
+    login_pixiv.refresh(Vars.cfg.data.get("refresh_token"))
+    print(f"token失效，尝试刷新refresh_token ")
 
 
 class PixivApp:
+
+    @staticmethod
+    def get_user_info(show_start: bool = False) -> bool:
+        params = {"filter": "for_android", "user_id": Vars.cfg.data['user_info']['id']}
+        response = HttpUtil.get_api(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
+        if response is not None:
+            if show_start is True:
+                print(f"用户名：{response.get('name')}\t\t用户id：{response.get('id')}")
+            return True
+
+        return False
 
     @staticmethod
     def images_information(works_id: str) -> dict:
@@ -72,7 +70,7 @@ class PixivApp:
                 return response["illusts"]
             else:
                 print("Retry:{} start error:{}".format(retry, response.get("error").get("message")))
-                PixivToken.instantiation_api()
+                refresh_pixiv_token()
 
     @staticmethod
     def recommend_information(ranking: bool = True, policy: bool = True, max_retry: int = 5) -> list:
@@ -88,7 +86,7 @@ class PixivApp:
                 return response["illusts"]
             else:
                 print("Retry:{} recommend error:{}".format(retry, response.get("error").get("message")))
-                PixivToken.instantiation_api()
+                refresh_pixiv_token()
 
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
@@ -124,7 +122,7 @@ class PixivApp:
     @staticmethod
     def rank_information():
         """作品排行 <class 'PixivApp.utils.JsonDict'>"""
-        pixiv_app_api = PixivToken.instantiation_api()
+        pixiv_app_api = refresh_pixiv_token()
         # mode: [day, week, month, day_male, day_female, week_original, week_rookie, day_manga]
         # date: '2016-08-01'
         # mode (Past): [day, week, month, day_male, day_female, week_original, week_rookie,

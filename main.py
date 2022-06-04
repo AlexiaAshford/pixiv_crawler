@@ -139,21 +139,16 @@ def shell_read_text_id():
 
 
 def shell_test_pixiv_token():
-    for retry in range(Vars.cfg.data.get("max_retry")):
-        if Vars.cfg.data.get("refresh_token") != "":
-            return True
-        if Vars.cfg.data.get("user_info") is not None:
-            return True
+    if Vars.cfg.data.get("refresh_token") == "":
+        print("检测到本地档案没有令牌，请登入网站获取code来请求token，也可以将token自行写入本地档案")
+        code_verifier = PixivAPI.login_pixiv.open_browser()
+        if PixivAPI.login_pixiv.login(code_verifier, PixivAPI.input_str('code:').strip()):
+            print(f"code信息验证成功！，token信息已经保存在本地档案，请继续使用")
         else:
-            print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
-            code_verifier = PixivAPI.login_pixiv.open_browser()
-            code = PixivAPI.input_str('code:').strip()
-            response = PixivAPI.login_pixiv.login(code_verifier, code)
-            if response is True:
-                print(f"code:{code} 信息验证成功！")
-                return True
-            else:
-                print(f"输入code:{code} 无效，请重新尝试获取！还剩余{Vars.cfg.data['max_retry'] - retry - 1}次机会")
+            print(f"输入code无效，请重新尝试获取code！")
+            shell_test_pixiv_token()
+    if not PixivAPI.PixivApp.get_user_info(show_start=True):
+        PixivAPI.refresh_pixiv_token()
 
 
 def shell_download_recommend():

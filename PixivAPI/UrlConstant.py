@@ -4,6 +4,7 @@ FOLLOWING_INFORMATION = "user/following"
 BOOKMARK_INFORMATION = "user/bookmarks/illust"
 RECOMMENDED_INFORMATION = "illust/recommended"
 AUTHOR_INFORMATION = "user/illusts"
+ACCOUNT_INFORMATION = "user/detail"
 
 PIXIV_HOST = "https://app-api.pixiv.net/v1/"
 
