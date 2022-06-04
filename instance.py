@@ -54,6 +54,7 @@ def write_file(file_dir: str, m: str, content: str = ""):
 class Vars:
     cfg = YamlData('pixiv-config.yaml')
     images_info = None
+    complex_images_info = list()
     images_info_list = list()
 
 

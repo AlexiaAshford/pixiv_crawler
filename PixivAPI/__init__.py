@@ -89,6 +89,7 @@ class PixivApp:
             else:
                 print("Retry:{} recommend error:{}".format(retry, response.get("error").get("message")))
                 PixivToken.instantiation_api()
+
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
         """获取指定 user_id 关注的所有画师信息"""

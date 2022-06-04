@@ -4,6 +4,7 @@ import Image
 from instance import *
 from rich.progress import track
 import PixivAPI
+import threading
 
 
 def update():
@@ -174,13 +175,28 @@ def shell_download_stars():
     start_information_list = PixivAPI.PixivApp.start_information()
     if isinstance(start_information_list, list):
         for illusts in start_information_list:
-            Vars.images_info = Image.ImageInfo(illusts)
-            Vars.images_info.show_images_information()
-            if Vars.images_info.page_count == 1:
-                Vars.images_info.save_image(Vars.images_info.original_url)
-            else:
-                Vars.images_info.save_image(Vars.images_info.original_url_list)
-            print(illusts['user']['name'], "的作品下载完毕")
+            Vars.complex_images_info.append(Image.ImageInfo(illusts))
+    else:
+        return print("无法进行下载,ERROR:", start_information_list)
+    if len(Vars.complex_images_info) != 0:
+        print("收藏插画加载完毕...\n开始下载收藏插画, 一共:", len(Vars.complex_images_info), "幅插画\n\n")
+        threading_list = [threading.Thread(target=thread_download_images, args=(images_info,)) for images_info in
+                          Vars.complex_images_info]
+        for thread_ing in threading_list:
+            thread_ing.start()
+
+        for thread_ing in threading_list:
+            thread_ing.join()
+        threading_list.clear()
+
+
+def thread_download_images(images_info):
+    images_info.show_images_information(thread_status=True)
+    if images_info.page_count == 1:
+        images_info.save_image(images_info.original_url)
+    else:
+        images_info.save_image(images_info.original_url_list)
+    # print(images_info.image_name, "的作品下载完毕")
 
 
 def shell():

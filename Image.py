@@ -16,19 +16,22 @@ class ImageInfo:
         self.original_url = result_info.get('meta_single_page', {}).get('original_image_url')
         self.original_url_list = [url['image_urls']["original"] for url in result_info.get('meta_pages')]
 
-    def show_images_information(self):
-        print("插画名称: {}:".format(self.image_name))
-        print("插画序号: {}".format(self.image_id))
-        print("作者名称: {}".format(self.author_name))
-        print("作者序号: {}".format(self.author_id))
-        print("插画标签: {}".format(self.tag_name))
-        print("画集数量: {}".format(self.page_count))
-        if self.page_count == 1:
-            print("插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", self.original_url)))
+    def show_images_information(self, thread_status: bool = False):
+        if not thread_status:
+            print("插画名称: {}:".format(self.image_name))
+            print("插画序号: {}".format(self.image_id))
+            print("作者名称: {}".format(self.author_name))
+            print("作者序号: {}".format(self.author_id))
+            print("插画标签: {}".format(self.tag_name))
+            print("画集数量: {}".format(self.page_count))
+            if self.page_count == 1:
+                print("插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", self.original_url)))
+            else:
+                for index, original_url in enumerate(self.original_url_list, start=1):
+                    print("画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url)))
+            print("发布时间: {}\n".format(self.create_date))
         else:
-            for index, original_url in enumerate(self.original_url_list, start=1):
-                print("画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url)))
-        print("发布时间: {}\n".format(self.create_date))
+            print("插画名称: {}:".format(self.image_name))
 
     def save_file(self, image_name: str, image_url: str):
         if Vars.cfg.data.get('save_type'):
