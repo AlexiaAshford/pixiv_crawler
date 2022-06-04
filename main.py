@@ -117,17 +117,25 @@ def shell_download_rank():
 
 @count_time
 def shell_read_text_id():
-    try:
-        image_id_list = [
-            re.sub("^\\s*(\\d{1,8}).*$\\n?", "\\1", line) for line in
-            open('image-list.txt', 'r', encoding='utf-8').readlines() if re.match("^\\s*(\\d{1,8}).*$", line)
-        ]
-        print("一共:", len(image_id_list), "幅插画，开始下载")
-        if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            for image_id in track(image_id_list, description=f"本地插画集加载中..."):
-                shell_illustration(["", image_id])
-    except OSError:
-        print(f" image-list.txt 文件不存在")
+    default_file_name = "pixiv_id_list.txt"
+    if not os.path.exists(default_file_name):
+        open(default_file_name, 'w').close()
+    image_id_list = []
+    for line in open(default_file_name, 'r', encoding='utf-8', newline="").readlines():
+        if line.startswith("#") or line.strip() == "":
+            continue
+        image_id = re.findall(r'^(\d{1,8})', line)
+        if image_id and len(image_id) >= 5:
+            image_id_list.append(image_id[0])
+    if isinstance(image_id_list, list) and len(image_id_list) != 0:
+        threading_image_pool = complex_image.Complex()
+        for image_id in track(image_id_list, description="本地插画集加载中..."):
+            Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
+            if isinstance(Vars.images_info, dict):
+                threading_image_pool.add_image_info_obj(Image.ImageInfo(Vars.images_info))
+            else:
+                return print("无法进行下载,ERROR:", Vars.images_info)
+        threading_image_pool.start_download_threading()
 
 
 def shell_test_pixiv_token():
@@ -176,10 +184,10 @@ def shell_parser():
     parser.add_argument("-l", "--login", dest="login", default=False, action="store_true", help="登录账号")
     parser.add_argument("-d", "--download", dest="downloadbook", nargs=1, default=None, help="输入image-id")
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="更改线程")
-    parser.add_argument("-up", "--update", dest="update", default=False, action="store_true", help="下载本地档案")
+    parser.add_argument("-u", "--update", dest="update", default=False, action="store_true", help="下载本地档案")
     parser.add_argument("-s", "--stars", dest="stars", default=False, action="store_true", help="下载收藏插画")
     parser.add_argument("-r", "--recommend", dest="recommend", default=False, action="store_true", help="下载推荐插画")
-    parser.add_argument("-clear", "--clear_cache", dest="clear_cache", default=False, action="store_true")
+    parser.add_argument("-c", "--clear_cache", dest="clear_cache", default=False, action="store_true")
     parser.add_argument("-a", "--author", dest="author", nargs=1, default=None, help="输入作者-id")
     args = parser.parse_args()
     if args.recommend:
