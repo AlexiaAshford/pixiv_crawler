@@ -1,6 +1,5 @@
 import json
 from instance import *
-from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 
 
@@ -27,8 +26,6 @@ class PixivApp:
             if show_start is True:
                 print(f"用户名：{response.get('name')}\t\t用户id：{response.get('id')}")
             return True
-
-        return False
 
     @staticmethod
     def images_information(works_id: str) -> dict:
@@ -100,10 +97,10 @@ class PixivApp:
                 return response["user_previews"]
             else:
                 print("Retry:{} follow_infor error:{}".format(retry, response.get("error").get("message")))
+                refresh_pixiv_token()
 
     @staticmethod
-    def author_information(author_id: str, offset: int = 30, max_retry: int = 5) -> list:
-        """作者作品集 """
+    def author_information(author_id: str, offset: int = 30, max_retry: int = 5) -> list:  # 作者作品集
         for retry in range(1, max_retry):
             params = {"filter": "for_android", "user_id": author_id, "type": "illust", "offset": offset}
             response = HttpUtil.get_api(api_url=UrlConstant.AUTHOR_INFORMATION, params=params)
@@ -111,6 +108,7 @@ class PixivApp:
                 return response["illusts"]
             else:
                 print("Retry:{} author error:{}".format(retry, response.get("error").get("message")))
+                refresh_pixiv_token()
 
     @staticmethod
     def search_information(png_name: str, page: int):
@@ -120,20 +118,14 @@ class PixivApp:
             return [data.get("id") for data in response.get("illusts")]
 
     @staticmethod
-    def rank_information():
-        """作品排行 <class 'PixivApp.utils.JsonDict'>"""
-        pixiv_app_api = refresh_pixiv_token()
-        # mode: [day, week, month, day_male, day_female, week_original, week_rookie, day_manga]
-        # date: '2016-08-01'
-        # mode (Past): [day, week, month, day_male, day_female, week_original, week_rookie,
-        #               day_r18, day_male_r18, day_female_r18, week_r18, week_r18g]
-        next_page = {"mode": "day"}
-        while next_page:
-            response = pixiv_app_api.illust_ranking(**next_page)
-            if response.error is not None:
-                return response.error
-            image_id_list = list(set([data.id for data in response.illusts]))
-            if type(image_id_list) is list and len(image_id_list) != 0:
-                next_page = pixiv_app_api.parse_qs(response.next_url)
+    def rank_information(mode: str = "day", max_retry: int = 5) -> list:  # 作品排行
+        """mode: [day, week, month, day_male, day_female, week_original, week_rookie,day_manga
+            day_r18, day_male_r18, day_female_r18, week_r18, week_r18g]"""
+        params = {"filter": "for_android", "mode": mode}
+        for retry in range(1, max_retry):
+            response = HttpUtil.get_api(api_url=UrlConstant.RANKING_INFORMATION, params=params)
+            if response.get('illusts') is not None:
+                return response["illusts"]
             else:
-                return "Pixiv排行榜插图下载完毕"
+                print("rank_information error:{}".format(retry, response.get("error").get("message")))
+                refresh_pixiv_token()

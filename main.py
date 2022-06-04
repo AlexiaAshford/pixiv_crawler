@@ -96,23 +96,14 @@ def shell_download_follow_author():
 
 @count_time
 def shell_download_rank():
-    pixiv_app_api, next_page = PixivAPI.PixivToken.instantiation_api(), {"mode": "day"}
-    while next_page:
-        response_ranking = pixiv_app_api.illust_ranking(**next_page)
-        if response_ranking.error is not None:
-            print(response_ranking.error)
-            break
-        image_id_list = list(set([data.id for data in response_ranking.illusts]))
-        print("本页一共:", len(image_id_list), "幅插画，开始下载")
-        if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            for image_id in track(image_id_list, description=f"排行榜插画集加载中..."):
-                Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
-                if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
-            # Image.ThreadDownload().threading_downloader()
-            next_page = pixiv_app_api.parse_qs(response_ranking.next_url)
-        else:
-            print("Pixiv排行榜插图下载完毕")
+    response_list = PixivAPI.PixivApp.rank_information()
+    if isinstance(response_list, list) and len(response_list) != 0:
+        threading_image_pool = complex_image.Complex()
+        for illusts in response_list:
+            threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+        threading_image_pool.start_download_threading()
+    else:
+        print("ERROR:", response_list)
 
 
 @count_time
@@ -174,19 +165,28 @@ def shell_download_stars():
     threading_image_pool.start_download_threading()
 
 
-def shell_parser():
-    parser, shell_console = argparse.ArgumentParser(), False
+def start_parser():
+    parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--login", dest="login", default=False, action="store_true", help="登录账号")
     parser.add_argument("-d", "--download", dest="downloadbook", nargs=1, default=None, help="输入image-id")
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="更改线程")
     parser.add_argument("-u", "--update", dest="update", default=False, action="store_true", help="下载本地档案")
     parser.add_argument("-s", "--stars", dest="stars", default=False, action="store_true", help="下载收藏插画")
     parser.add_argument("-r", "--recommend", dest="recommend", default=False, action="store_true", help="下载推荐插画")
+    parser.add_argument("-k", "--ranking", dest="ranking", default=False, action="store_true", help="下载排行榜插画")
     parser.add_argument("-c", "--clear_cache", dest="clear_cache", default=False, action="store_true")
     parser.add_argument("-a", "--author", dest="author", nargs=1, default=None, help="输入作者-id")
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def shell_parser():
+    args, shell_console = start_parser(), False
     if args.recommend:
         shell_download_recommend()
+        shell_console = True
+
+    if args.ranking:
+        shell_download_rank()
         shell_console = True
 
     if args.stars:
@@ -198,8 +198,7 @@ def shell_parser():
         shell_console = True
 
     if args.clear_cache:
-        Vars.cfg.data.clear()
-        set_config()
+        Vars.cfg.data.clear(), set_config()
         Vars.cfg.save()
         sys.exit(3)
 
@@ -261,4 +260,4 @@ if __name__ == '__main__':
         print("已手动退出程序")
         sys.exit(1)
     except Exception as error:
-        print("程序意外推出，ERROR:", error)
+        print("程序意外退出，ERROR:", error)
