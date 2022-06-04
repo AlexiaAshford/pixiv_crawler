@@ -5,7 +5,7 @@ import Image
 from instance import *
 from rich.progress import track
 import PixivAPI
-import threading
+import complex_image
 
 
 def update():
@@ -75,11 +75,7 @@ def shell_search(inputs: list):
         print("本页一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
             for image_id in track(image_id_list, description=f"插画集加载中..."):
-                Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
-                if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
-
-            Image.ThreadDownload().threading_downloader()
+                shell_illustration(["", image_id])
         else:
             print("搜索画集下载完毕！")
 
@@ -91,13 +87,10 @@ def shell_download_follow_author():
         print("共有", len(follow_information_list), "个关注")
         for follow_information in follow_information_list:
             print("开始下载", follow_information['user']['name'], "的作品")
+            threading_image_pool = complex_image.Complex()
             for illusts in follow_information['illusts']:
-                Vars.images_info = Image.ImageInfo(illusts)
-                Vars.images_info.show_images_information()
-                if Vars.images_info.page_count == 1:
-                    Vars.images_info.save_image(Vars.images_info.original_url)
-                else:
-                    Vars.images_info.save_image(Vars.images_info.original_url_list)
+                threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+            threading_image_pool.start_download_threading()
             print(follow_information['user']['name'], "的作品下载完毕")
 
 
@@ -116,7 +109,7 @@ def shell_download_rank():
                 Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
                 if isinstance(Vars.images_info, dict):
                     Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
-            Image.ThreadDownload().threading_downloader()
+            # Image.ThreadDownload().threading_downloader()
             next_page = pixiv_app_api.parse_qs(response_ranking.next_url)
         else:
             print("Pixiv排行榜插图下载完毕")
@@ -132,10 +125,7 @@ def shell_read_text_id():
         print("一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
             for image_id in track(image_id_list, description=f"本地插画集加载中..."):
-                Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
-                if isinstance(Vars.images_info, dict):
-                    Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
-            Image.ThreadDownload().threading_downloader()
+                shell_illustration(["", image_id])
     except OSError:
         print(f" image-list.txt 文件不存在")
 
@@ -160,49 +150,29 @@ def shell_test_pixiv_token():
 
 def shell_download_recommend():
     while True:
-        recommend_list = PixivAPI.PixivApp.recommend_information()
-        if isinstance(recommend_list, list):
-            for recommend in recommend_list:
-                Vars.images_info = Image.ImageInfo(recommend)
-                Vars.images_info.show_images_information()
-                if Vars.images_info.page_count == 1:
-                    Vars.images_info.save_image(Vars.images_info.original_url)
-                else:
-                    Vars.images_info.save_image(Vars.images_info.original_url_list)
-            print("推荐插画下载完毕")
+        response_list: list = PixivAPI.PixivApp.recommend_information()
+        threading_image_pool = complex_image.Complex()
+        if isinstance(response_list, list):
+            for illusts in response_list:
+                threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+        else:
+            return print("无法进行下载,ERROR:", response_list)
+        threading_image_pool.start_download_threading()
 
 
 def shell_download_stars():
-    start_information_list = PixivAPI.PixivApp.start_information()
-    if isinstance(start_information_list, list):
-        for illusts in start_information_list:
-            Vars.complex_images_info.append(Image.ImageInfo(illusts))
+    response_list: list = PixivAPI.PixivApp.start_information()
+    threading_image_pool = complex_image.Complex()
+    if isinstance(response_list, list):
+        for illusts in response_list:
+            threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
     else:
-        return print("无法进行下载,ERROR:", start_information_list)
-    if len(Vars.complex_images_info) != 0:
-        print("收藏插画加载完毕...\n开始下载收藏插画, 一共:", len(Vars.complex_images_info), "幅插画\n\n")
-        threading_list = [threading.Thread(target=thread_download_images, args=(images_info,)) for images_info in
-                          Vars.complex_images_info]
-        for thread_ing in threading_list:
-            thread_ing.start()
-
-        for thread_ing in threading_list:
-            thread_ing.join()
-        threading_list.clear()
-
-
-def thread_download_images(images_info):
-    images_info.show_images_information(thread_status=True)
-    if images_info.page_count == 1:
-        images_info.save_image(images_info.original_url)
-    else:
-        images_info.save_image(images_info.original_url_list)
-    # print(images_info.image_name, "的作品下载完毕")
+        return print("无法进行下载,ERROR:", response_list)
+    threading_image_pool.start_download_threading()
 
 
 def shell_parser():
     parser, shell_console = argparse.ArgumentParser(), False
-    # 注意在使用参数时，是用的参数的dest名字，而不是参数的名字
     parser.add_argument("-l", "--login", dest="login", default=False, action="store_true", help="登录账号")
     parser.add_argument("-d", "--download", dest="downloadbook", nargs=1, default=None, help="输入image-id")
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="更改线程")
@@ -252,7 +222,7 @@ def shell_parser():
             shell(re.split('\\s+', PixivAPI.input_str('>').strip()))
 
 
-def shell(inputs):
+def shell(inputs: list):
     if inputs[0] == 'q' or inputs[0] == 'quit':
         sys.exit("已退出程序")
     elif inputs[0] == 'h' or inputs[0] == 'help':

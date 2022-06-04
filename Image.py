@@ -30,8 +30,6 @@ class ImageInfo:
                 for index, original_url in enumerate(self.original_url_list, start=1):
                     print("画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url)))
             print("发布时间: {}\n".format(self.create_date))
-        else:
-            print("插画名称: {}:".format(self.image_name))
 
     def save_file(self, image_name: str, image_url: str):
         if Vars.cfg.data.get('save_type'):

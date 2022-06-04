@@ -1,5 +1,4 @@
 import json
-import threading
 from instance import *
 from PixivApp import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
@@ -34,7 +33,7 @@ class PixivToken:
 class PixivApp:
 
     @staticmethod
-    def images_information(works_id):
+    def images_information(works_id: str) -> dict:
         response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
         if response.get('error') is None:
             return response["illust"]
@@ -73,6 +72,7 @@ class PixivApp:
                 return response["illusts"]
             else:
                 print("Retry:{} start error:{}".format(retry, response.get("error").get("message")))
+                PixivToken.instantiation_api()
 
     @staticmethod
     def recommend_information(ranking: bool = True, policy: bool = True, max_retry: int = 5) -> list:
