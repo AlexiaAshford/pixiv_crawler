@@ -111,11 +111,34 @@ class PixivApp:
                 refresh_pixiv_token()
 
     @staticmethod
-    def search_information(png_name: str, page: int):
-        """搜索插画 <class 'PixivApp.utils.JsonDict'>"""
-        response = get(UrlConstant.SEARCH_INFORMATION(png_name, page))
-        if response.get("illusts") and response.get("error") is None:
-            return [data.get("id") for data in response.get("illusts")]
+    def search_information(png_name: str, sort: str = "date_desc", max_retry: int = 5) -> list:
+        """
+        search_target
+        partial_match_for_tags	exact_match_for_tags    title_and_caption
+        标签部分一致                  标签完全一致              标题说明文
+
+        sort
+        date_desc	    date_asc    popular_desc
+        按日期倒序        按日期正序    受欢迎降序(Premium功能)
+
+        search_duration
+        "within_last_day" "within_last_week" "within_last_month"
+        """
+        params = {
+            "filter": "for_android",
+            "include_translated_tag_results": "true",
+            "merge_plain_keyword_results": "true",
+            "word": png_name,
+            "sort": sort,
+            "search_target": "partial_match_for_tags",
+        }
+        for retry in range(1, max_retry):
+            response = HttpUtil.get_api(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
+            if response.get('illusts') is not None:
+                return response["illusts"]
+            else:
+                print("Retry:{} search error:{}".format(retry, response.get("error").get("message")))
+                refresh_pixiv_token()
 
     @staticmethod
     def rank_information(max_page: int = 100, max_retry: int = 5) -> list:  # 作品排行信息

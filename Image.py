@@ -39,6 +39,8 @@ class ImageInfo:
             with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
                 file.write(HttpUtil.get(image_url).content)
 
+                # file.write(HttpUtil.get_api(api_url=image_url, return_type="content"))
+
     def save_image(self, image_url_list):
         if isinstance(image_url_list, list):
             for index, url in enumerate(image_url_list):

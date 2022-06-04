@@ -69,15 +69,15 @@ def shell_illustration(inputs):
 def shell_search(inputs: list):
     if len(inputs) < 2:
         print("没有输入搜索信息")
-        return
-    for index, page in enumerate(range(20), start=1):
-        image_id_list = PixivAPI.PixivApp.search_information(inputs[1], index)
-        print("本页一共:", len(image_id_list), "幅插画，开始下载")
-        if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            for image_id in track(image_id_list, description=f"插画集加载中..."):
-                shell_illustration(["", image_id])
-        else:
-            print("搜索画集下载完毕！")
+        return False
+    response_list = PixivAPI.PixivApp.search_information(png_name=inputs[1])
+    if isinstance(response_list, list) and len(response_list) != 0:
+        threading_image_pool = complex_image.Complex()
+        for image_info in response_list:
+            threading_image_pool.add_image_info_obj(Image.ImageInfo(image_info))
+        threading_image_pool.start_download_threading()
+    else:
+        print("没有找到相应的作品！")
 
 
 @count_time
@@ -106,7 +106,6 @@ def shell_download_rank():
         for illusts in response_list:
             threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
         threading_image_pool.start_download_threading()
-
 
 
 @count_time
@@ -173,6 +172,7 @@ def start_parser():
     parser.add_argument("-l", "--login", dest="login", default=False, action="store_true", help="登录账号")
     parser.add_argument("-d", "--download", dest="downloadbook", nargs=1, default=None, help="输入image-id")
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="更改线程")
+    parser.add_argument("-n", "--name", dest="name", nargs=1, default=None, help="输入搜搜信息")
     parser.add_argument("-u", "--update", dest="update", default=False, action="store_true", help="下载本地档案")
     parser.add_argument("-s", "--stars", dest="stars", default=False, action="store_true", help="下载收藏插画")
     parser.add_argument("-r", "--recommend", dest="recommend", default=False, action="store_true", help="下载推荐插画")
@@ -207,6 +207,10 @@ def shell_parser():
 
     if args.threading_max:
         Vars.cfg.data['max_thread'] = int(args.max)
+
+    if args.name:
+        shell_search(['n'] + args.name)
+        shell_console = True
 
     if args.downloadbook:
         shell_illustration(['d'] + args.downloadbook)
