@@ -1,9 +1,9 @@
 IMAGE_INFORMATION = "https://api.obfs.dev/api/pixiv/illust?id={}"
-AUTHOR_INFORMATION = "https://api.obfs.dev/api/pixiv/member_illust?id={}&page={}"
 FAVORITE_INFORMATION = "https://api.obfs.dev/api/pixiv/favorite?id={}"
 FOLLOWING_INFORMATION = "user/following"
 BOOKMARK_INFORMATION = "user/bookmarks/illust"
 RECOMMENDED_INFORMATION = "illust/recommended"
+AUTHOR_INFORMATION = "user/illusts"
 
 PIXIV_HOST = "https://app-api.pixiv.net/v1/"
 

@@ -1,3 +1,4 @@
+import argparse
 import json
 import sys
 import Image
@@ -35,30 +36,31 @@ def update():
 
 def shell_download_author_works(author_id: str):
     for index, page in enumerate(range(20), start=1):
-        image_id_list = PixivAPI.PixivApp.author_information(author_id, index)
-        if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            Image.ThreadGetImagesInfo.get_images_info(image_id_list)
-            Image.ThreadDownload().threading_downloader()
-        else:
-            break
-
-
-@count_time
-def shell_illustration(inputs):
-    if len(inputs) >= 2:
-        if isinstance(inputs, list) and len(inputs) == 3 and inputs[2] == "a":
-            shell_download_author_works(inputs[1])  # 通过作者ID下载作者的作品集
-        else:
-            Vars.images_info = PixivAPI.PixivApp.images_information(PixivAPI.rec_id(inputs[1]))
-            if isinstance(Vars.images_info, dict):
-                Vars.images_info = Image.ImageInfo(Vars.images_info)
+        author_image_list = PixivAPI.PixivApp.author_information(author_id=author_id, offset=(index * 30))
+        if isinstance(author_image_list, list) and len(author_image_list) != 0:
+            for recommend in author_image_list:
+                Vars.images_info = Image.ImageInfo(recommend)
                 Vars.images_info.show_images_information()
                 if Vars.images_info.page_count == 1:
                     Vars.images_info.save_image(Vars.images_info.original_url)
                 else:
                     Vars.images_info.save_image(Vars.images_info.original_url_list)
+            print("推荐插画下载完毕")
+
+
+@count_time
+def shell_illustration(inputs):
+    if len(inputs) >= 2:
+        Vars.images_info = PixivAPI.PixivApp.images_information(PixivAPI.rec_id(inputs[1]))
+        if isinstance(Vars.images_info, dict):
+            Vars.images_info = Image.ImageInfo(Vars.images_info)
+            Vars.images_info.show_images_information()
+            if Vars.images_info.page_count == 1:
+                Vars.images_info.save_image(Vars.images_info.original_url)
             else:
-                print("没有找到相应的作品！")
+                Vars.images_info.save_image(Vars.images_info.original_url_list)
+        else:
+            print("没有找到相应的作品！")
     else:
         print("你没有输入id或者链接")
 
@@ -121,12 +123,11 @@ def shell_download_rank():
 
 
 @count_time
-def shell_read_text_id(inputs):
-    list_file_name = inputs[1] + '.txt' if len(inputs) >= 2 else 'list.txt'
+def shell_read_text_id():
     try:
         image_id_list = [
-            re.sub("^\\s*([0-9]{1,8}).*$\\n?", "\\1", line) for line in
-            open(list_file_name, 'r', encoding='utf-8').readlines() if re.match("^\\s*([0-9]{1,8}).*$", line)
+            re.sub("^\\s*(\\d{1,8}).*$\\n?", "\\1", line) for line in
+            open('image-list.txt', 'r', encoding='utf-8').readlines() if re.match("^\\s*(\\d{1,8}).*$", line)
         ]
         print("一共:", len(image_id_list), "幅插画，开始下载")
         if isinstance(image_id_list, list) and len(image_id_list) != 0:
@@ -136,7 +137,7 @@ def shell_read_text_id(inputs):
                     Vars.images_info_list.append(Image.ImageInfo(Vars.images_info))
             Image.ThreadDownload().threading_downloader()
     except OSError:
-        print(f"{list_file_name}文件不存在")
+        print(f" image-list.txt 文件不存在")
 
 
 def shell_test_pixiv_token():
@@ -199,42 +200,82 @@ def thread_download_images(images_info):
     # print(images_info.image_name, "的作品下载完毕")
 
 
-def shell():
-    if len(sys.argv) > 1 and isinstance(sys.argv, list):
-        command_line = True
-        inputs = sys.argv[1:]
-    else:
-        command_line = False
+def shell_parser():
+    parser, shell_console = argparse.ArgumentParser(), False
+    # 注意在使用参数时，是用的参数的dest名字，而不是参数的名字
+    parser.add_argument("-l", "--login", dest="login", default=False, action="store_true", help="登录账号")
+    parser.add_argument("-d", "--download", dest="downloadbook", nargs=1, default=None, help="输入image-id")
+    parser.add_argument("-m", "--max", dest="threading_max", default=None, help="更改线程")
+    parser.add_argument("-up", "--update", dest="update", default=False, action="store_true", help="下载本地档案")
+    parser.add_argument("-s", "--stars", dest="stars", default=False, action="store_true", help="下载收藏插画")
+    parser.add_argument("-r", "--recommend", dest="recommend", default=False, action="store_true", help="下载推荐插画")
+    parser.add_argument("-clear", "--clear_cache", dest="clear_cache", default=False, action="store_true")
+    parser.add_argument("-a", "--author", dest="author", nargs=1, default=None, help="输入作者-id")
+    args = parser.parse_args()
+    if args.recommend:
+        shell_download_recommend()
+        shell_console = True
+
+    if args.stars:
+        shell_download_stars()
+        shell_console = True
+
+    if args.update:
+        shell_read_text_id()
+        shell_console = True
+
+    if args.clear_cache:
+        Vars.cfg.data.clear()
+        set_config()
+        Vars.cfg.save()
+        sys.exit(3)
+
+    if args.threading_max:
+        Vars.cfg.data['max_thread'] = int(args.max)
+
+    if args.downloadbook:
+        shell_illustration(['d'] + args.downloadbook)
+        shell_console = True
+
+    if args.author:
+        shell_download_author_works(args.author[0])
+        shell_console = True
+
+    if args.login:
+        shell_test_pixiv_token()
+        shell_console = True
+
+    if not shell_console:
+        for info in Msg.msg_help:
+            print('[帮助]', info)
+        while True:
+            shell(re.split('\\s+', PixivAPI.input_str('>').strip()))
+
+
+def shell(inputs):
+    if inputs[0] == 'q' or inputs[0] == 'quit':
+        sys.exit("已退出程序")
+    elif inputs[0] == 'h' or inputs[0] == 'help':
         for msg_help in Msg.msg_help:
             print('[帮助]', msg_help)
-        inputs = re.split('\\s+', PixivAPI.input_str('>').strip())
-    while True:
-        if inputs[0] == 'q' or inputs[0] == 'quit':
-            sys.exit("已退出程序")
-        elif inputs[0] == 'h' or inputs[0] == 'help':
-            for msg_help in Msg.msg_help:
-                print('[帮助]', msg_help)
-        elif inputs[0] == 'l' or inputs[0] == 'login':
-            shell_test_pixiv_token()
-        elif inputs[0] == 'd' or inputs[0] == 'download':
-            shell_illustration(inputs)
-        elif inputs[0] == 's' or inputs[0] == 'stars':
-            shell_download_stars()
-        elif inputs[0] == 'n' or inputs[0] == 'name':
-            shell_search(inputs)
-        elif inputs[0] == 't' or inputs[0] == 'recommend':
-            shell_download_recommend()
-        elif inputs[0] == 'u' or inputs[0] == 'update':
-            shell_read_text_id(inputs)
-        elif inputs[0] == 'r' or inputs[0] == 'rank':
-            shell_download_rank()
-        elif inputs[0] == 'f' or inputs[0] == 'follow':
-            shell_download_follow_author()
-        else:
-            print(inputs[0], "为无效指令")
-        if command_line is True:
-            sys.exit(1)
-        inputs = re.split('\\s+', PixivAPI.input_str('>').strip())
+    elif inputs[0] == 'l' or inputs[0] == 'login':
+        shell_test_pixiv_token()
+    elif inputs[0] == 'd' or inputs[0] == 'download':
+        shell_illustration(inputs)
+    elif inputs[0] == 's' or inputs[0] == 'stars':
+        shell_download_stars()
+    elif inputs[0] == 'n' or inputs[0] == 'name':
+        shell_search(inputs)
+    elif inputs[0] == 't' or inputs[0] == 'recommend':
+        shell_download_recommend()
+    elif inputs[0] == 'u' or inputs[0] == 'update':
+        shell_read_text_id(inputs)
+    elif inputs[0] == 'r' or inputs[0] == 'rank':
+        shell_download_rank()
+    elif inputs[0] == 'f' or inputs[0] == 'follow':
+        shell_download_follow_author()
+    else:
+        print(inputs[0], "为无效指令")
 
 
 if __name__ == '__main__':
@@ -242,9 +283,9 @@ if __name__ == '__main__':
     # update()
     try:
         shell_test_pixiv_token()
-        shell()
+        shell_parser()
     except KeyboardInterrupt:
         print("已手动退出程序")
         sys.exit(1)
-    except Exception as e:
-        print("程序意外推出，ERROR:", e)
+    except Exception as error:
+        print("程序意外推出，ERROR:", error)
