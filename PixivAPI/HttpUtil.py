@@ -1,3 +1,4 @@
+from typing import Union
 import requests
 from instance import *
 import functools
@@ -51,7 +52,7 @@ def get(api_url: str, params=None, **kwargs):
         return False
 
 
-def get_api(api_url: str, params: dict = None, return_type: str = "json", **kwargs):
+def get_api(api_url: str, params: Union[dict, str] = None, return_type: str = "json", **kwargs):
     try:
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, "")
         if return_type == "json":

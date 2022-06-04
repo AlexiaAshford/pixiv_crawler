@@ -15,7 +15,7 @@ def update():
     data = json.loads(open('update.json', 'r').read())
     if data['version'] < response['version']:
         print("检测到有新版本", response['version'], "是否进行更新？[yes/no]")
-        choice = PixivAPI.input_('>').strip()
+        choice = PixivAPI.input_str('>').strip()
         if choice == "yes":
             download_test = True
             print("开始更新", response['version'], "版本")
@@ -147,13 +147,27 @@ def shell_test_pixiv_token():
         else:
             print("检测到本地档案没有令牌，请登入网站获取code，也可以将token自行写入本地档案")
             code_verifier = PixivAPI.login_pixiv.open_browser()
-            code = PixivAPI.input_('code:').strip()
+            code = PixivAPI.input_str('code:').strip()
             response = PixivAPI.login_pixiv.login(code_verifier, code)
             if response is True:
                 print(f"code:{code} 信息验证成功！")
                 return True
             else:
                 print(f"输入code:{code} 无效，请重新尝试获取！还剩余{Vars.cfg.data['max_retry'] - retry - 1}次机会")
+
+
+def shell_download_recommend():
+    while True:
+        recommend_list = PixivAPI.PixivApp.recommend_information()
+        if isinstance(recommend_list, list):
+            for recommend in recommend_list:
+                Vars.images_info = Image.ImageInfo(recommend)
+                Vars.images_info.show_images_information()
+                if Vars.images_info.page_count == 1:
+                    Vars.images_info.save_image(Vars.images_info.original_url)
+                else:
+                    Vars.images_info.save_image(Vars.images_info.original_url_list)
+            print("推荐插画下载完毕")
 
 
 def shell_download_stars():
@@ -169,7 +183,6 @@ def shell_download_stars():
             print(illusts['user']['name'], "的作品下载完毕")
 
 
-
 def shell():
     if len(sys.argv) > 1 and isinstance(sys.argv, list):
         command_line = True
@@ -178,7 +191,7 @@ def shell():
         command_line = False
         for msg_help in Msg.msg_help:
             print('[帮助]', msg_help)
-        inputs = re.split('\\s+', PixivAPI.input_('>').strip())
+        inputs = re.split('\\s+', PixivAPI.input_str('>').strip())
     while True:
         if inputs[0] == 'q' or inputs[0] == 'quit':
             sys.exit("已退出程序")
@@ -194,7 +207,7 @@ def shell():
         elif inputs[0] == 'n' or inputs[0] == 'name':
             shell_search(inputs)
         elif inputs[0] == 't' or inputs[0] == 'recommend':
-            PixivAPI.PixivApp.recommend_information()
+            shell_download_recommend()
         elif inputs[0] == 'u' or inputs[0] == 'update':
             shell_read_text_id(inputs)
         elif inputs[0] == 'r' or inputs[0] == 'rank':
@@ -205,11 +218,17 @@ def shell():
             print(inputs[0], "为无效指令")
         if command_line is True:
             sys.exit(1)
-        inputs = re.split('\\s+', PixivAPI.input_('>').strip())
+        inputs = re.split('\\s+', PixivAPI.input_str('>').strip())
 
 
 if __name__ == '__main__':
     set_config()
     # update()
-    shell_test_pixiv_token()
-    shell()
+    try:
+        shell_test_pixiv_token()
+        shell()
+    except KeyboardInterrupt:
+        print("已手动退出程序")
+        sys.exit(1)
+    except Exception as e:
+        print("程序意外推出，ERROR:", e)

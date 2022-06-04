@@ -12,7 +12,7 @@ class ImageInfo:
         self.page_count = result_info['page_count']
         self.image_name = remove_str(result_info['title'])
         self.create_date = result_info['create_date']
-        self.tag_name = list_derivation(result_info['tags'], "name")
+        self.tag_name = ' '.join([data["name"] for data in result_info['tags'] if data["name"]])
         self.original_url = result_info.get('meta_single_page', {}).get('original_image_url')
         self.original_url_list = [url['image_urls']["original"] for url in result_info.get('meta_pages')]
 

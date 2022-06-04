@@ -44,7 +44,6 @@ class YamlData:
             yaml.safe_dump(self.data, f, default_flow_style=False, allow_unicode=True)
 
 
-
 def write_file(file_dir: str, m: str, content: str = ""):
     if m == "r":
         return open(file_dir, "r", encoding='utf-8').read()
@@ -74,7 +73,7 @@ def remove_str(content: str):
 
 
 def rec_id(book_id: str):
-    book_id = book_id if 'http' not in book_id else re.findall(r'/([0-9]+)/?', book_id)[0]
+    book_id = book_id if 'http' not in book_id else re.findall(r'/(\d+)/?', book_id)[0]
     return str(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
 
 
@@ -87,17 +86,13 @@ def makedirs(file_path: str):
         os.mkdir(file_path)
 
 
-def input_(prompt, default=None):
+def input_str(prompt, default=None):
     while True:
         ret = input(prompt)
         if ret != '':
             return ret
         elif default is not None:
             return default
-
-
-def list_derivation(list_, key2):
-    return ''.join([data[key2] for data in list_ if data[key2]])
 
 
 def set_config():

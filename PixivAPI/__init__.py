@@ -1,3 +1,4 @@
+import json
 import threading
 from instance import *
 from PixivApp import *
@@ -51,7 +52,7 @@ class PixivApp:
             print("插画ID: {}".format(information["id"]))
             print("作者ID: {}".format(author_id))
             print("作者名称: {}".format(information['user']["name"]))
-            print("插画标签: {}".format(list_derivation(information['tags'], "translated_name")))
+            print("插画标签: {}".format(i for i in information['tags']))
             print("画集数量: {}".format(page_count))
             print("发布时间: {}\n".format(information["create_date"]))
             if page_count == 1:
@@ -71,20 +72,23 @@ class PixivApp:
             if response.get('illusts') is not None:
                 return response["illusts"]
             else:
-                print("Retry:{} follow_infor error:{}".format(retry, response.get("error").get("message")))
+                print("Retry:{} start error:{}".format(retry, response.get("error").get("message")))
 
     @staticmethod
-    def recommend_information():
-        """推荐插画 <class 'PixivApp.utils.JsonDict'>"""
-        pixiv_app_api = PixivToken.instantiation_api()
-        response = pixiv_app_api.illust_recommended()
-        next_qs = pixiv_app_api.parse_qs(response.next_url)
-        while next_qs is not None:
-            response = pixiv_app_api.illust_recommended(**next_qs)
-            if response.error is None:
-                return list(set([data.id for data in response.illusts]))
-            print("error: ", response.error)
-
+    def recommend_information(ranking: bool = True, policy: bool = True, max_retry: int = 5) -> list:
+        """推荐插画 """
+        params = json.dumps({
+            "filter": "for_android",
+            "include_ranking_illusts": ranking,
+            "include_privacy_policy": policy
+        })
+        for retry in range(1, max_retry):
+            response = HttpUtil.get_api(api_url=UrlConstant.RECOMMENDED_INFORMATION, params=params)
+            if response.get('illusts') is not None:
+                return response["illusts"]
+            else:
+                print("Retry:{} recommend error:{}".format(retry, response.get("error").get("message")))
+                PixivToken.instantiation_api()
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
         """获取指定 user_id 关注的所有画师信息"""
