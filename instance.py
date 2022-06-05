@@ -139,19 +139,20 @@ def set_config():
         Vars.cfg.data['refresh_token'] = ""
         config_change = True
 
-    if type(Vars.cfg.data.get('referer')) is not str:
-        Vars.cfg.data['words'] = "https://www.pixiv.net/ranking.php?mode=daily&content=illust"
-        config_change = True
-
     if type(Vars.cfg.data.get('max_retry')) is not int:
         Vars.cfg.data['max_retry'] = 5
         config_change = True
 
-    if type(Vars.cfg.data.get('Cookie')) is not str or Vars.cfg.data.get('Cookie') == "":
-        Vars.cfg.data['Cookie'] = ""
+    if not isinstance(Vars.cfg.data.get('file_name_config'), dict):
+        Vars.cfg.data['file_name_config'] = {'image_id': True, 'author': 'author'}
+        config_change = True
+
+    if not isinstance(Vars.cfg.data.get('user_info'), dict):
+        Vars.cfg.data['user_info'] = {'account': '', 'id': '', 'mail_address': '', 'name': ''}
         config_change = True
 
     if config_change:
         Vars.cfg.save()
+
     if not os.path.exists(Vars.cfg.data.get('save_file')):
         os.mkdir(Vars.cfg.data.get('save_file'))

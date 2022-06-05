@@ -1,4 +1,4 @@
-IMAGE_INFORMATION = "https://api.obfs.dev/api/pixiv/illust?id={}"
+IMAGE_INFORMATION = "https://api.obfs.dev/api/pixiv/illust"
 
 # PIXIV_APP_API
 FOLLOWING_INFORMATION = "user/following"

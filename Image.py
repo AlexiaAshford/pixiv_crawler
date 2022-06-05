@@ -1,5 +1,6 @@
 from PixivAPI import HttpUtil
 from instance import *
+import PixivAPI
 
 
 class ImageInfo:
@@ -37,13 +38,21 @@ class ImageInfo:
         YamlData("", out_dir)
         if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
             with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
-                file.write(HttpUtil.get(image_url).content)
+                file.write(PixivAPI.get(api_url=image_url, head="png", types="content"))
 
                 # file.write(HttpUtil.get_api(api_url=image_url, return_type="content"))
 
     def save_image(self, image_url_list):
         if isinstance(image_url_list, list):
-            for index, url in enumerate(image_url_list):
-                self.save_file(self.author_id + "-" + index_title(index, self.image_name), url)
+            for index, url in enumerate(image_url_list, start=1):
+                if Vars.cfg.data.get("file_name_config").get("image_id"):
+                    file_name = self.image_id + "-" + str(index).rjust(4, "0") + '-' + self.image_name
+                else:
+                    file_name = self.author_id + "-" + index_title(index, self.image_name)
+                self.save_file(file_name, url)
         else:
-            self.save_file(self.author_id + "-" + self.image_name, image_url_list)
+            if Vars.cfg.data.get("file_name_config").get("image_id"):
+                file_name = self.image_id + "-" + self.image_name
+            else:
+                file_name = self.author_id + "-" + self.image_name
+            self.save_file(file_name, image_url_list)

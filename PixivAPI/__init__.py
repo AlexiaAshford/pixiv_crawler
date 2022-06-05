@@ -1,27 +1,45 @@
-import json
+from fake_useragent import UserAgent
 from instance import *
 from PixivAPI import login_pixiv, HttpUtil, UrlConstant
 
-
-def get(url: str) -> dict:
-    return HttpUtil.get(url).json()
+common_params = {"filter": "for_android"}
 
 
-def image(url: str) -> bytes:
-    return HttpUtil.get(url).content
+def return_headers(headers: str = "app"):
+    if headers == "app":
+        return {
+            'Host': 'app-api.pixiv.net ',
+            'user-agent': 'PixivAndroidApp/6.46.0',
+            'authorization': "Bearer " + Vars.cfg.data.get("access_token"),
+            'app-version': '6.46.0 ',
+        }
+    if headers == "png":
+        return {'Referer': 'https://www.pixiv.net/', 'User-Agent': UserAgent(verify_ssl=False).random}
+    else:
+        return {'User-Agent': UserAgent(verify_ssl=False).random}
+
+
+def get(api_url: str, params: [dict, str] = None, head: str = "app", types: str = "json") -> [dict, bytes, str]:
+    if head == "app":
+        params.update(common_params)
+        api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
+    try:
+        return HttpUtil.get_api(api_url, params=params, return_type=types, headers=return_headers(head))
+    except Exception as error:
+        print("post error:", error)
 
 
 def refresh_pixiv_token():
     login_pixiv.refresh(Vars.cfg.data.get("refresh_token"))
-    print(f"token失效，尝试刷新refresh_token ")
+    print("token失效，尝试刷新refresh_token ")
 
 
 class PixivApp:
 
     @staticmethod
     def get_user_info(show_start: bool = False) -> bool:
-        params = {"filter": "for_android", "user_id": Vars.cfg.data['user_info']['id']}
-        response = HttpUtil.get_api(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
+        params = {"user_id": Vars.cfg.data['user_info']['id']}
+        response = get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
         if response is not None:
             if show_start is True:
                 print(f"用户名：{response.get('name')}\t\t用户id：{response.get('id')}")
@@ -29,40 +47,21 @@ class PixivApp:
 
     @staticmethod
     def images_information(works_id: str) -> dict:
-        response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
-        if response.get('error') is None:
+        response = get(UrlConstant.IMAGE_INFORMATION, params={'id': works_id}, head="web")
+        if isinstance(response, dict) and response.get('illust') is not None:
             return response["illust"]
-
-    @staticmethod
-    def illustration_information(works_id: int):
-        """插画信息 <class 'PixivApp.utils.JsonDict'>"""
-        response = get(UrlConstant.IMAGE_INFORMATION.format(works_id))
-        if response.get('error') is None:
-            information = response["illust"]
-            image_name = remove_str(information['title'])
-            page_count = information['page_count']
-            author_id = str(information['user']["id"])
-            print("插画名称: {}:".format(image_name))
-            print("插画ID: {}".format(information["id"]))
-            print("作者ID: {}".format(author_id))
-            print("作者名称: {}".format(information['user']["name"]))
-            print("插画标签: {}".format(i for i in information['tags']))
-            print("画集数量: {}".format(page_count))
-            print("发布时间: {}\n".format(information["create_date"]))
-            if page_count == 1:
-                return [information['meta_single_page']['original_image_url'], image_name, author_id]
-            img_url_list = [url['image_urls'].get("original") for url in information['meta_pages']]
-            return [img_url_list, image_name, author_id]
+        else:
+            print(response)
 
     @staticmethod
     def start_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
         """收藏插画 """
         if user_id is None:
             user_id = Vars.cfg.data['user_info']['id']
-        params = {"filter": "for_android", "user_id": user_id, "restrict": restrict}
+        params = {"user_id": user_id, "restrict": restrict}
 
         for retry in range(1, max_retry):
-            response = HttpUtil.get_api(api_url=UrlConstant.BOOKMARK_INFORMATION, params=params)
+            response = get(api_url=UrlConstant.BOOKMARK_INFORMATION, params=params)
             if response.get('illusts') is not None:
                 return response["illusts"]
             else:
@@ -70,20 +69,15 @@ class PixivApp:
                 refresh_pixiv_token()
 
     @staticmethod
-    def recommend_information(ranking: bool = True, policy: bool = True, max_retry: int = 5) -> list:
-        """推荐插画 """
-        params = json.dumps({
-            "filter": "for_android",
-            "include_ranking_illusts": ranking,
-            "include_privacy_policy": policy
-        })
-        for retry in range(1, max_retry):
-            response = HttpUtil.get_api(api_url=UrlConstant.RECOMMENDED_INFORMATION, params=params)
-            if response.get('illusts') is not None:
-                return response["illusts"]
-            else:
-                print("Retry:{} recommend error:{}".format(retry, response.get("error").get("message")))
-                refresh_pixiv_token()
+    def recommend_information() -> list:  # 推荐插画
+        params = {"include_ranking_illusts": "true", "include_privacy_policy": "true"}
+        response = get(api_url=UrlConstant.RECOMMENDED_INFORMATION, params=params)
+        if response.get('illusts') is not None:
+            return response["illusts"]
+        else:
+            print("recommend error:{}".format(response.get("error").get("message")))
+            refresh_pixiv_token()
+            PixivApp.recommend_information()
 
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
@@ -91,8 +85,8 @@ class PixivApp:
         if user_id is None:
             user_id = Vars.cfg.data['user_info']['id']
         for retry in range(1, max_retry):
-            params = {"filter": "for_android", "user_id": user_id, "restrict": restrict}
-            response = HttpUtil.get_api(api_url=UrlConstant.FOLLOWING_INFORMATION, params=params)
+            params = {"user_id": user_id, "restrict": restrict}
+            response = get(api_url=UrlConstant.FOLLOWING_INFORMATION, params=params)
             if response.get('user_previews') is not None:
                 return response["user_previews"]
             else:
@@ -102,42 +96,12 @@ class PixivApp:
     @staticmethod
     def author_information(author_id: str, offset: int = 30, max_retry: int = 5) -> list:  # 作者作品集
         for retry in range(1, max_retry):
-            params = {"filter": "for_android", "user_id": author_id, "type": "illust", "offset": offset}
-            response = HttpUtil.get_api(api_url=UrlConstant.AUTHOR_INFORMATION, params=params)
+            params = {"user_id": author_id, "type": "illust", "offset": offset}
+            response = get(api_url=UrlConstant.AUTHOR_INFORMATION, params=params)
             if response.get('illusts') is not None:
                 return response["illusts"]
             else:
                 print("Retry:{} author error:{}".format(retry, response.get("error").get("message")))
-                refresh_pixiv_token()
-
-    @staticmethod
-    def search_information(png_name: str, sort: str = "date_desc", max_retry: int = 5) -> list:
-        """
-        search_target
-        partial_match_for_tags	exact_match_for_tags    title_and_caption
-        标签部分一致                  标签完全一致              标题说明文
-
-        sort
-        date_desc	    date_asc    popular_desc
-        按日期倒序        按日期正序    受欢迎降序(Premium功能)
-
-        search_duration
-        "within_last_day" "within_last_week" "within_last_month"
-        """
-        params = {
-            "filter": "for_android",
-            "include_translated_tag_results": "true",
-            "merge_plain_keyword_results": "true",
-            "word": png_name,
-            "sort": sort,
-            "search_target": "partial_match_for_tags",
-        }
-        for retry in range(1, max_retry):
-            response = HttpUtil.get_api(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
-            if response.get('illusts') is not None:
-                return response["illusts"]
-            else:
-                print("Retry:{} search error:{}".format(retry, response.get("error").get("message")))
                 refresh_pixiv_token()
 
     @staticmethod
@@ -147,17 +111,61 @@ class PixivApp:
         for index, mode in enumerate(mode_list):
             print("index:", index, "\t\tmode_name:", mode)
         mode_type = mode_list[input_int(">", len(mode_list))]
-        for page in range(1, max_page):
-            params = {
-                "filter": "for_android",
-                "offset": 2 * 30,
-                "mode": mode_type,
-                "data": str(time.strftime("%Y-%m-%d", time.localtime())),
-            }
+        for index, page in enumerate(range(max_page), start=1):
+            params = {"offset": index * 30, "mode": mode_type, "data": time.strftime("%Y-%m-%d", time.localtime())}
             for retry in range(1, max_retry):
-                response = HttpUtil.get_api(api_url=UrlConstant.RANKING_INFORMATION, params=params)
+                response = get(api_url=UrlConstant.RANKING_INFORMATION, params=params)
                 if response.get('illusts') is not None:
                     return response["illusts"]
                 else:
                     print("rank_information error:{}".format(retry, response.get("error").get("message")))
                     refresh_pixiv_token()
+
+
+class Tag:
+    """
+    search_target
+    partial_match_for_tags	exact_match_for_tags    title_and_caption
+    标签部分一致                  标签完全一致              标题说明文
+
+    sort
+    date_desc	    date_asc    popular_desc
+    按日期倒序        按日期正序    受欢迎降序(Premium功能)
+
+    search_duration
+    "within_last_day" "within_last_week" "within_last_month"
+    """
+
+    @staticmethod
+    def search_tag_information(png_name: str, sort: str = "popular_desc", max_retry: int = 5) -> list:
+        params = {
+            "include_translated_tag_results": "true",
+            "merge_plain_keyword_results": "true",
+            "word": png_name,
+            "sort": sort,
+            "search_target": "exact_match_for_tags",
+        }
+        for retry in range(1, max_retry):
+            response = get(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
+            if response.get('illusts') is not None:
+                return response["illusts"]
+            else:
+                print("Retry:{} search error:{}".format(retry, response.get("error").get("message")))
+                refresh_pixiv_token()
+
+    @staticmethod
+    def search_information(png_name: str, sort: str = "date_desc", max_retry: int = 5) -> list:
+        params = {
+            "include_translated_tag_results": "true",
+            "merge_plain_keyword_results": "true",
+            "word": png_name,
+            "sort": sort,
+            "search_target": "partial_match_for_tags",
+        }
+        for retry in range(1, max_retry):
+            response = get(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
+            if response.get('illusts') is not None:
+                return response["illusts"]
+            else:
+                print("Retry:{} search error:{}".format(retry, response.get("error").get("message")))
+                refresh_pixiv_token()

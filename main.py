@@ -27,7 +27,7 @@ def update():
     if download_test:
         with open(data['name'] + ".exe", 'wb') as file:
             print(response['download_url'].format(response['version']))
-            file.write(PixivAPI.HttpUtil.get(response['download_url'].format(response['version'])).content)
+            file.write(PixivAPI.get(response['download_url'].format(response['version']), types="content"))
         print(data['name'] + ".exe", "下载完毕")
         json.dump(response, open('update.json', 'w'))
         print("三秒后自动退出脚本...")
@@ -70,7 +70,7 @@ def shell_search(inputs: list):
     if len(inputs) < 2:
         print("没有输入搜索信息")
         return False
-    response_list = PixivAPI.PixivApp.search_information(png_name=inputs[1])
+    response_list = PixivAPI.Tag.search_information(png_name=inputs[1])
     if isinstance(response_list, list) and len(response_list) != 0:
         threading_image_pool = complex_image.Complex()
         for image_info in response_list:
@@ -266,5 +266,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("已手动退出程序")
         sys.exit(1)
-    except Exception as error:
-        print("程序意外退出，ERROR:", error)
+    # except Exception as error:
+    #     print("程序意外退出，ERROR:", error)
