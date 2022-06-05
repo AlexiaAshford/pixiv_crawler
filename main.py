@@ -266,5 +266,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("已手动退出程序")
         sys.exit(1)
-    # except Exception as error:
-    #     print("程序意外退出，ERROR:", error)
+    except Exception as error:
+        print("程序意外退出，ERROR:", error)

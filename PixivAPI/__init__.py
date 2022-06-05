@@ -19,12 +19,22 @@ def return_headers(headers: str = "app"):
         return {'User-Agent': UserAgent(verify_ssl=False).random}
 
 
-def get(api_url: str, params: [dict, str] = None, head: str = "app", types: str = "json") -> [dict, bytes, str]:
+def get(
+        api_url: str,
+        params: [dict, str] = None,
+        head: str = "app",
+        types: str = "json",
+        request_mode: str = "GET") -> [dict, bytes, str, None]:
     if head == "app":
         params.update(common_params)
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
     try:
-        return HttpUtil.get_api(api_url, params=params, return_type=types, headers=return_headers(head))
+        if request_mode == "GET":
+            return HttpUtil.get_api(api_url, params=params, return_type=types, headers=return_headers(head))
+        elif request_mode == "POST":
+            return HttpUtil.post_api(api_url, params=params, return_type=types, headers=return_headers(head))
+        elif request_mode == "PUT":
+            return HttpUtil.put_api(api_url, params=params, return_type=types, headers=return_headers(head))
     except Exception as error:
         print("post error:", error)
 
