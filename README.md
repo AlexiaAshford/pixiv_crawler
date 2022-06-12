@@ -1,31 +1,21 @@
 # PixivCrawler
 
-| 功能               | 实现  |
-|------------------|-----|
-| id下载插画           | ✅   |
-| 命令行              | ✅   |
-| 批量下载搜索插画         | ✅   |
-| 批量下载下载收藏插画       | ✅   |
-| 批量下载下载推荐和相关插画    | ✅   |
-| 多线程 谨慎使用，线程不要开太大 | ✅   |
-| 异步 不支持，担心封IP     | ❌   |
-| 唤起浏览器获取实现pixiv登入 | ✅   |
-
 ### pixiv login.
 
 - authentication method is no longer supported to pixiv .
 - The Pixiv app now logs in through `https://accounts.pixiv.net/login`
 - but this page is protected by Google reCAPTCHA, which seems impossible to circumvent.
-- so, you can't use this crawler to login,but you can use this crawler to web can get the account token to login.
+- so, you can't use this crawler to with login account,but you can use this crawler to web get the account token to
+  login.
 - You can refer to the following [link](/pixiv_login_course) to get the account token.
-- run `py mian.py` browser automatically login pixiv on startup **1**
-- copy the `code` **2**
-- enter the `code` it to command terminal **3**
+- run `py mian.py` browser automatically login pixiv on startup **[1](/pixiv_login_course/1.png)**
+- copy the `code`  **[2](/pixiv_login_course/2.png)**
+- enter the `code` it to command terminal  **[3](/pixiv_login_course/3.png)**
 - **Congratulations on your login success!**
 
 ## start crawler with command line arguments
+
 ```
-输入首字母
 h | help               --- 显示说明
 q | quit               --- 退出正在运作的程序
 d | picture            --- 输入插画id或url下载插画
@@ -46,6 +36,17 @@ n | tag name           --- 输入插画名或者标签名批量下载
 - **搜索插画** ``` -s / --search <search_word> ```
 - **下载排行** ``` -k / --rkaning ```
 - **清除缓存** ``` -c / --clear_cache```
+
+| 功能               | 实现  |
+|------------------|-----|
+| id下载插画           | ✅   |
+| 命令行              | ✅   |
+| 批量下载搜索插画         | ✅   |
+| 批量下载下载收藏插画       | ✅   |
+| 批量下载下载推荐和相关插画    | ✅   |
+| 多线程 谨慎使用，线程不要开太大 | ✅   |
+| 异步 不支持，担心封IP     | ❌   |
+| 唤起浏览器获取实现pixiv登入 | ✅   |
 
 ### 下载本地插画id
 
