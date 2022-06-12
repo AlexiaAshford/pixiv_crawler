@@ -11,14 +11,19 @@
 | 异步 不支持，担心封IP     | ❌   |
 | 唤起浏览器获取实现pixiv登入 | ✅   |
 
-### 目前 Pixiv 不支持login api进行账号登入，只能从web获取
+### pixiv login.
 
-## 运行脚本
+- authentication method is no longer supported to pixiv .
+- The Pixiv app now logs in through `https://accounts.pixiv.net/login`
+- but this page is protected by Google reCAPTCHA, which seems impossible to circumvent.
+- so, you can't use this crawler to login,but you can use this crawler to web can get the account token to login.
+- You can refer to the following [link](/pixiv_login_course) to get the account token.
+- run `py mian.py` browser automatically login pixiv on startup **1**
+- copy the `code` **2**
+- enter the `code` it to command terminal **3**
+- **Congratulations on your login success!**
 
-```bash
-python main.py
-```
-
+## start crawler with command line arguments
 ```
 输入首字母
 h | help               --- 显示说明
@@ -30,7 +35,7 @@ u | read text pid      --- 读取本地文本里的pid批量下载
 n | tag name           --- 输入插画名或者标签名批量下载
 ```
 
-## 关于 <命令行> 交互
+## about command line arguments and usage
 
 - **登入账号** ``` -l / --login```
 - **下载插画** ``` -d / --download <image_id> ```
