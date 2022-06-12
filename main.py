@@ -34,18 +34,22 @@ def update():
         sys.exit()
 
 
-def shell_download_author_works(author_id: str):
-    for index, page in enumerate(range(20), start=1):
-        author_image_list = PixivAPI.PixivApp.author_information(author_id=author_id, offset=(index * 30))
-        if isinstance(author_image_list, list) and len(author_image_list) != 0:
-            for recommend in author_image_list:
-                Vars.images_info = Image.ImageInfo(recommend)
-                Vars.images_info.show_images_information()
-                if Vars.images_info.page_count == 1:
-                    Vars.images_info.save_image(Vars.images_info.original_url)
-                else:
-                    Vars.images_info.save_image(Vars.images_info.original_url_list)
-            print("推荐插画下载完毕")
+def shell_author_works(author_id: str, next_url: str = ""):  # download author images save to local
+    while True:
+        if next_url is None:  # if next_url is None, it means that it is download complete
+            return print("the end of author_works list")
+        if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
+            response_list, next_url = PixivAPI.PixivApp.author_information(author_id=author_id)
+        else:  # if next_url is not empty, it means it is the next time to download author works list
+            response_list, next_url = PixivAPI.PixivApp.author_information(api_url=next_url)
+        # if response_list is not list, it means that it is download complete
+        multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool
+        if isinstance(response_list, list) and len(response_list) != 0:
+            for illusts in response_list:  # add illusts to threading pool for download
+                multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+            multi_threading_image_pool.start_download_threading()  # start download threading pool for download
+        else:
+            return print("get author works list error:", response_list)
 
 
 @count_time
@@ -149,9 +153,9 @@ def shell_download_recommend(next_url: str = ""):  # download recommend images f
         if next_url is None:  # if next_url is None, it means that it is download complete
             return print("the end of recommend list")
         if next_url == "":  # if next_url is empty, it means it is the first time to download recommend list
-            response_list, next_url = PixivAPI.PixivApp.recommend()
+            response_list, next_url = PixivAPI.PixivApp.recommend_images()
         else:  # if next_url is not empty, it means it is the next time to download recommend list
-            response_list, next_url = PixivAPI.PixivApp.recommend(next_url)
+            response_list, next_url = PixivAPI.PixivApp.recommend_images(api_url=next_url)
 
         # if response_list is not list, it means that it is download complete
         multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool
@@ -159,7 +163,8 @@ def shell_download_recommend(next_url: str = ""):  # download recommend images f
             for illusts in response_list:  # add illusts to threading pool for download
                 multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
             multi_threading_image_pool.start_download_threading()  # start download threading pool for download
-        return print("get recommend list error:", response_list)
+        else:
+            return print("get recommend list error:", response_list)
 
 
 def shell_download_stars(next_url: str = ""):  # get stars list and download all the images in the list
@@ -291,7 +296,7 @@ def shell_parser():
         shell_console = True
 
     if args.author:
-        shell_download_author_works(args.author[0])
+        shell_author_works(args.author[0])
         shell_console = True
 
     if args.login:

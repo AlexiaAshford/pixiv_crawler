@@ -24,7 +24,10 @@ def get(
         params: [dict, str] = None,
         head: str = "app",
         types: str = "json",
+        params_clear: bool = False,
         request_mode: str = "GET") -> [dict, bytes, str, None]:
+    if params_clear:
+        params = params.clear()
     if head == "app":
         params.update(common_params)
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
@@ -39,9 +42,13 @@ def get(
         print("post error:", error)
 
 
-def refresh_pixiv_token():
-    login_pixiv.refresh(Vars.cfg.data.get("refresh_token"))
-    print("token失效，尝试刷新refresh_token ")
+def refresh_pixiv_token(error_info: str = "") -> None:
+    if error_info != "" and error_info is not None:
+        print("[error]:", error_info)
+    if login_pixiv.refresh(Vars.cfg.data.get("refresh_token")):
+        print("refresh token success, new token:", Vars.cfg.data.get("access_token"))
+    else:
+        print("refresh token failed, please login again")
 
 
 class PixivApp:
@@ -67,25 +74,35 @@ class PixivApp:
     def start_images(
             api_url: str = UrlConstant.BOOKMARK_INFORMATION,
             user_id: [int, str] = None,
-            restrict: str = "public") -> [list, str, None]:  # get account start information and return a list of p_id
+            restrict: str = "public",
+            params_clear: bool = False
+    ) -> [list, str, None]:  # get account start information and return a list of p_id
         if user_id is None:  # if user_id is None, get the user_id from config file
             user_id = Vars.cfg.data['user_info']['id']
-        response = get(api_url=api_url, params={"user_id": user_id, "restrict": restrict})
+
+        if api_url != UrlConstant.BOOKMARK_INFORMATION:  # if api_url is not bookmark, clear to params dict
+            params_clear = True
+        response = get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
         if response.get('illusts') is not None:
             return response.get('illusts'), response.get('next_url')
         else:
-            print("start error:{}".format(response.get("error").get("message")))
-            refresh_pixiv_token()  # if get error, try to refresh token and retry
+            refresh_pixiv_token(response.get("error").get("message"))  # refresh token
+            PixivApp.start_images(api_url, user_id, restrict)  # if get error, try to refresh token and retry
 
     @staticmethod
-    def recommend(api_url: str = UrlConstant.RECOMMENDED_INFORMATION) -> [list, str, None]:  # 推荐插画
-        response = get(api_url=api_url, params={"include_ranking_illusts": "true", "include_privacy_policy": "true"})
+    def recommend_images(
+            api_url: str = UrlConstant.RECOMMENDED_INFORMATION,
+            params_clear: bool = False
+    ) -> [list, str, None]:  # get account recommend images and return a list of p_id
+        if api_url != UrlConstant.RECOMMENDED_INFORMATION:  # if api_url is not recommended, clear to params dict
+            params_clear = True
+        params = {"include_ranking_illusts": "true", "include_privacy_policy": "true"}
+        response = get(api_url=api_url, params=params, params_clear=params_clear)
         if response.get('illusts') is not None:
             return response["illusts"], response.get('next_url')
         else:
-            print("recommend error:{}".format(response.get("error").get("message")))
-            refresh_pixiv_token()
-            PixivApp.recommend(api_url)
+            refresh_pixiv_token(response.get("error").get("message"))  # refresh token
+            PixivApp.recommend_images(api_url=api_url)  # if get error, try to refresh token and retry
 
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
@@ -102,15 +119,20 @@ class PixivApp:
                 refresh_pixiv_token()
 
     @staticmethod
-    def author_information(author_id: str, offset: int = 30, max_retry: int = 5) -> list:  # 作者作品集
-        for retry in range(1, max_retry):
-            params = {"user_id": author_id, "type": "illust", "offset": offset}
-            response = get(api_url=UrlConstant.AUTHOR_INFORMATION, params=params)
-            if response.get('illusts') is not None:
-                return response["illusts"]
-            else:
-                print("Retry:{} author error:{}".format(retry, response.get("error").get("message")))
-                refresh_pixiv_token()
+    def author_information(
+            api_url: str = UrlConstant.AUTHOR_INFORMATION,
+            author_id: str = "",
+            params_clear: bool = False
+    ) -> [list, str, None]:  # get author information and return a list of p_id
+
+        if api_url != UrlConstant.AUTHOR_INFORMATION:  # if api_url is not author, clear to params dict
+            params_clear = True
+        response = get(api_url=api_url, params={"user_id": author_id, "type": "illust"}, params_clear=params_clear)
+        if response.get('illusts') is not None:  # get success, return a list of p_id and next_url (if not None)
+            return response.get('illusts'), response.get('next_url')
+        else:
+            refresh_pixiv_token(response.get("error").get("message"))  # refresh token
+            PixivApp.author_information(api_url=api_url, author_id=author_id)  # try to refresh token and retry
 
     @staticmethod
     def rank_information(max_page: int = 100, max_retry: int = 5) -> list:  # 作品排行信息

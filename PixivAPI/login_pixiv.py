@@ -67,9 +67,9 @@ def refresh(refresh_token):
 
     if response.get("errors") is not None:
         print("errors:", response['errors']['system']['message'])
-        return False
     else:
         save_token(response)
+        return True
 
 
 def save_token(response):
