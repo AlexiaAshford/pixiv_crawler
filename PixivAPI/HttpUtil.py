@@ -39,7 +39,7 @@ def post_api(
         data: Union[dict, str] = None,
         headers: dict = "app",
         return_type: str = "json",
-        **kwargs) -> Union[dict, bool, bytes, str]:
+        **kwargs) -> Union[dict, bool, bytes, str, None]:
     try:
         if return_type == "json":
             return requests.post(api_url, headers=headers, data=data, **kwargs).json()
@@ -56,7 +56,7 @@ def put_api(
         data: Union[dict, str] = None,
         headers: dict = "app",
         return_type: str = "json",
-        **kwargs) -> Union[dict, bool, bytes, str]:
+        **kwargs) -> Union[dict, bool, bytes, str, None]:
     try:
         if return_type == "json":
             return requests.put(api_url, headers=headers, data=data, **kwargs).json()

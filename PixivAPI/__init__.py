@@ -64,30 +64,28 @@ class PixivApp:
             print(response)
 
     @staticmethod
-    def start_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:
-        """收藏插画 """
-        if user_id is None:
+    def start_images(
+            api_url: str = UrlConstant.BOOKMARK_INFORMATION,
+            user_id: [int, str] = None,
+            restrict: str = "public") -> [list, str, None]:  # get account start information and return a list of p_id
+        if user_id is None:  # if user_id is None, get the user_id from config file
             user_id = Vars.cfg.data['user_info']['id']
-        params = {"user_id": user_id, "restrict": restrict}
-
-        for retry in range(1, max_retry):
-            response = get(api_url=UrlConstant.BOOKMARK_INFORMATION, params=params)
-            if response.get('illusts') is not None:
-                return response["illusts"]
-            else:
-                print("Retry:{} start error:{}".format(retry, response.get("error").get("message")))
-                refresh_pixiv_token()
+        response = get(api_url=api_url, params={"user_id": user_id, "restrict": restrict})
+        if response.get('illusts') is not None:
+            return response.get('illusts'), response.get('next_url')
+        else:
+            print("start error:{}".format(response.get("error").get("message")))
+            refresh_pixiv_token()  # if get error, try to refresh token and retry
 
     @staticmethod
-    def recommend_information() -> list:  # 推荐插画
-        params = {"include_ranking_illusts": "true", "include_privacy_policy": "true"}
-        response = get(api_url=UrlConstant.RECOMMENDED_INFORMATION, params=params)
+    def recommend(api_url: str = UrlConstant.RECOMMENDED_INFORMATION) -> [list, str, None]:  # 推荐插画
+        response = get(api_url=api_url, params={"include_ranking_illusts": "true", "include_privacy_policy": "true"})
         if response.get('illusts') is not None:
-            return response["illusts"]
+            return response["illusts"], response.get('next_url')
         else:
             print("recommend error:{}".format(response.get("error").get("message")))
             refresh_pixiv_token()
-            PixivApp.recommend_information()
+            PixivApp.recommend(api_url)
 
     @staticmethod
     def follow_information(user_id: [int, str] = None, restrict: str = "public", max_retry: int = 5) -> list:

@@ -144,42 +144,116 @@ def shell_test_pixiv_token():
         PixivAPI.refresh_pixiv_token()
 
 
-def shell_download_recommend():
+def shell_download_recommend(next_url: str = ""):  # download recommend images from pixiv api and save to local
     while True:
-        response_list: list = PixivAPI.PixivApp.recommend_information()
-        threading_image_pool = complex_image.Complex()
-        if isinstance(response_list, list):
-            for illusts in response_list:
-                threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+        if next_url is None:  # if next_url is None, it means that it is download complete
+            return print("the end of recommend list")
+        if next_url == "":  # if next_url is empty, it means it is the first time to download recommend list
+            response_list, next_url = PixivAPI.PixivApp.recommend()
+        else:  # if next_url is not empty, it means it is the next time to download recommend list
+            response_list, next_url = PixivAPI.PixivApp.recommend(next_url)
+
+        # if response_list is not list, it means that it is download complete
+        multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool
+        if isinstance(response_list, list) and len(response_list) != 0:
+            for illusts in response_list:  # add illusts to threading pool for download
+                multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+            multi_threading_image_pool.start_download_threading()  # start download threading pool for download
+        return print("get recommend list error:", response_list)
+
+
+def shell_download_stars(next_url: str = ""):  # get stars list and download all the images in the list
+    while True:
+        if next_url is None:
+            return print("the end of stars list")  # if next_url is None, it means that it is download complete
+        if next_url == "":  # if next_url is empty, it means it is the first time to download stars list
+            response_list, next_url = PixivAPI.PixivApp.start_images()
+        else:  # if next_url is not empty, it means it is the next time to download stars list
+            response_list, next_url = PixivAPI.PixivApp.start_images(api_url=next_url)
+        multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool for download
+        if isinstance(response_list, list) and len(response_list) != 0:
+            for illusts in response_list:  # add illusts to threading pool for download
+                multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
+            multi_threading_image_pool.start_download_threading()  # start download threading pool for download
         else:
-            return print("无法进行下载,ERROR:", response_list)
-        threading_image_pool.start_download_threading()
+            return print("get star list error:", response_list)
 
 
-def shell_download_stars():
-    response_list: list = PixivAPI.PixivApp.start_information()
-    threading_image_pool = complex_image.Complex()
-    if isinstance(response_list, list):
-        for illusts in response_list:
-            threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
-    else:
-        return print("无法进行下载,ERROR:", response_list)
-    threading_image_pool.start_download_threading()
-
-
-def start_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--login", dest="login", default=False, action="store_true", help="登录账号")
-    parser.add_argument("-d", "--download", dest="downloadbook", nargs=1, default=None, help="输入image-id")
-    parser.add_argument("-m", "--max", dest="threading_max", default=None, help="更改线程")
-    parser.add_argument("-n", "--name", dest="name", nargs=1, default=None, help="输入搜搜信息")
-    parser.add_argument("-u", "--update", dest="update", default=False, action="store_true", help="下载本地档案")
-    parser.add_argument("-s", "--stars", dest="stars", default=False, action="store_true", help="下载收藏插画")
-    parser.add_argument("-r", "--recommend", dest="recommend", default=False, action="store_true", help="下载推荐插画")
-    parser.add_argument("-k", "--ranking", dest="ranking", default=False, action="store_true", help="下载排行榜插画")
-    parser.add_argument("-c", "--clear_cache", dest="clear_cache", default=False, action="store_true")
-    parser.add_argument("-a", "--author", dest="author", nargs=1, default=None, help="输入作者-id")
-    return parser.parse_args()
+def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
+    parser = argparse.ArgumentParser()  # create parser object for command line arguments
+    parser.add_argument(
+        "-l", "--login",
+        dest="login",
+        default=False,
+        action="store_true",
+        help="登录账号"
+    )  # add login argument to parser object for command line arguments
+    parser.add_argument(
+        "-d",
+        "--download",
+        dest="downloadbook",
+        nargs=1,
+        default=None,
+        help="输入image-id"
+    )  # add download argument to parser object for command line arguments for download image
+    parser.add_argument(
+        "-m", "--max",
+        dest="threading_max",
+        default=None,
+        help="更改线程"
+    )  # add max argument to parser object for command line arguments for change threading max
+    parser.add_argument(
+        "-n", "--name",
+        dest="name",
+        nargs=1,
+        default=None,
+        help="输入搜搜信息"
+    )  # add name argument to parser object for command line arguments for search
+    parser.add_argument(
+        "-u",
+        "--update",
+        dest="update",
+        default=False,
+        action="store_true",
+        help="下载本地档案"
+    )  # add update argument to parser object for command line arguments for download local file
+    parser.add_argument(
+        "-s", "--stars",
+        dest="stars",
+        default=False,
+        action="store_true",
+        help="下载收藏插画"
+    )  # add stars argument to parser object for command line arguments for download stars
+    parser.add_argument(
+        "-r", "--recommend",
+        dest="recommend",
+        default=False,
+        action="store_true",
+        help="下载推荐插画"
+    )  # add recommend argument to parser object for command line arguments for download recommend
+    parser.add_argument(
+        "-k", "--ranking",
+        dest="ranking",
+        default=False,
+        action="store_true",
+        help="下载排行榜插画"
+    )  # add ranking argument to parser object for command line arguments for download ranking
+    parser.add_argument(
+        "-c",
+        "--clear_cache",
+        dest="clear_cache",
+        default=False,
+        action="store_true"
+    )  # add clear_cache argument to parser object for command line arguments for clear cache
+    parser.add_argument(
+        "-a",
+        "--author",
+        dest="author",
+        nargs=1,
+        default=None,
+        help="输入作者-id"
+    )  # add author argument to parser object for command line arguments for download author
+    return parser.parse_args()  # return parser object for command line arguments and return it as a tuple
 
 
 def shell_parser():
