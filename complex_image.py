@@ -1,37 +1,39 @@
 import threading
+import Image
 from instance import *
 
 
-class Complex:
+class Multithreading:
     def __init__(self):
-        self.images_info_obj_list = []
         self.threading_list = []
         self.threading_page = 0
+        self.images_info_obj_list = []
         self.max_thread = Vars.cfg.data.get("max_thread")
         self.semaphore = threading.Semaphore(self.max_thread)
 
     def add_image_info_obj(self, image_info_obj):
         self.images_info_obj_list.append(image_info_obj)
 
-    def start_download_threading(self):
-        print("插画列表加载完毕...")
+    def handling_threads(self):
         if len(self.images_info_obj_list) != 0:
-            print("开始下载, 一共:", len(self.images_info_obj_list), "幅插画\n\n")
-            self.threading_list = [threading.Thread(target=self.thread_download_images, args=(images_info,))
-                                   for images_info in self.images_info_obj_list]
-            for thread_ing in self.threading_list:
-                thread_ing.start()
+            print("download length:{}".format(len(self.images_info_obj_list)))
+            self.threading_list = [
+                threading.Thread(target=self.download_images, args=(images_info,))
+                for images_info in self.images_info_obj_list
+            ]
+            for thread_ing in self.threading_list:  # start threading pool for download images
+                thread_ing.start()  # start threading pool for download images
 
-            for thread_ing in self.threading_list:
-                thread_ing.join()
+            for thread_ing in self.threading_list:  # wait for all threading pool finish download
+                thread_ing.join()  # wait for all threading pool finish download
             self.threading_list.clear()
         else:
-            print("线程队列为空，没有可下载的插画！")
-        self.images_info_obj_list.clear()
+            print("threading pool is empty, no need to start download threading pool.")
+        self.images_info_obj_list.clear()  # clear threading pool and semaphore for next download
 
-    def thread_download_images(self, images_info):
-        self.semaphore.acquire()
-        self.threading_page += 1
+    def download_images(self, images_info):
+        self.semaphore.acquire()  # acquire semaphore to limit threading pool
+        self.threading_page += 1  # threading page count + 1
         images_info.show_images_information(thread_status=True)
         if images_info.page_count == 1:
             images_info.save_image(images_info.original_url)
@@ -39,4 +41,12 @@ class Complex:
             images_info.save_image(images_info.original_url_list)
         # print(images_info.image_name, "的作品下载完毕")
         print("下载进度:{}/{}".format(self.threading_page, len(self.images_info_obj_list)), end="\r")
-        self.semaphore.release()
+        self.semaphore.release()  # release semaphore when threading pool is empty
+
+    def executing_multithreading(self, image_info_list: list):
+        if isinstance(image_info_list, list) and len(image_info_list) != 0:  # if image_info_list is not empty list
+            for illusts in image_info_list:  # add illusts to threading pool for download
+                self.add_image_info_obj(Image.ImageInfo(illusts))
+            self.handling_threads()  # start download threading pool for download images
+        else:
+            return print("get works list error:", image_info_list)

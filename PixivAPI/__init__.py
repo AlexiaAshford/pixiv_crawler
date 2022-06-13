@@ -29,7 +29,8 @@ def get(
     if params_clear:
         params = params.clear()
     if head == "app":
-        params.update(common_params)
+        if params is not None:
+            params.update(common_params)
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
     try:
         if request_mode == "GET":

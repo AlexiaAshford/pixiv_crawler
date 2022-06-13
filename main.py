@@ -39,17 +39,11 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
         if next_url is None:  # if next_url is None, it means that it is download complete
             return print("the end of author_works list")
         if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
-            response_list, next_url = PixivAPI.PixivApp.author_information(author_id=author_id)
+            image_info_list, next_url = PixivAPI.PixivApp.author_information(author_id=author_id)
         else:  # if next_url is not empty, it means it is the next time to download author works list
-            response_list, next_url = PixivAPI.PixivApp.author_information(api_url=next_url)
-        # if response_list is not list, it means that it is download complete
-        multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool
-        if isinstance(response_list, list) and len(response_list) != 0:
-            for illusts in response_list:  # add illusts to threading pool for download
-                multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
-            multi_threading_image_pool.start_download_threading()  # start download threading pool for download
-        else:
-            return print("get author works list error:", response_list)
+            image_info_list, next_url = PixivAPI.PixivApp.author_information(api_url=next_url)
+        # # start download threading pool for download images from author works list
+        complex_image.Multithreading().executing_multithreading(image_info_list)
 
 
 @count_time
@@ -71,17 +65,10 @@ def shell_illustration(inputs):
 
 @count_time
 def shell_search(inputs: list):
-    if len(inputs) < 2:
-        print("没有输入搜索信息")
-        return False
-    response_list = PixivAPI.Tag.search_information(png_name=inputs[1])
-    if isinstance(response_list, list) and len(response_list) != 0:
-        threading_image_pool = complex_image.Complex()
-        for image_info in response_list:
-            threading_image_pool.add_image_info_obj(Image.ImageInfo(image_info))
-        threading_image_pool.start_download_threading()
-    else:
-        print("没有找到相应的作品！")
+    if len(inputs) < 2:  # if there is no search keyword input
+        return print("没有输入搜索信息")  # print error message
+    # start download threading pool for download images from search list and save to local
+    complex_image.Multithreading().executing_multithreading(PixivAPI.Tag.search_information(png_name=inputs[1]))
 
 
 @count_time
@@ -91,25 +78,18 @@ def shell_download_follow_author():
         print("共有", len(follow_information_list), "个关注")
         for follow_information in follow_information_list:
             print("开始下载", follow_information['user']['name'], "的作品")
-            threading_image_pool = complex_image.Complex()
-            for illusts in follow_information['illusts']:
-                threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
-            threading_image_pool.start_download_threading()
-            print(follow_information['user']['name'], "的作品下载完毕")
+            complex_image.Multithreading().executing_multithreading(follow_information['illusts'])
 
 
 @count_time
 def shell_download_rank():
-    response_list = PixivAPI.PixivApp.rank_information()
-    if not isinstance(response_list, list):
+    image_info_list = PixivAPI.PixivApp.rank_information()
+    if not isinstance(image_info_list, list):
         print("排行榜下载失败")
-    elif len(response_list) == 0:
+    elif len(image_info_list) == 0:
         print("排行榜获取完毕！")
     else:
-        threading_image_pool = complex_image.Complex()
-        for illusts in response_list:
-            threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
-        threading_image_pool.start_download_threading()
+        complex_image.Multithreading().executing_multithreading(image_info_list)
 
 
 @count_time
@@ -125,14 +105,14 @@ def shell_read_text_id():
         if image_id and len(image_id) >= 5:
             image_id_list.append(image_id[0])
     if isinstance(image_id_list, list) and len(image_id_list) != 0:
-        threading_image_pool = complex_image.Complex()
+        threading_image_pool = complex_image.Multithreading()
         for image_id in track(image_id_list, description="本地插画集加载中..."):
             Vars.images_info = PixivAPI.PixivApp.images_information(image_id)
             if isinstance(Vars.images_info, dict):
                 threading_image_pool.add_image_info_obj(Image.ImageInfo(Vars.images_info))
             else:
                 return print("无法进行下载,ERROR:", Vars.images_info)
-        threading_image_pool.start_download_threading()
+        threading_image_pool.handling_threads()
 
 
 def shell_test_pixiv_token():
@@ -153,18 +133,11 @@ def shell_download_recommend(next_url: str = ""):  # download recommend images f
         if next_url is None:  # if next_url is None, it means that it is download complete
             return print("the end of recommend list")
         if next_url == "":  # if next_url is empty, it means it is the first time to download recommend list
-            response_list, next_url = PixivAPI.PixivApp.recommend_images()
+            image_info_list, next_url = PixivAPI.PixivApp.recommend_images()
         else:  # if next_url is not empty, it means it is the next time to download recommend list
-            response_list, next_url = PixivAPI.PixivApp.recommend_images(api_url=next_url)
+            image_info_list, next_url = PixivAPI.PixivApp.recommend_images(api_url=next_url)
 
-        # if response_list is not list, it means that it is download complete
-        multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool
-        if isinstance(response_list, list) and len(response_list) != 0:
-            for illusts in response_list:  # add illusts to threading pool for download
-                multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
-            multi_threading_image_pool.start_download_threading()  # start download threading pool for download
-        else:
-            return print("get recommend list error:", response_list)
+        complex_image.Multithreading().executing_multithreading(image_info_list)
 
 
 def shell_download_stars(next_url: str = ""):  # get stars list and download all the images in the list
@@ -172,16 +145,11 @@ def shell_download_stars(next_url: str = ""):  # get stars list and download all
         if next_url is None:
             return print("the end of stars list")  # if next_url is None, it means that it is download complete
         if next_url == "":  # if next_url is empty, it means it is the first time to download stars list
-            response_list, next_url = PixivAPI.PixivApp.start_images()
+            image_info_list, next_url = PixivAPI.PixivApp.start_images()
         else:  # if next_url is not empty, it means it is the next time to download stars list
-            response_list, next_url = PixivAPI.PixivApp.start_images(api_url=next_url)
-        multi_threading_image_pool: complex_image.Complex = complex_image.Complex()  # new threading pool for download
-        if isinstance(response_list, list) and len(response_list) != 0:
-            for illusts in response_list:  # add illusts to threading pool for download
-                multi_threading_image_pool.add_image_info_obj(Image.ImageInfo(illusts))
-            multi_threading_image_pool.start_download_threading()  # start download threading pool for download
-        else:
-            return print("get star list error:", response_list)
+            image_info_list, next_url = PixivAPI.PixivApp.start_images(api_url=next_url)
+        # start download threading pool for download images from stars list and save to local
+        complex_image.Multithreading().executing_multithreading(image_info_list)
 
 
 def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
@@ -305,7 +273,7 @@ def shell_parser():
 
     if not shell_console:
         for info in Msg.msg_help:
-            print('[帮助]', info)
+            print_lang('[帮助]', info)
         while True:
             shell(re.split('\\s+', PixivAPI.input_str('>').strip()))
 
@@ -315,7 +283,7 @@ def shell(inputs: list):
         sys.exit("已退出程序")
     elif inputs[0] == 'h' or inputs[0] == 'help':
         for msg_help in Msg.msg_help:
-            print('[帮助]', msg_help)
+            print_lang('[帮助]', msg_help)
     elif inputs[0] == 'l' or inputs[0] == 'login':
         shell_test_pixiv_token()
     elif inputs[0] == 'd' or inputs[0] == 'download':
@@ -336,6 +304,20 @@ def shell(inputs: list):
         print(inputs[0], "为无效指令")
 
 
+def print_lang(*args) -> None:  # print message in language set in config file
+    from zhconv import convert  # import zhconv module for chinese conversion
+    msg = ""  # create empty string for message to be printed
+    if len(args) >= 1:  # if there is message to be printed
+        for arg in args:  # for each message in args
+            msg += str(arg)  # add message to string for printing
+    else:  # if there is no message to be printed
+        msg += args[0] if len(args) == 1 else msg  # if there is only one message to be printed, print it directly
+    if Vars.cfg.data.get("lang") is None:  # if language is not set in config file
+        print(convert(str(msg), 'zh-hant'))  # print message in chinese
+    else:  # if language is set in config file
+        print(msg)
+
+
 if __name__ == '__main__':
     set_config()
     # update()
@@ -343,7 +325,6 @@ if __name__ == '__main__':
         shell_test_pixiv_token()
         shell_parser()
     except KeyboardInterrupt:
-        print("已手动退出程序")
-        sys.exit(1)
+        quit("已手动退出程序")
     except Exception as error:
         print("程序意外退出，ERROR:", error)

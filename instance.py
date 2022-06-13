@@ -10,7 +10,7 @@ class Msg:
         "输入首字母",
         "h | help\t\t\t\t\t\t--- 显示说明",
         "q | quit\t\t\t\t\t\t--- 退出正在运作的程序",
-        "d | picture\t\t\t\t\t--- 输入id或url下载插画",
+        "d | picture\t\t\t\t\t\t--- 输入id或url下载插画",
         "t | recommend\t\t\t\t\t--- 下载pixiv推荐插画",
         "s | start\t\t\t\t\t\t--- 下载账号收藏插画",
         "r | rank\t\t\t\t\t\t--- 下载排行榜作品",
