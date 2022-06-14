@@ -342,5 +342,5 @@ if __name__ == '__main__':
         shell_parser()
     except KeyboardInterrupt:
         quit("已手动退出程序")
-    # except Exception as error:
-    #     print("程序意外退出，ERROR:", error)
+    except Exception as error:
+        print("程序意外退出，ERROR:", error)

@@ -1,6 +1,6 @@
 from fake_useragent import UserAgent
 from instance import *
-from PixivAPI import login_pixiv, HttpUtil, UrlConstant
+from PixivAPI import HttpUtil, UrlConstant
 
 common_params = {"filter": "for_android"}
 
@@ -49,7 +49,7 @@ def get(
 def refresh_pixiv_token(error_info: str = "") -> None:
     if error_info != "" and error_info is not None:
         print("[error]:", error_info)
-    if login_pixiv.refresh(Vars.cfg.data.get("refresh_token")):
+    if PixivLogin.refresh(Vars.cfg.data.get("refresh_token")):
         print("refresh token success, new token:", Vars.cfg.data.get("access_token"))
     else:
         print("refresh token failed, please login again")
