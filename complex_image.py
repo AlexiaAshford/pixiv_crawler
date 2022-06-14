@@ -8,15 +8,17 @@ class Multithreading:
         self.threading_list = []
         self.threading_page = 0
         self.images_info_obj_list = []
+        self.pool_length = 0
         self.max_thread = Vars.cfg.data.get("max_thread")
         self.semaphore = threading.Semaphore(self.max_thread)
 
     def add_image_info_obj(self, image_info_obj):
-        self.images_info_obj_list.append(image_info_obj)
+        self.images_info_obj_list.append(image_info_obj)  # add image_info_obj to threading pool
+        self.pool_length += 1  # pool length + 1 if add image_info_obj to threading pool
 
     def handling_threads(self):
         if len(self.images_info_obj_list) != 0:
-            print("download length:{}".format(len(self.images_info_obj_list)))
+            print("download length:{}".format(self.pool_length))
             self.threading_list = [
                 threading.Thread(target=self.download_images, args=(images_info,))
                 for images_info in self.images_info_obj_list

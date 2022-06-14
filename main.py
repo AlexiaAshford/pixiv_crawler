@@ -72,13 +72,17 @@ def shell_search(inputs: list):
 
 
 @count_time
-def shell_download_follow_author():
-    follow_information_list = PixivAPI.PixivApp.follow_information()
-    if isinstance(follow_information_list, list):
-        print("共有", len(follow_information_list), "个关注")
-        for follow_information in follow_information_list:
-            print("开始下载", follow_information['user']['name'], "的作品")
-            complex_image.Multithreading().executing_multithreading(follow_information['illusts'])
+def shell_download_follow_author(next_url: str = ""):
+    while True:
+        if next_url is None:  # if next_url is None, it means that it is download complete
+            return print("the end of follow list")
+        if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
+            follow_list, next_url = PixivAPI.PixivApp.follow_information()
+        else:  # if next_url is not empty, it means it is the next time to download author works list
+            follow_list, next_url = PixivAPI.PixivApp.follow_information(api_url=next_url)  # get next follow list
+        for follow_info in follow_list:  # start download threading pool for download images from author works list
+            print("start download author {} works".format(follow_info['user_name']))  # print author name
+            shell_author_works(follow_info.get("user").get("id"))  # download author works list and save to local
 
 
 @count_time
@@ -136,7 +140,7 @@ def shell_download_recommend(next_url: str = ""):  # download recommend images f
             image_info_list, next_url = PixivAPI.PixivApp.recommend_images()
         else:  # if next_url is not empty, it means it is the next time to download recommend list
             image_info_list, next_url = PixivAPI.PixivApp.recommend_images(api_url=next_url)
-
+        # start download threading pool for download images from recommend list and save to local
         complex_image.Multithreading().executing_multithreading(image_info_list)
 
 
