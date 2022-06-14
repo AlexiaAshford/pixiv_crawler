@@ -27,7 +27,7 @@ class YamlData:
             if not os.path.exists(self.file_dir):
                 try:
                     os.mkdir(self.file_dir)
-                except FileExistsError as err:
+                except (FileExistsError, OSError) as err:
                     print(err)
         self.file_path = os.path.join(os.getcwd(), file_path)
         self.data = {}
@@ -61,7 +61,7 @@ class Vars:
     images_info_list = list()
 
 
-def count_time(func):
+def count_time(func: callable) -> callable:
     def wrapper(*arg, **kwargs):
         start_time = time.time()
         result = func(*arg, **kwargs)
@@ -73,7 +73,7 @@ def count_time(func):
 
 def remove_str(content: str):
     res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-    return res_compile.sub("", re.sub('[/:*?"<>|]', '-', content))
+    return res_compile.sub("", re.sub('[/:*?"<>|x08]', '-', content))
 
 
 def rec_id(book_id: str):
@@ -83,11 +83,6 @@ def rec_id(book_id: str):
 
 def index_title(division_index: int, image_name: str):
     return str(division_index).rjust(4, "0") + '-' + str(image_name)
-
-
-def makedirs(file_path: str):
-    if not os.path.exists(file_path):
-        os.mkdir(file_path)
 
 
 def input_str(prompt, default=None):
@@ -143,7 +138,7 @@ def set_config():
         config_change = True
 
     if type(Vars.cfg.data.get('max_retry')) is not int:
-        Vars.cfg.data['max_retry'] = 5
+        Vars.cfg.data['max_retry'] = 5  # retry times when download failed
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('file_name_config'), dict):
@@ -151,10 +146,10 @@ def set_config():
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('user_info'), dict):
-        Vars.cfg.data['user_info'] = {'account': '', 'id': '', 'mail_address': '', 'name': ''}
+        Vars.cfg.data['user_info'] = {}  # save user info to config file
         config_change = True
 
-    if config_change:
+    if config_change:  # if config change, save it to file and reload.
         Vars.cfg.save()
 
     if not os.path.exists(Vars.cfg.data.get('save_file')):

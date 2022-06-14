@@ -156,7 +156,7 @@ class PixivApp:
             max_retry += 1
 
     @staticmethod
-    def rank_information(
+    def get_ranking_info(
             api_url: str = UrlConstant.RANKING_INFORMATION,
             params_clear: bool = False,
             max_retry: int = 5
@@ -178,7 +178,7 @@ class PixivApp:
             return response.get('illusts'), response.get('next_url')
         if max_retry <= 3:  # if max_retry is less than 3, try to refresh token and retry
             refresh_pixiv_token(response.get("error").get("message"))  # refresh token
-            PixivApp.rank_information(api_url=api_url)  # if get error, try to refresh token and retry
+            PixivApp.get_ranking_info(api_url=api_url)  # if get error, try to refresh token and retry
             max_retry += 1  # add retry count to max_retry
 
 
@@ -253,7 +253,7 @@ class PixivLogin:
         return code_verifier, open_url(f"https://app-api.pixiv.net/web/v1/login?{urlencode(login_params)}")
 
     @staticmethod
-    def login(code_verifier, code_information: str):
+    def login(code_verifier: str, code_information: str) -> bool:  # login with code_information
         response = get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
             head="login",
@@ -268,14 +268,14 @@ class PixivLogin:
                 "redirect_uri": "https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback",
             },
         )
-        if response.get("errors") is not None:
+        if response.get("errors") is not None:  # if get error, return False and print error message
             print("errors:", response['errors'])
         else:
             PixivLogin.save_token(response)
             return True
 
     @staticmethod
-    def refresh(refresh_token):
+    def refresh(refresh_token: str) -> bool:  # refresh token and save to file
         response = get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
             head="login",
@@ -296,8 +296,8 @@ class PixivLogin:
             return True
 
     @staticmethod
-    def save_token(response: dict) -> None:
-        if isinstance(response, dict):
+    def save_token(response: dict) -> None:  # save token to file for later use
+        if isinstance(response, dict):  # if response is a dict
             Vars.cfg.data["user_info"] = response["user"]  # save user_id to config
             Vars.cfg.data["access_token"] = response["access_token"]  # save access_token to config
             Vars.cfg.data["refresh_token"] = response["refresh_token"]  # save refresh_token to config

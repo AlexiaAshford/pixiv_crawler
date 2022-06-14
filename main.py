@@ -91,9 +91,9 @@ def shell_download_rank(next_url: str = ""):
         if next_url is None:  # if next_url is None, it means that it is download complete
             return print("the end of follow list")
         if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
-            image_info_list, next_url = PixivAPI.PixivApp.rank_information()
+            image_info_list, next_url = PixivAPI.PixivApp.get_ranking_info()
         else:  # if next_url is not empty, it means it is the next time to download author works list
-            image_info_list, next_url = PixivAPI.PixivApp.rank_information(api_url=next_url)  # get next follow list
+            image_info_list, next_url = PixivAPI.PixivApp.get_ranking_info(api_url=next_url)  # get next follow list
         # start download threading pool for download images from author works list
         complex_image.Multithreading().executing_multithreading(image_info_list)
 
