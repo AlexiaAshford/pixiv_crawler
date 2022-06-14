@@ -13,6 +13,8 @@ def return_headers(headers: str = "app"):
             'authorization': "Bearer " + Vars.cfg.data.get("access_token"),
             'app-version': '6.46.0 ',
         }
+    if headers == "login":
+        return {"User-Agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}
     if headers == "png":
         return {'Referer': 'https://www.pixiv.net/', 'User-Agent': UserAgent(verify_ssl=False).random}
     else:
@@ -25,7 +27,8 @@ def get(
         head: str = "app",
         types: str = "json",
         params_clear: bool = False,
-        request_mode: str = "GET") -> [dict, bytes, str, None]:
+        request_mode: str = "GET"
+) -> [dict, bytes, str, None]:  # return json or bytes or str or None (if error)
     if params_clear:
         params = params.clear()
     if head == "app":
@@ -36,7 +39,7 @@ def get(
         if request_mode == "GET":
             return HttpUtil.get_api(api_url, params=params, return_type=types, headers=return_headers(head))
         elif request_mode == "POST":
-            return HttpUtil.post_api(api_url, params=params, return_type=types, headers=return_headers(head))
+            return HttpUtil.post_api(api_url, data=params, return_type=types, headers=return_headers(head))
         elif request_mode == "PUT":
             return HttpUtil.put_api(api_url, params=params, return_type=types, headers=return_headers(head))
     except Exception as error:
@@ -226,3 +229,91 @@ class Tag:
             refresh_pixiv_token(response.get("error").get("message"))
             Tag.search_information(png_name, sort)
             max_retry += 1
+
+
+class PixivLogin:
+
+    @staticmethod
+    def s256(data):
+        from base64 import urlsafe_b64encode
+        from hashlib import sha256
+        """S256 transformation method."""
+        return urlsafe_b64encode(sha256(data).digest()).rstrip(b"=").decode("ascii")
+
+    @staticmethod
+    def oauth_pkce() -> [str, str]:
+        from secrets import token_urlsafe
+        """Proof Key for Code Exchange by OAuth Public Clients (RFC7636)."""
+        """S256 transformation method."""
+        code_verifier = token_urlsafe(32)
+        code_challenge = PixivLogin.s256(code_verifier.encode("ascii"))
+        return code_verifier, code_challenge
+
+    @staticmethod
+    def open_browser():
+        from webbrowser import open as open_url
+        from urllib.parse import urlencode
+        code_verifier, code_challenge = PixivLogin.oauth_pkce()
+        login_params = {
+            "code_challenge": code_challenge,
+            "code_challenge_method": "S256",
+            "client": "pixiv-android",
+        }
+        open_url(f"https://app-api.pixiv.net/web/v1/login?{urlencode(login_params)}")
+        return code_verifier
+
+    @staticmethod
+    def login(code_verifier, code_information: str):
+        response = get(
+            api_url="https://oauth.secure.pixiv.net/auth/token",
+            head="login",
+            request_mode="POST",
+            params={
+                "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
+                "client_secret": "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj",
+                "code": code_information,
+                "code_verifier": code_verifier,
+                "grant_type": "authorization_code",
+                "include_policy": "true",
+                "redirect_uri": "https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback",
+            },
+        )
+        if response.get("errors") is not None:
+            print("errors:", response['errors'])
+        else:
+            PixivLogin.save_token(response)
+            return True
+
+    @staticmethod
+    def refresh(refresh_token):
+        response = get(
+            api_url="https://oauth.secure.pixiv.net/auth/token",
+            head="login",
+            request_mode="POST",
+            params={
+                "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
+                "client_secret": "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj",
+                "grant_type": "refresh_token",
+                "include_policy": "true",
+                "refresh_token": refresh_token,
+            }
+        )
+
+        if response.get("errors") is not None:
+            print("errors:", response['errors'])
+        else:
+            PixivLogin.save_token(response)
+            return True
+
+    @staticmethod
+    def save_token(response):
+        print(response)
+        Vars.cfg.data["user_info"] = {
+            'id': response["user"]["id"],
+            'name': response["user"]["name"],
+            'account': response["user"]["account"],
+            'mail_address': response["user"]["mail_address"],
+        }
+        Vars.cfg.data["access_token"] = response["access_token"]
+        Vars.cfg.data["refresh_token"] = response["refresh_token"]
+        Vars.cfg.save()

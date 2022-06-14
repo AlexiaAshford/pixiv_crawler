@@ -124,8 +124,8 @@ def shell_read_text_id():
 def shell_test_pixiv_token():
     if Vars.cfg.data.get("refresh_token") == "":
         print("检测到本地档案没有令牌，请登入网站获取code来请求token，也可以将token自行写入本地档案")
-        code_verifier = PixivAPI.login_pixiv.open_browser()
-        if PixivAPI.login_pixiv.login(code_verifier, PixivAPI.input_str('code:').strip()):
+        code_verifier = PixivAPI.PixivLogin.open_browser()
+        if PixivAPI.PixivLogin.login(code_verifier, PixivAPI.input_str('code:').strip()):
             print(f"code信息验证成功！，token信息已经保存在本地档案，请继续使用")
         else:
             print(f"输入code无效，请重新尝试获取code！")
@@ -161,7 +161,8 @@ def shell_download_stars(next_url: str = ""):  # get stars list and download all
 def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
     parser = argparse.ArgumentParser()  # create parser object for command line arguments
     parser.add_argument(
-        "-l", "--login",
+        "-l",
+        "--login",
         dest="login",
         default=False,
         action="store_true",
@@ -341,5 +342,5 @@ if __name__ == '__main__':
         shell_parser()
     except KeyboardInterrupt:
         quit("已手动退出程序")
-    except Exception as error:
-        print("程序意外退出，ERROR:", error)
+    # except Exception as error:
+    #     print("程序意外退出，ERROR:", error)

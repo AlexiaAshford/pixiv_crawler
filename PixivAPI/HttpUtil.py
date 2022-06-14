@@ -20,7 +20,7 @@ def max_retry(func):
 def get_api(
         api_url: str,
         params: Union[dict, str] = None,
-        headers: dict = "app",
+        headers: dict = None,
         return_type: str = "json",
         **kwargs) -> Union[dict, bool, bytes, str]:
     try:
@@ -37,7 +37,7 @@ def get_api(
 def post_api(
         api_url: str,
         data: Union[dict, str] = None,
-        headers: dict = "app",
+        headers: dict = None,
         return_type: str = "json",
         **kwargs) -> Union[dict, bool, bytes, str, None]:
     try:
