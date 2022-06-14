@@ -234,33 +234,23 @@ class Tag:
 class PixivLogin:
 
     @staticmethod
-    def s256(data):
-        from base64 import urlsafe_b64encode
-        from hashlib import sha256
-        """S256 transformation method."""
-        return urlsafe_b64encode(sha256(data).digest()).rstrip(b"=").decode("ascii")
-
-    @staticmethod
     def oauth_pkce() -> [str, str]:
         from secrets import token_urlsafe
-        """Proof Key for Code Exchange by OAuth Public Clients (RFC7636)."""
-        """S256 transformation method."""
-        code_verifier = token_urlsafe(32)
-        code_challenge = PixivLogin.s256(code_verifier.encode("ascii"))
+        from base64 import urlsafe_b64encode
+        from hashlib import sha256
+        """S256 transformation method. Proof Key for Code Exchange by OAuth Public Clients (RFC7636)."""
+        code_verifier = token_urlsafe(32)  # generate code_verifier from secrets.token_urlsafe
+        code_challenge = urlsafe_b64encode(sha256(code_verifier.encode("ascii")).digest()). \
+            rstrip(b"=").decode("ascii")  # remove padding characters from base64 encoding and decode to ascii
         return code_verifier, code_challenge
 
     @staticmethod
-    def open_browser():
+    def open_browser(client: str = "pixiv-android") -> [str, None]:
         from webbrowser import open as open_url
         from urllib.parse import urlencode
         code_verifier, code_challenge = PixivLogin.oauth_pkce()
-        login_params = {
-            "code_challenge": code_challenge,
-            "code_challenge_method": "S256",
-            "client": "pixiv-android",
-        }
-        open_url(f"https://app-api.pixiv.net/web/v1/login?{urlencode(login_params)}")
-        return code_verifier
+        login_params = {"code_challenge": code_challenge, "code_challenge_method": "S256", "client": client}
+        return code_verifier, open_url(f"https://app-api.pixiv.net/web/v1/login?{urlencode(login_params)}")
 
     @staticmethod
     def login(code_verifier, code_information: str):
@@ -306,14 +296,12 @@ class PixivLogin:
             return True
 
     @staticmethod
-    def save_token(response):
-        print(response)
-        Vars.cfg.data["user_info"] = {
-            'id': response["user"]["id"],
-            'name': response["user"]["name"],
-            'account': response["user"]["account"],
-            'mail_address': response["user"]["mail_address"],
-        }
-        Vars.cfg.data["access_token"] = response["access_token"]
-        Vars.cfg.data["refresh_token"] = response["refresh_token"]
-        Vars.cfg.save()
+    def save_token(response: dict) -> None:
+        if isinstance(response, dict):
+            Vars.cfg.data["user_info"] = response["user"]  # save user_id to config
+            Vars.cfg.data["access_token"] = response["access_token"]  # save access_token to config
+            Vars.cfg.data["refresh_token"] = response["refresh_token"]  # save refresh_token to config
+            Vars.cfg.save()  # save config to file
+            print("login success, user_id:", response["user"]["id"], "access_token:", response["access_token"])
+        else:
+            print("response is not dict type")

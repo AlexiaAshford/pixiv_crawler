@@ -124,7 +124,7 @@ def shell_read_text_id():
 def shell_test_pixiv_token():
     if Vars.cfg.data.get("refresh_token") == "":
         print("检测到本地档案没有令牌，请登入网站获取code来请求token，也可以将token自行写入本地档案")
-        code_verifier = PixivAPI.PixivLogin.open_browser()
+        code_verifier, browser = PixivAPI.PixivLogin.open_browser()
         if PixivAPI.PixivLogin.login(code_verifier, PixivAPI.input_str('code:').strip()):
             print(f"code信息验证成功！，token信息已经保存在本地档案，请继续使用")
         else:
