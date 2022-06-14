@@ -86,13 +86,15 @@ def shell_download_follow_author(next_url: str = ""):
 
 
 @count_time
-def shell_download_rank():
-    image_info_list = PixivAPI.PixivApp.rank_information()
-    if not isinstance(image_info_list, list):
-        print("排行榜下载失败")
-    elif len(image_info_list) == 0:
-        print("排行榜获取完毕！")
-    else:
+def shell_download_rank(next_url: str = ""):
+    while True:
+        if next_url is None:  # if next_url is None, it means that it is download complete
+            return print("the end of follow list")
+        if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
+            image_info_list, next_url = PixivAPI.PixivApp.rank_information()
+        else:  # if next_url is not empty, it means it is the next time to download author works list
+            image_info_list, next_url = PixivAPI.PixivApp.rank_information(api_url=next_url)  # get next follow list
+        # start download threading pool for download images from author works list
         complex_image.Multithreading().executing_multithreading(image_info_list)
 
 
@@ -199,22 +201,30 @@ def start_parser() -> argparse.Namespace:  # start parser for command line argum
         dest="stars",
         default=False,
         action="store_true",
-        help="下载收藏插画"
+        help="download stars list and download all the images in the list"
     )  # add stars argument to parser object for command line arguments for download stars
     parser.add_argument(
         "-r", "--recommend",
         dest="recommend",
         default=False,
         action="store_true",
-        help="下载推荐插画"
+        help="download pixiv recommend images"
     )  # add recommend argument to parser object for command line arguments for download recommend
     parser.add_argument(
         "-k", "--ranking",
         dest="ranking",
         default=False,
         action="store_true",
-        help="下载排行榜插画"
+        help="download ranking images"
     )  # add ranking argument to parser object for command line arguments for download ranking
+    parser.add_argument(
+        "-f",
+        "--follow",
+        dest="follow",
+        default=False,
+        action="store_true",
+        help="download follow author images"
+    )
     parser.add_argument(
         "-c",
         "--clear_cache",
@@ -228,7 +238,7 @@ def start_parser() -> argparse.Namespace:  # start parser for command line argum
         dest="author",
         nargs=1,
         default=None,
-        help="输入作者-id"
+        help="enter author id"
     )  # add author argument to parser object for command line arguments for download author
     return parser.parse_args()  # return parser object for command line arguments and return it as a tuple
 
@@ -247,6 +257,10 @@ def shell_parser():
         shell_download_stars()
         shell_console = True
 
+    if args.follow:
+        shell_download_follow_author()
+        shell_console = True
+
     if args.update:
         shell_read_text_id()
         shell_console = True
@@ -254,7 +268,7 @@ def shell_parser():
     if args.clear_cache:
         Vars.cfg.data.clear(), set_config()
         Vars.cfg.save()
-        sys.exit(3)
+        sys.exit(3)  # exit with code 3  to clear cache
 
     if args.threading_max:
         Vars.cfg.data['max_thread'] = int(args.max)
@@ -285,9 +299,6 @@ def shell_parser():
 def shell(inputs: list):
     if inputs[0] == 'q' or inputs[0] == 'quit':
         sys.exit("已退出程序")
-    elif inputs[0] == 'h' or inputs[0] == 'help':
-        for msg_help in Msg.msg_help:
-            print_lang('[帮助]', msg_help)
     elif inputs[0] == 'l' or inputs[0] == 'login':
         shell_test_pixiv_token()
     elif inputs[0] == 'd' or inputs[0] == 'download':
@@ -296,11 +307,11 @@ def shell(inputs: list):
         shell_download_stars()
     elif inputs[0] == 'n' or inputs[0] == 'name':
         shell_search(inputs)
-    elif inputs[0] == 't' or inputs[0] == 'recommend':
+    elif inputs[0] == 'r' or inputs[0] == 'recommend':
         shell_download_recommend()
     elif inputs[0] == 'u' or inputs[0] == 'update':
         shell_read_text_id(inputs)
-    elif inputs[0] == 'r' or inputs[0] == 'rank':
+    elif inputs[0] == 'k' or inputs[0] == 'rank':
         shell_download_rank()
     elif inputs[0] == 'f' or inputs[0] == 'follow':
         shell_download_follow_author()
@@ -323,9 +334,9 @@ def print_lang(*args) -> None:  # print message in language set in config file
 
 
 if __name__ == '__main__':
-    set_config()
     # update()
     try:
+        set_config()
         shell_test_pixiv_token()
         shell_parser()
     except KeyboardInterrupt:

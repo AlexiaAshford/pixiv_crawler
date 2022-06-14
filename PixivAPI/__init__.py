@@ -153,21 +153,30 @@ class PixivApp:
             max_retry += 1
 
     @staticmethod
-    def rank_information(max_page: int = 100, max_retry: int = 5) -> list:  # 作品排行信息
-        mode_list = ["day", "week", "month", "day_male", "day_female", "week_original", "week_rookie", "day_manga",
-                     "day_r18", "day_male_r18", "day_female_r18", "week_r18", "week_r18g"]
-        for index, mode in enumerate(mode_list):
-            print("index:", index, "\t\tmode_name:", mode)
-        mode_type = mode_list[input_int(">", len(mode_list))]
-        for index, page in enumerate(range(max_page), start=1):
-            params = {"offset": index * 30, "mode": mode_type, "data": time.strftime("%Y-%m-%d", time.localtime())}
-            for retry in range(1, max_retry):
-                response = get(api_url=UrlConstant.RANKING_INFORMATION, params=params)
-                if response.get('illusts') is not None:
-                    return response["illusts"]
-                else:
-                    print("rank_information error:{}".format(retry, response.get("error").get("message")))
-                    refresh_pixiv_token()
+    def rank_information(
+            api_url: str = UrlConstant.RANKING_INFORMATION,
+            params_clear: bool = False,
+            max_retry: int = 5
+    ) -> [list, str]:  # 作品排行信息
+        mode_list = [
+            "day", "week", "month", "day_male",
+            "day_female", "week_original", "week_rookie",
+            "day_manga", "day_r18", "day_male_r18",
+            "day_female_r18", "week_r18", "week_r18g"
+        ]
+        if api_url == UrlConstant.RANKING_INFORMATION:  # if api_url is not author, clear to params dict
+            for index, mode in enumerate(mode_list):  # for each mode, get the ranking information
+                print("index:", index, "\t\tmode_name:", mode)  # print mode_name
+            mode_type = mode_list[input_int(">", len(mode_list))]  # input mode_type from user
+        else:
+            params_clear, mode_type = True, None  # clear to params dict and set mode_type to None
+        response = get(api_url=api_url, params={"mode": mode_type}, params_clear=params_clear)
+        if response.get('illusts') is not None:
+            return response.get('illusts'), response.get('next_url')
+        if max_retry <= 3:  # if max_retry is less than 3, try to refresh token and retry
+            refresh_pixiv_token(response.get("error").get("message"))  # refresh token
+            PixivApp.rank_information(api_url=api_url)  # if get error, try to refresh token and retry
+            max_retry += 1  # add retry count to max_retry
 
 
 class Tag:

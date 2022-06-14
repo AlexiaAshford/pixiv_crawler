@@ -25,7 +25,10 @@ class YamlData:
         if file_dir is not None:
             self.file_dir = os.path.join(os.getcwd(), file_dir)
             if not os.path.exists(self.file_dir):
-                os.mkdir(self.file_dir)
+                try:
+                    os.mkdir(self.file_dir)
+                except FileExistsError as err:
+                    print(err)
         self.file_path = os.path.join(os.getcwd(), file_path)
         self.data = {}
 
