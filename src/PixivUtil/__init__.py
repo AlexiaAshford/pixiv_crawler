@@ -60,7 +60,7 @@ class PixivApp:
 
     @staticmethod
     def get_user_info(show_start: bool = False) -> bool:
-        params = {"user_id": Vars.cfg.data['user_info']['id']}
+        params = {"user_id": Vars.cfg.data.get("user_info", {}).get("id")}
         response = get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
         if response is not None:
             if show_start is True:

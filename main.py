@@ -220,12 +220,11 @@ def print_lang(*args) -> None:  # print message in language set in config file
 
 
 if __name__ == '__main__':
-    # update()
     try:
         set_config()
         src.shell_test_pixiv_token()
         shell_parser()
     except KeyboardInterrupt:
-        quit("已手动退出程序")
-    except Exception as error:
-        print("程序意外退出，ERROR:", error)
+        print("已手动退出程序")
+    # except Exception as error:
+    #     print("程序意外退出，ERROR:", error)
