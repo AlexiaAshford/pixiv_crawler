@@ -1,4 +1,3 @@
-from PixivAPI import HttpUtil
 from instance import *
 import PixivAPI
 
@@ -30,29 +29,28 @@ class ImageInfo:
                     print("画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url)))
             print("发布时间: {}\n".format(self.create_date))
 
-    def save_file(self, image_name: str, image_url: str):
-        if Vars.cfg.data.get('save_type'):
-            out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_name, self.image_name)
-        else:
-            out_dir = os.path.join(Vars.cfg.data.get("save_file"), self.author_name)
-        YamlData("", out_dir)
-        if not os.path.exists(os.path.join(out_dir, f'{image_name}.png')):
-            with open(os.path.join(out_dir, f'{image_name}.png'), 'wb+') as file:
-                file.write(PixivAPI.get(api_url=image_url, head="png", types="content"))
+        Vars.image_out_path = os.path.join(Vars.cfg.data['save_file'], self.author_name)
+        YamlData(file_dir=Vars.image_out_path)  # create a new image file
 
-                # file.write(HttpUtil.get_api(api_url=image_url, return_type="content"))
+    def save_image_to_local(self, file_name: str, image_url: str):
+        save_image_dir: str = os.path.join(Vars.image_out_path, file_name)
+        if not os.path.exists(save_image_dir):
+            TextFile.write_image(
+                save_path=save_image_dir,
+                image_file=PixivAPI.get(api_url=image_url, head="png", types="content")
+            )
+        elif os.path.getsize(save_image_dir) == 0:
+            print("{} is empty, retry download png file!".format(self.image_name))
+            TextFile.write_image(
+                save_path=save_image_dir,
+                image_file=PixivAPI.get(api_url=image_url, head="png", types="content")
+            )
 
-    def save_image(self, image_url_list):
-        if isinstance(image_url_list, list):
+    def out_put_download_image_file(self, image_url: str = None, image_url_list: list = None):
+        if isinstance(image_url_list, list) and len(image_url_list) > 0:
             for index, url in enumerate(image_url_list, start=1):
-                if Vars.cfg.data.get("file_name_config").get("image_id"):
-                    file_name = self.image_id + "-" + str(index).rjust(4, "0") + '-' + self.image_name
-                else:
-                    file_name = self.author_id + "-" + index_title(index, self.image_name)
-                self.save_file(file_name, url)
-        else:
-            if Vars.cfg.data.get("file_name_config").get("image_id"):
-                file_name = self.image_id + "-" + self.image_name
-            else:
-                file_name = self.author_id + "-" + self.image_name
-            self.save_file(file_name, image_url_list)
+                file_name = self.image_id + "-" + str(index).rjust(4, "0") + '-' + self.image_name
+                self.save_image_to_local(file_name=file_name, image_url=url)
+
+        elif isinstance(image_url, str) and image_url != "":
+            self.save_image_to_local(file_name=self.image_id + "-" + self.image_name + ".png", image_url=image_url)

@@ -28,9 +28,11 @@ class YamlData:
                 try:
                     os.mkdir(self.file_dir)
                 except (FileExistsError, OSError) as err:
-                    print(err)
-        self.file_path = os.path.join(os.getcwd(), file_path)
-        self.data = {}
+                    print("file_dir：", err)
+
+        if file_path is not None:
+            self.file_path = os.path.join(os.getcwd(), file_path)
+            self.data = {}
 
     def load(self):
         try:
@@ -54,9 +56,43 @@ def write_file(file_dir: str, m: str, content: str = ""):
         f.write(content)
 
 
+class TextFile:
+    @staticmethod
+    def write(text_path: str = "", text_content: str = "", mode: str = "a") -> [str, None]:
+        try:
+            with open(text_path, mode, encoding="utf-8") as file:
+                file.write(text_content)
+        except Exception as error:
+            print("[error] text_file.write:", error)
+
+    @staticmethod
+    def read(text_path: str = "", split_list: bool = False, allow_file_not_found: bool = False) -> [str, None]:
+        if allow_file_not_found and not os.path.exists(text_path):
+            return None
+        try:
+            with open(text_path, "r", encoding="utf-8") as file:
+                if split_list:
+                    return file.read().splitlines()
+                return file.read()
+        except Exception as error:
+            print("[error] text_file.read:", error)
+
+    @staticmethod
+    def write_image(save_path: str, image_file: str, mode: str = "wb+") -> None:
+        if image_file is not None:
+            try:
+                with open(save_path, mode) as file:  # wb+:二进制写入
+                    file.write(image_file)  # write binary data to file
+            except Exception as error:
+                print("[error] text_file.write_image:", error)
+        else:
+            print("[error] text_file.write_image: image_file is None", image_file)
+
+
 class Vars:
-    cfg = YamlData('pixiv-config.yaml')
+    cfg = YamlData(file_path='pixiv-config.yaml')
     images_info = None
+    image_out_path = None
     complex_images_info = list()
     images_info_list = list()
 
@@ -125,10 +161,6 @@ def set_config():
         Vars.cfg.data['out_file'] = 'downloaded'
         config_change = True
 
-    if type(Vars.cfg.data.get('save_type')) is not bool:
-        Vars.cfg.data['save_type'] = False
-        config_change = True
-
     if type(Vars.cfg.data.get('access_token')) is not str:
         Vars.cfg.data['access_token'] = ""
         config_change = True
@@ -139,10 +171,6 @@ def set_config():
 
     if type(Vars.cfg.data.get('max_retry')) is not int:
         Vars.cfg.data['max_retry'] = 5  # retry times when download failed
-        config_change = True
-
-    if not isinstance(Vars.cfg.data.get('file_name_config'), dict):
-        Vars.cfg.data['file_name_config'] = {'image_id': True, 'author': 'author'}
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('user_info'), dict):

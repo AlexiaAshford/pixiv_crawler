@@ -38,9 +38,9 @@ class Multithreading:
         self.threading_page += 1  # threading page count + 1
         images_info.show_images_information(thread_status=True)
         if images_info.page_count == 1:
-            images_info.save_image(images_info.original_url)
+            images_info.out_put_download_image_file(images_info.original_url)
         else:
-            images_info.save_image(images_info.original_url_list)
+            images_info.out_put_download_image_file(images_info.original_url_list)
         # print(images_info.image_name, "的作品下载完毕")
         print("下载进度:{}/{}".format(self.threading_page, len(self.images_info_obj_list)), end="\r")
         self.semaphore.release()  # release semaphore when threading pool is empty

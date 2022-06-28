@@ -1,37 +1,10 @@
 import argparse
-import json
 import sys
 import Image
 from instance import *
 from rich.progress import track
 import PixivAPI
 import complex_image
-
-
-def update():
-    download_test = False
-    response = PixivAPI.get("https://raw.githubusercontent.com/Elaina-Alex/pixiv_crawler/main/update.json")
-    if not os.path.exists('update.json'):
-        json.dump(response, open('update.json', 'w'))
-        download_test = True
-    data = json.loads(open('update.json', 'r').read())
-    if data['version'] < response['version']:
-        print("检测到有新版本", response['version'], "是否进行更新？[yes/no]")
-        choice = PixivAPI.input_str('>').strip()
-        if choice == "yes":
-            download_test = True
-            print("开始更新", response['version'], "版本")
-        else:
-            download_test = False
-
-    if download_test:
-        with open(data['name'] + ".exe", 'wb') as file:
-            print(response['download_url'].format(response['version']))
-            file.write(PixivAPI.get(response['download_url'].format(response['version']), types="content"))
-        print(data['name'] + ".exe", "下载完毕")
-        json.dump(response, open('update.json', 'w'))
-        print("三秒后自动退出脚本...")
-        sys.exit()
 
 
 def shell_author_works(author_id: str, next_url: str = ""):  # download author images save to local
@@ -54,9 +27,9 @@ def shell_illustration(inputs):
             Vars.images_info = Image.ImageInfo(Vars.images_info)
             Vars.images_info.show_images_information()
             if Vars.images_info.page_count == 1:
-                Vars.images_info.save_image(Vars.images_info.original_url)
+                Vars.images_info.out_put_download_image_file(image_url=Vars.images_info.original_url)
             else:
-                Vars.images_info.save_image(Vars.images_info.original_url_list)
+                Vars.images_info.out_put_download_image_file(image_url_list=Vars.images_info.original_url_list)
         else:
             print("没有找到相应的作品！")
     else:
