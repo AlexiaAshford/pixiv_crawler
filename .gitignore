@@ -1667,7 +1667,6 @@ Referenced Packages
 /_build
 /cover
 /deps
-/doc
 /.fetch
 erl_crash.dump
 *.ez
@@ -5703,7 +5702,7 @@ pubspec.lock
 
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
-doc/api/
+docs/api/
 
 # Avoid committing generated Javascript files:
 *.dart.js
@@ -6030,7 +6029,7 @@ build-iPhoneSimulator/
 ## Documentation cache and generated files:
 /.yardoc/
 /_yardoc/
-/doc/
+/docs/
 /rdoc/
 
 ## Environment normalization:

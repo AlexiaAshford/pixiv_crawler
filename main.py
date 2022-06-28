@@ -1,7 +1,45 @@
 import argparse
 import sys
-from instance import *
+from tools.instance import *
 import src
+
+
+def set_config():
+    Vars.cfg.load()
+    config_change = False
+    if type(Vars.cfg.data.get('max_thread')) is not int:
+        Vars.cfg.data['max_thread'] = 5
+        config_change = True
+
+    if Vars.cfg.data.get('save_file') is not str:
+        Vars.cfg.data['save_file'] = 'image_file'
+        config_change = True
+
+    if Vars.cfg.data.get('out_file') is not str:
+        Vars.cfg.data['out_file'] = 'downloaded'
+        config_change = True
+
+    if type(Vars.cfg.data.get('access_token')) is not str:
+        Vars.cfg.data['access_token'] = ""
+        config_change = True
+
+    if type(Vars.cfg.data.get('refresh_token')) is not str:
+        Vars.cfg.data['refresh_token'] = ""
+        config_change = True
+
+    if type(Vars.cfg.data.get('max_retry')) is not int:
+        Vars.cfg.data['max_retry'] = 5  # retry times when download failed
+        config_change = True
+
+    if not isinstance(Vars.cfg.data.get('user_info'), dict):
+        Vars.cfg.data['user_info'] = {}  # save user info to config file
+        config_change = True
+
+    if config_change:  # if config change, save it to file and reload.
+        Vars.cfg.save()
+
+    if not os.path.exists(Vars.cfg.data.get('save_file')):
+        os.mkdir(Vars.cfg.data.get('save_file'))
 
 
 def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
@@ -178,7 +216,7 @@ def print_lang(*args) -> None:  # print message in language set in config file
     if Vars.cfg.data.get("lang") is None:  # if language is not set in config file
         print(convert(str(msg), 'zh-hant'))  # print message in chinese
     else:  # if language is set in config file
-        print(msg)
+        print(msg)  # print message in language set in config file
 
 
 if __name__ == '__main__':

@@ -7,10 +7,10 @@
 - but this page is protected by Google reCAPTCHA, which seems impossible to circumvent.
 - so, you can't use this crawler to with login account,but you can use this crawler to web get the account token to
   login.
-- You can refer to the following [link](/doc) to get the account token.
-- run `py mian.py` browser automatically login pixiv on startup **[1](/doc/1.png)**
-- copy the `code`  **[2](/doc/2.png)**
-- enter the `code` it to command terminal  **[3](/doc/3.png)**
+- You can refer to the following [link](/docs) to get the account token.
+- run `py mian.py` browser automatically login pixiv on startup **[1](/docs/1.png)**
+- copy the `code`  **[2](/docs/2.png)**
+- enter the `code` it to command terminal  **[3](/docs/3.png)**
 - **Congratulations on your login success!**
 
 ## start crawler with command line arguments

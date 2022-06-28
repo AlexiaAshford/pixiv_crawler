@@ -1,5 +1,5 @@
 import threading
-from instance import *
+from tools.instance import *
 import src
 
 

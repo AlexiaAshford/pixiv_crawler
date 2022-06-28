@@ -1,5 +1,5 @@
 import Image
-from instance import *
+from tools.instance import *
 from rich.progress import track
 import src
 

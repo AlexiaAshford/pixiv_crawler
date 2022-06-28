@@ -1,5 +1,5 @@
 import requests
-from instance import *
+from tools.instance import *
 import functools
 
 
