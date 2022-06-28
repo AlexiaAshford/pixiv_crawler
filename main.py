@@ -4,7 +4,7 @@ from tools.instance import *
 import src
 
 
-def set_config():
+def set_update_config():
     Vars.cfg.load()
     config_change = False
     if type(Vars.cfg.data.get('max_thread')) is not int:
@@ -151,7 +151,7 @@ def shell_parser():
         shell_console = True
 
     if args.clear_cache:
-        Vars.cfg.data.clear(), set_config()
+        Vars.cfg.data.clear(), set_update_config()
         Vars.cfg.save()
         sys.exit(3)  # exit with code 3  to clear cache
 
@@ -177,7 +177,7 @@ def shell_parser():
     if not shell_console:
         for info in Msg.msg_help:
             print_lang('[帮助]', info)
-        while True:
+        while True:  # start interactive mode for command line
             shell(re.split('\\s+', src.input_str('>').strip()))
 
 
@@ -221,10 +221,10 @@ def print_lang(*args) -> None:  # print message in language set in config file
 
 if __name__ == '__main__':
     try:
-        set_config()
+        set_update_config()
         src.shell_test_pixiv_token()
         shell_parser()
     except KeyboardInterrupt:
         print("已手动退出程序")
-    # except Exception as error:
-    #     print("程序意外退出，ERROR:", error)
+    except Exception as error:
+        print("there is an error:", error)
