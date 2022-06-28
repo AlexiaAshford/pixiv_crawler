@@ -1,6 +1,6 @@
 import threading
 from instance import *
-import scr
+import src
 
 
 class ImageInfo:
@@ -38,13 +38,13 @@ class ImageInfo:
         if not os.path.exists(save_image_dir):
             TextFile.write_image(
                 save_path=save_image_dir,
-                image_file=scr.get(api_url=image_url, head="png", types="content")
+                image_file=src.get(api_url=image_url, head="png", types="content")
             )
         elif os.path.getsize(save_image_dir) == 0:
             print("{} is empty, retry download png file!".format(self.image_name))
             TextFile.write_image(
                 save_path=save_image_dir,
-                image_file=scr.get(api_url=image_url, head="png", types="content")
+                image_file=src.get(api_url=image_url, head="png", types="content")
             )
 
     def out_put_download_image_file(self, image_url: str = None, image_url_list: list = None):

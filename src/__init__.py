@@ -1,6 +1,6 @@
 from fake_useragent import UserAgent
 from instance import *
-from scr.PixivApi import UrlConstant, HttpUtil
+from src.PixivApi import UrlConstant, HttpUtil
 
 common_params = {"filter": "for_android"}
 
