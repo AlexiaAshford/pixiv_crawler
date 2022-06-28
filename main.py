@@ -4,7 +4,6 @@ import Image
 from instance import *
 from rich.progress import track
 import scr
-import complex_image
 
 
 def shell_author_works(author_id: str, next_url: str = ""):  # download author images save to local
@@ -16,7 +15,7 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
         else:  # if next_url is not empty, it means it is the next time to download author works list
             image_info_list, next_url = scr.PixivApp.author_information(api_url=next_url)
         # # start download threading pool for download images from author works list
-        complex_image.Multithreading().executing_multithreading(image_info_list)
+        Image.Multithreading().executing_multithreading(image_info_list)
 
 
 @count_time
@@ -41,7 +40,7 @@ def shell_search(inputs: list):
     if len(inputs) < 2:  # if there is no search keyword input
         return print("没有输入搜索信息")  # print error message
     # start download threading pool for download images from search list and save to local
-    complex_image.Multithreading().executing_multithreading(scr.Tag.search_information(png_name=inputs[1]))
+    Image.Multithreading().executing_multithreading(scr.Tag.search_information(png_name=inputs[1]))
 
 
 @count_time
@@ -68,7 +67,7 @@ def shell_download_rank(next_url: str = ""):
         else:  # if next_url is not empty, it means it is the next time to download author works list
             image_info_list, next_url = scr.PixivApp.get_ranking_info(api_url=next_url)  # get next follow list
         # start download threading pool for download images from author works list
-        complex_image.Multithreading().executing_multithreading(image_info_list)
+        Image.Multithreading().executing_multithreading(image_info_list)
 
 
 @count_time
@@ -84,7 +83,7 @@ def shell_read_text_id():
         if image_id and len(image_id) >= 5:
             image_id_list.append(image_id[0])
     if isinstance(image_id_list, list) and len(image_id_list) != 0:
-        threading_image_pool = complex_image.Multithreading()
+        threading_image_pool = Image.Multithreading()
         for image_id in track(image_id_list, description="本地插画集加载中..."):
             Vars.images_info = scr.PixivApp.images_information(image_id)
             if isinstance(Vars.images_info, dict):
@@ -116,7 +115,7 @@ def shell_download_recommend(next_url: str = ""):  # download recommend images f
         else:  # if next_url is not empty, it means it is the next time to download recommend list
             image_info_list, next_url = scr.PixivApp.recommend_images(api_url=next_url)
         # start download threading pool for download images from recommend list and save to local
-        complex_image.Multithreading().executing_multithreading(image_info_list)
+        Image.Multithreading().executing_multithreading(image_info_list)
 
 
 def shell_download_stars(next_url: str = ""):  # get stars list and download all the images in the list
@@ -128,7 +127,7 @@ def shell_download_stars(next_url: str = ""):  # get stars list and download all
         else:  # if next_url is not empty, it means it is the next time to download stars list
             image_info_list, next_url = scr.PixivApp.start_images(api_url=next_url)
         # start download threading pool for download images from stars list and save to local
-        complex_image.Multithreading().executing_multithreading(image_info_list)
+        Image.Multithreading().executing_multithreading(image_info_list)
 
 
 def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
