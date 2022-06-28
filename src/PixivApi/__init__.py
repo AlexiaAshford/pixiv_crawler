@@ -1,4 +1,5 @@
-from fake_useragent import UserAgent
+import random
+
 from instance import *
 from src.PixivApi import UrlConstant, HttpUtil
 
@@ -16,9 +17,9 @@ def return_headers(headers: str = "app"):
     if headers == "login":
         return {"User-Agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}
     if headers == "png":
-        return {'Referer': 'https://www.pixiv.net/', 'User-Agent': UserAgent(verify_ssl=False).random}
+        return {'Referer': 'https://www.pixiv.net/', 'User-Agent': random.choice(UrlConstant.USER_AGENT)}
     else:
-        return {'User-Agent': UserAgent(verify_ssl=False).random}
+        return {'User-Agent': random.choice(UrlConstant.USER_AGENT)}
 
 
 def get(
