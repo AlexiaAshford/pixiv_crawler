@@ -1,7 +1,7 @@
 import random
 
 from tools.instance import *
-from src.PixivApi import UrlConstant, HttpUtil
+from src.PixivUtil import UrlConstant, HttpUtil
 
 common_params = {"filter": "for_android"}
 

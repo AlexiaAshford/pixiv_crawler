@@ -32,7 +32,6 @@ class YamlData:
 
         if file_path is not None:
             self.file_path = os.path.join(os.getcwd(), file_path)
-            print("file_path：", self.file_path)
             self.data = {}
 
     def load(self):

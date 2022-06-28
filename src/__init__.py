@@ -1,2 +1,2 @@
-from src.PixivApi import *
+from src.PixivUtil import *
 from src.pixiv_shell import *
