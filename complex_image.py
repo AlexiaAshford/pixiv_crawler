@@ -18,7 +18,7 @@ class Multithreading:
 
     def handling_threads(self):
         if len(self.images_info_obj_list) != 0:
-            print("download length:{}".format(self.pool_length))
+            print("download {} images~ ".format(self.pool_length))
             self.threading_list = [
                 threading.Thread(target=self.download_images, args=(images_info,))
                 for images_info in self.images_info_obj_list
@@ -33,16 +33,23 @@ class Multithreading:
             print("threading pool is empty, no need to start download threading pool.")
         self.images_info_obj_list.clear()  # clear threading pool and semaphore for next download
 
+    def progress_bar(self, total_length: int, images_name:str) -> None:  # progress bar
+        percentage = int(100 * self.threading_page / total_length)
+        print("progress: {}/{}\tpercentage: {}%\tname: {}".format(
+            self.threading_page, total_length, percentage, images_name),
+            end="\r")  # print progress bar for download images in threading pool
+
     def download_images(self, images_info):
         self.semaphore.acquire()  # acquire semaphore to limit threading pool
         self.threading_page += 1  # threading page count + 1
-        images_info.show_images_information(thread_status=True)
+        images_info.show_images_information(thread_status=True)  # show images information
         if images_info.page_count == 1:
             images_info.out_put_download_image_file(images_info.original_url)
         else:
             images_info.out_put_download_image_file(images_info.original_url_list)
-        # print(images_info.image_name, "的作品下载完毕")
-        print("下载进度:{}/{}".format(self.threading_page, len(self.images_info_obj_list)), end="\r")
+
+        self.progress_bar(len(self.images_info_obj_list), images_info.image_name)
+
         self.semaphore.release()  # release semaphore when threading pool is empty
 
     def executing_multithreading(self, image_info_list: list):
