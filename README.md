@@ -16,50 +16,50 @@
 ## start crawler with command line arguments
 
 ```
-h | help               --- 显示说明
-q | quit               --- 退出正在运作的程序
-d | picture            --- 输入插画id或url下载插画
-t | recommend          --- 批量下载pixiv推荐插画
-s | start              --- 批量下载账号收藏插画
-u | read text pid      --- 读取本地文本里的pid批量下载
-n | tag name           --- 输入插画名或者标签名批量下载
+h | help               --- show help information
+q | quit               --- quit crawler and exit
+d | picture            --- input picture id to download
+t | recommend          --- download recommend picture
+s | start              --- download all collect picture
+u | read text pid      --- read text from picture id (only for pixiv)
+n | tag name           --- search tag name and download all picture
 ```
+
+## install
+
+``` pip install pixivlib ```
 
 ## about command line arguments and usage
 
-- **登入账号** ``` -l / --login```
-- **下载插画** ``` -d / --download <image_id> ```
-- **作者画集** ``` -a / --author <author_id> ```
-- **更改线程** ``` -m / --max ```
-- **下载收藏** ``` -s / --start ```
-- **推荐插画** ``` -r / --recommend```
-- **搜索插画** ``` -s / --search <search_word> ```
-- **下载排行** ``` -k / --rkaning ```
-- **清除缓存** ``` -c / --clear_cache```
+## NAME pixivlib
 
-| 功能               | 实现  |
-|------------------|-----|
-| id下载插画           | ✅   |
-| 命令行              | ✅   |
-| 批量下载搜索插画         | ✅   |
-| 批量下载下载收藏插画       | ✅   |
-| 批量下载下载推荐和相关插画    | ✅   |
-| 多线程 谨慎使用，线程不要开太大 | ✅   |
-| 异步 不支持，担心封IP     | ❌   |
-| 唤起浏览器获取实现pixiv登入 | ✅   |
+- **login account** 
+  - ``` -l / --login```
+- **download image** 
+  - ```-d / --download <image_id> ```
+- **download author illustrations**
+  - ``` -a / --author <author_id> ```
+- **change the thread number** 
+  - ``` -m / --max ```
+- **download collect illustrations**
+  - ``` -s / --start ```
+- **download recommend illustrations**
+  - ``` -r / --recommend```
+- **search illustrations** 
+  - ``` -s / --search <search_word> ```
+- **ranking illustrations** 
+  - ``` -k / --rkaning ```
+- **clear cache** 
+  - ``` -c / --clear_cache```
 
-### 下载本地插画id
-
-* 可以使用**本地文本**中所列出的插画id进行下载<p>
-* 或者輸入:  `-u | --update <文本名>`  <p>
-* 若省略`<文本名>`則會下载预设`"pixiv_id_list.txt"`中所列的插画id<br>
-
-* 规则概要 :
-    * 每行只能下载最开始的第一个插画id号
-    * 插画id开始只能是<空白>或<插画ID_8位數>
-    * <插画ID_8位數> 后面的信息会被忽略
-* 若不符合正则表达式则忽略该行
-    * 可在刻意“**不符合规则**”插画ID自前插入任意符号来停用该次下载，不必删除该行
-    * 可自由添加“**不符合规则**”的文字来进行分类管理或注释，增加阅读辨识度
-* 提供參考范例 "pixiv_id_list.txt"
-
+| functions                                    | complete |
+|----------------------------------------------|----------|
+| download picture by image_id                 | ✅        |
+| command line                                 | ✅        |
+| download picture by image_name               | ✅        |
+| download collect illustrations               | ✅        |
+| download recommend illustrations             | ✅        |
+| multi-threading                              | ✅        |
+| asynchronous                                 | ❌        |
+| browser automatically login pixiv on startup | ✅        |
+| download illustrations by tag name           | ✅        |

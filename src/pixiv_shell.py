@@ -1,4 +1,4 @@
-import Image
+from src import Image
 from tools.instance import *
 from rich.progress import track
 import src
