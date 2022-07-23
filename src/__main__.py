@@ -42,23 +42,23 @@ def start_parser() -> argparse.Namespace:  # start parser for command line argum
     parser = argparse.ArgumentParser()  # create parser object for command line arguments
     parser.add_argument(
         "-l", "--login",
-        default=False, action="store_true", help="登录账号"
+        default=False, action="store_true", help="login to pixiv account and save token to config file"
     )  # add login argument to parser object for command line arguments
     parser.add_argument(
         "-d", "--download",
-        nargs=1, default=None, help="输入image-id"
+        nargs=1, default=None, help="input image id to download it"
     )  # add download argument to parser object for command line arguments for download image
     parser.add_argument(
         "-m", "--max",
-        dest="threading_max", default=None, help="更改线程"
+        dest="threading_max", default=None, help="change max threading number"
     )  # add max argument to parser object for command line arguments for change threading max
     parser.add_argument(
         "-n", "--name",
-        nargs=1, default=None, help="输入搜搜信息"
+        nargs=1, default=None, help="input search name or tag name"
     )  # add name argument to parser object for command line arguments for search
     parser.add_argument(
         "-u", "--update",
-        default=False, action="store_true", help="下载本地档案"
+        default=False, action="store_true", help="download update local image id"
     )  # add update argument to parser object for command line arguments for download local file
     parser.add_argument(
         "-s", "--stars",
@@ -88,7 +88,7 @@ def start_parser() -> argparse.Namespace:  # start parser for command line argum
 
 
 def shell_parser(command_line_args: argparse.Namespace):
-    shell_console = False
+    shell_console = False  # if shell console is True, it will start shell console
     if command_line_args.recommend:
         src.shell_download_recommend()
         shell_console = True

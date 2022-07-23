@@ -74,15 +74,16 @@ def shell_read_text_id(file_name: str = "./pixiv_list.txt"):
     if not os.path.exists(file_name):
         print("the file is not exist")
         open(file_name, 'w').close()
-    else:
-        for line in open(file_name, 'r', encoding='utf-8', newline="").readlines():
-            if line.startswith("#") or line.strip() == "":
-                continue
-            image_id = re.findall(r'^(\d+)', line)
-            if image_id and len(image_id) >= 5:
-                image_id_list.append(image_id[0])
-        if isinstance(image_id_list, list) and len(image_id_list) != 0:
-            Image.Multithreading().executing_multithreading(image_id_list)
+        return
+    print(image_id_list)
+    for line in open(file_name, 'r', encoding='utf-8', newline="").readlines():
+        if line.startswith("#") or line.strip() == "":
+            continue
+        image_id = re.findall(r'^(\d+)', line)
+        if image_id and len(image_id) >= 5:
+            image_id_list.append(image_id[0])
+    if isinstance(image_id_list, list) and len(image_id_list) != 0:
+        Image.Multithreading().executing_multithreading(image_id_list)
 
 
 def shell_test_pixiv_token():
