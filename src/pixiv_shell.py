@@ -1,6 +1,5 @@
 from src import Image
 from tools.instance import *
-from rich.progress import track
 import src
 
 
@@ -38,7 +37,8 @@ def shell_search(inputs: list):
     if len(inputs) < 2:  # if there is no search keyword input
         return print("没有输入搜索信息")  # print error message
     # start download threading pool for download images from search list and save to local
-    Image.Multithreading().executing_multithreading(src.Tag.search_information(png_name=inputs[1]))
+    response = src.Tag.search_information(png_name=inputs[1])
+    Image.Multithreading().executing_multithreading(response)
 
 
 @count_time
@@ -69,26 +69,20 @@ def shell_download_rank(next_url: str = ""):
 
 
 @count_time
-def shell_read_text_id():
-    default_file_name = "../pixiv_id_list.txt"
-    if not os.path.exists(default_file_name):
-        open(default_file_name, 'w').close()
+def shell_read_text_id(file_name: str = "./pixiv_list.txt"):
     image_id_list = []
-    for line in open(default_file_name, 'r', encoding='utf-8', newline="").readlines():
-        if line.startswith("#") or line.strip() == "":
-            continue
-        image_id = re.findall(r'^(\d{1,8})', line)
-        if image_id and len(image_id) >= 5:
-            image_id_list.append(image_id[0])
-    if isinstance(image_id_list, list) and len(image_id_list) != 0:
-        threading_image_pool = Image.Multithreading()
-        for image_id in track(image_id_list, description="本地插画集加载中..."):
-            Vars.images_info = src.PixivApp.images_information(image_id)
-            if isinstance(Vars.images_info, dict):
-                threading_image_pool.add_image_info_obj(Image.ImageInfo(Vars.images_info))
-            else:
-                return print("无法进行下载,ERROR:", Vars.images_info)
-        threading_image_pool.handling_threads()
+    if not os.path.exists(file_name):
+        print("the file is not exist")
+        open(file_name, 'w').close()
+    else:
+        for line in open(file_name, 'r', encoding='utf-8', newline="").readlines():
+            if line.startswith("#") or line.strip() == "":
+                continue
+            image_id = re.findall(r'^(\d+)', line)
+            if image_id and len(image_id) >= 5:
+                image_id_list.append(image_id[0])
+        if isinstance(image_id_list, list) and len(image_id_list) != 0:
+            Image.Multithreading().executing_multithreading(image_id_list)
 
 
 def shell_test_pixiv_token():

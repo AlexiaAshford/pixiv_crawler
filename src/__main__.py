@@ -129,48 +129,48 @@ def start_parser() -> argparse.Namespace:  # start parser for command line argum
 
 
 def shell_parser():
-    args, shell_console = start_parser(), False
-    if args.recommend:
+    command_line_args, shell_console = start_parser(), False
+    if command_line_args.recommend:
         src.shell_download_recommend()
         shell_console = True
 
-    if args.ranking:
+    if command_line_args.ranking:
         src.shell_download_rank()
         shell_console = True
 
-    if args.stars:
+    if command_line_args.stars:
         src.shell_download_stars()
         shell_console = True
 
-    if args.follow:
+    if command_line_args.follow:
         src.shell_download_follow_author()
         shell_console = True
 
-    if args.update:
+    if command_line_args.update:
         src.shell_read_text_id()
         shell_console = True
 
-    if args.clear_cache:
+    if command_line_args.clear_cache:
         Vars.cfg.data.clear(), set_update_config()
         Vars.cfg.save()
         sys.exit(3)  # exit with code 3  to clear cache
 
-    if args.threading_max:
-        Vars.cfg.data['max_thread'] = int(args.max)
+    if command_line_args.threading_max:
+        Vars.cfg.data['max_thread'] = int(command_line_args.max)
 
-    if args.name:
-        src.shell_search(['n'] + args.name)
+    if command_line_args.name:
+        src.shell_search(['n'] + command_line_args.name)
         shell_console = True
 
-    if args.downloadbook:
-        src.shell_illustration(['d'] + args.downloadbook)
+    if command_line_args.downloadbook:
+        src.shell_illustration(['d'] + command_line_args.downloadbook)
         shell_console = True
 
-    if args.author:
-        src.shell_author_works(args.author[0])
+    if command_line_args.author:
+        src.shell_author_works(command_line_args.author[0])
         shell_console = True
 
-    if args.login:
+    if command_line_args.login:
         src.shell_test_pixiv_token()
         shell_console = True
 
