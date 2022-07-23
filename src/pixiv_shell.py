@@ -68,14 +68,12 @@ def shell_download_rank(next_url: str = ""):
         Image.Multithreading().executing_multithreading(image_info_list)
 
 
-@count_time
 def shell_read_text_id(file_name: str = "./pixiv_list.txt"):
     image_id_list = []
     if not os.path.exists(file_name):
         print("the file is not exist")
         open(file_name, 'w').close()
         return
-    print(image_id_list)
     for line in open(file_name, 'r', encoding='utf-8', newline="").readlines():
         if line.startswith("#") or line.strip() == "":
             continue

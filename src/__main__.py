@@ -110,9 +110,9 @@ def shell_parser(command_line_args: argparse.Namespace):
         shell_console = True
 
     if command_line_args.clear_cache:
-        Vars.cfg.data.clear(), set_update_config()
+        Vars.cfg.data.clear()
         Vars.cfg.save()
-        sys.exit(3)  # exit with code 3  to clear cache
+        shell_console = True  # if clear cache, it will close shell console
 
     if command_line_args.threading_max:
         Vars.cfg.data['max_thread'] = int(command_line_args.max)
