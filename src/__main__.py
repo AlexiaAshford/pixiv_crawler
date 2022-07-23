@@ -15,10 +15,6 @@ def set_update_config():
         Vars.cfg.data['save_file'] = 'image_file'
         config_change = True
 
-    if Vars.cfg.data.get('out_file') is not str:
-        Vars.cfg.data['out_file'] = 'downloaded'
-        config_change = True
-
     if type(Vars.cfg.data.get('access_token')) is not str:
         Vars.cfg.data['access_token'] = ""
         config_change = True
@@ -45,91 +41,54 @@ def set_update_config():
 def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
     parser = argparse.ArgumentParser()  # create parser object for command line arguments
     parser.add_argument(
-        "-l",
-        "--login",
-        dest="login",
-        default=False,
-        action="store_true",
-        help="登录账号"
+        "-l", "--login",
+        default=False, action="store_true", help="登录账号"
     )  # add login argument to parser object for command line arguments
     parser.add_argument(
-        "-d",
-        "--download",
-        dest="downloadbook",
-        nargs=1,
-        default=None,
-        help="输入image-id"
+        "-d", "--download",
+        nargs=1, default=None, help="输入image-id"
     )  # add download argument to parser object for command line arguments for download image
     parser.add_argument(
         "-m", "--max",
-        dest="threading_max",
-        default=None,
-        help="更改线程"
+        dest="threading_max", default=None, help="更改线程"
     )  # add max argument to parser object for command line arguments for change threading max
     parser.add_argument(
         "-n", "--name",
-        dest="name",
-        nargs=1,
-        default=None,
-        help="输入搜搜信息"
+        nargs=1, default=None, help="输入搜搜信息"
     )  # add name argument to parser object for command line arguments for search
     parser.add_argument(
-        "-u",
-        "--update",
-        dest="update",
-        default=False,
-        action="store_true",
-        help="下载本地档案"
+        "-u", "--update",
+        default=False, action="store_true", help="下载本地档案"
     )  # add update argument to parser object for command line arguments for download local file
     parser.add_argument(
         "-s", "--stars",
-        dest="stars",
-        default=False,
-        action="store_true",
-        help="download stars list and download all the images in the list"
+        default=False, action="store_true", help="download stars list and download all the images in the list"
     )  # add stars argument to parser object for command line arguments for download stars
     parser.add_argument(
         "-r", "--recommend",
-        dest="recommend",
-        default=False,
-        action="store_true",
-        help="download pixiv recommend images"
+        default=False, action="store_true", help="download pixiv recommend images"
     )  # add recommend argument to parser object for command line arguments for download recommend
     parser.add_argument(
         "-k", "--ranking",
-        dest="ranking",
-        default=False,
-        action="store_true",
-        help="download ranking images"
+        default=False, action="store_true", help="download ranking images"
     )  # add ranking argument to parser object for command line arguments for download ranking
     parser.add_argument(
-        "-f",
-        "--follow",
-        dest="follow",
-        default=False,
-        action="store_true",
-        help="download follow author images"
+        "-f", "--follow",
+        default=False, action="store_true", help="download follow author images"
     )
     parser.add_argument(
-        "-c",
-        "--clear_cache",
-        dest="clear_cache",
-        default=False,
-        action="store_true"
+        "-c", "--clear_cache",
+        default=False, action="store_true"
     )  # add clear_cache argument to parser object for command line arguments for clear cache
     parser.add_argument(
-        "-a",
-        "--author",
-        dest="author",
-        nargs=1,
-        default=None,
-        help="enter author id"
+        "-a", "--author",
+        nargs=1, default=None, help="enter author id"
     )  # add author argument to parser object for command line arguments for download author
     return parser.parse_args()  # return parser object for command line arguments and return it as a tuple
 
 
-def shell_parser():
-    command_line_args, shell_console = start_parser(), False
+def shell_parser(command_line_args: argparse.Namespace):
+    shell_console = False
     if command_line_args.recommend:
         src.shell_download_recommend()
         shell_console = True
@@ -162,8 +121,8 @@ def shell_parser():
         src.shell_search(['n'] + command_line_args.name)
         shell_console = True
 
-    if command_line_args.downloadbook:
-        src.shell_illustration(['d'] + command_line_args.downloadbook)
+    if command_line_args.download:
+        src.shell_illustration(['d'] + command_line_args.download)
         shell_console = True
 
     if command_line_args.author:
@@ -196,7 +155,7 @@ def shell(inputs: list):
     elif inputs_choice == 'r' or inputs_choice == 'recommend':
         src.shell_download_recommend()
     elif inputs_choice == 'u' or inputs_choice == 'update':
-        src.shell_read_text_id(inputs)
+        src.shell_read_text_id(inputs[1:])
     elif inputs_choice == 'k' or inputs_choice == 'rank':
         src.shell_download_rank()
     elif inputs_choice == 'f' or inputs_choice == 'follow':
@@ -223,7 +182,7 @@ def main():
     try:
         set_update_config()
         src.shell_test_pixiv_token()
-        shell_parser()
+        shell_parser(start_parser())
     except KeyboardInterrupt:
         print("已手动退出程序")
     except Exception as error:
