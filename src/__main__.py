@@ -7,24 +7,23 @@ import src
 def set_update_config():
     Vars.cfg.load()
     config_change = False
-    if type(Vars.cfg.data.get('max_thread')) is not int:
+    if not isinstance(Vars.cfg.data.get('max_thread'), int):
         Vars.cfg.data['max_thread'] = 5
         config_change = True
 
-    if Vars.cfg.data.get('save_file') is not str:
+    if not isinstance(Vars.cfg.data.get('save_file'), str):
         Vars.cfg.data['save_file'] = 'image_file'
         config_change = True
 
-    if type(Vars.cfg.data.get('access_token')) is not str:
+    if not isinstance(Vars.cfg.data.get('access_token'), str):
         Vars.cfg.data['access_token'] = ""
         config_change = True
 
-    if type(Vars.cfg.data.get('refresh_token')) is not str:
+    if not isinstance(Vars.cfg.data.get('refresh_token'), str):
         Vars.cfg.data['refresh_token'] = ""
         config_change = True
-
-    if type(Vars.cfg.data.get('picture_format')) is not int:
-        Vars.cfg.data['picture_format'] = ".jpg"
+    if not isinstance(Vars.cfg.data.get('picture_format'), str):
+        Vars.cfg.data['picture_format'] = ".png"
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('user_info'), dict):
