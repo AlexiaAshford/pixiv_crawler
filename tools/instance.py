@@ -102,7 +102,7 @@ def count_time(func: callable) -> callable:
 
 def remove_str(content: str):
     res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-    return res_compile.sub("", re.sub('[/:*?"<>|x08]', '-', content))
+    return res_compile.sub("", re.sub('[/:*?"<>|x0「」8]', '#', content))
 
 
 def rec_id(book_id: str):

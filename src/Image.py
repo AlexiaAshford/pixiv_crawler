@@ -5,6 +5,7 @@ import src
 
 class ImageInfo:
     def __init__(self, result_info: dict):
+        self.result_info = result_info
         self.image_id = str(result_info["id"])
         self.author_id = str(result_info['user']["id"])
         self.author_name = remove_str(str(result_info['user']["name"]))
@@ -68,15 +69,17 @@ class Multithreading:
         self.semaphore = threading.Semaphore(self.max_thread)
 
     def add_image_info_obj(self, image_info_obj):
+
         self.images_info_obj_list.append(image_info_obj)  # add image_info_obj to threading pool
+
         self.pool_length += 1  # pool length + 1 if add image_info_obj to threading pool
 
     def handling_threads(self):
         if len(self.images_info_obj_list) != 0:
             print("download {} images~ ".format(self.pool_length))
             self.threading_list = [
-                threading.Thread(target=self.download_images, args=(images_info,))
-                for images_info in self.images_info_obj_list
+                threading.Thread(target=self.download_images, args=(image_info_obj,))
+                for image_info_obj in self.images_info_obj_list
             ]
             for thread_ing in self.threading_list:  # start threading pool for download images
                 thread_ing.start()  # start threading pool for download images
@@ -99,9 +102,9 @@ class Multithreading:
         self.threading_page += 1  # threading page count + 1
         images_info.show_images_information(thread_status=True)  # show images information
         if images_info.page_count == 1:
-            images_info.out_put_download_image_file(images_info.original_url)
+            images_info.out_put_download_image_file(image_url=images_info.original_url)
         else:
-            images_info.out_put_download_image_file(images_info.original_url_list)
+            images_info.out_put_download_image_file(image_url_list=images_info.original_url_list)
 
         self.progress_bar(len(self.images_info_obj_list), images_info.image_name)
 

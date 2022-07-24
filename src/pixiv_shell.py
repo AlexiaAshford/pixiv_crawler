@@ -12,10 +12,6 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
         else:  # if next_url is not empty, it means it is the next time to download author works list
             image_info_list, next_url = src.PixivApp.author_information(api_url=next_url)
         # # start download threading pool for download images from author works list
-        with open("pixiv_list.txt", "a", encoding="utf-8") as f:
-            for image_info in image_info_list:
-                f.write(f"{image_info['id']}\n")
-        print(len([i['id'] for i in image_info_list]))
         Image.Multithreading().executing_multithreading(image_info_list)
 
 
@@ -51,10 +47,10 @@ def shell_download_follow_author(next_url: str = ""):
         if next_url is None:  # if next_url is None, it means that it is download complete
             return print("the end of follow list")
         if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
-            follow_list, next_url = src.PixivApp.follow_information()
+            follow_image_list, next_url = src.PixivApp.follow_information()
         else:  # if next_url is not empty, it means it is the next time to download author works list
-            follow_list, next_url = src.PixivApp.follow_information(api_url=next_url)  # get next follow list
-        for follow_info in follow_list:  # start download threading pool for download images from author works list
+            follow_image_list, next_url = src.PixivApp.follow_information(api_url=next_url)  # get next follow list
+        for follow_info in follow_image_list:  # start download threading pool for download images from author works
             print("start download author {} works".format(follow_info['user_name']))  # print author name
             shell_author_works(follow_info.get("user").get("id"))  # download author works list and save to local
 
