@@ -12,6 +12,10 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
         else:  # if next_url is not empty, it means it is the next time to download author works list
             image_info_list, next_url = src.PixivApp.author_information(api_url=next_url)
         # # start download threading pool for download images from author works list
+        with open("pixiv_list.txt", "a", encoding="utf-8") as f:
+            for image_info in image_info_list:
+                f.write(f"{image_info['id']}\n")
+        print(len([i['id'] for i in image_info_list]))
         Image.Multithreading().executing_multithreading(image_info_list)
 
 
@@ -73,13 +77,15 @@ def shell_read_text_id(file_name: str = "./pixiv_list.txt"):
     if not os.path.exists(file_name):
         print("the file is not exist")
         open(file_name, 'w').close()
-        return
+        return False
+
     for line in open(file_name, 'r', encoding='utf-8', newline="").readlines():
         if line.startswith("#") or line.strip() == "":
             continue
-        image_id = re.findall(r'^(\d+)', line)
-        if image_id and len(image_id) >= 5:
+        image_id = re.findall(r'^(\d+)', line) # get image id
+        if isinstance(image_id, list) and len(image_id[0]) >= 5:
             image_id_list.append(image_id[0])
+    print(image_id_list)
     if isinstance(image_id_list, list) and len(image_id_list) != 0:
         Image.Multithreading().executing_multithreading(image_id_list)
 
