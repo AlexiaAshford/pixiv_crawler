@@ -34,7 +34,7 @@ class ImageInfo:
         YamlData(file_dir=Vars.image_out_path)  # create a new image file
 
     def save_image_to_local(self, file_name: str, image_url: str):
-        save_image_dir: str = os.path.join(Vars.image_out_path, file_name)
+        save_image_dir: str = os.path.join(Vars.image_out_path, file_name)  # save image file
         if not os.path.exists(save_image_dir):
             TextFile.write_image(
                 save_path=save_image_dir,
@@ -51,10 +51,11 @@ class ImageInfo:
         if isinstance(image_url_list, list) and len(image_url_list) > 0:
             for index, url in enumerate(image_url_list, start=1):
                 file_name = self.image_id + "-" + str(index).rjust(4, "0") + '-' + self.image_name
-                self.save_image_to_local(file_name=file_name, image_url=url)
+                self.save_image_to_local(file_name=file_name + Vars.cfg.data['picture_format'], image_url=url)
 
         elif isinstance(image_url, str) and image_url != "":
-            self.save_image_to_local(file_name=self.image_id + "-" + self.image_name + ".png", image_url=image_url)
+            file_name = self.image_id + "-" + self.image_name + Vars.cfg.data['picture_format']
+            self.save_image_to_local(file_name=file_name, image_url=image_url)
 
 
 class Multithreading:

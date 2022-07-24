@@ -22,9 +22,8 @@ def set_update_config():
     if type(Vars.cfg.data.get('refresh_token')) is not str:
         Vars.cfg.data['refresh_token'] = ""
         config_change = True
-
-    if type(Vars.cfg.data.get('max_retry')) is not int:
-        Vars.cfg.data['max_retry'] = 5  # retry times when download failed
+    if type(Vars.cfg.data.get('picture_format')) is not int:
+        Vars.cfg.data['picture_format'] = ".jpg"
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('user_info'), dict):
@@ -178,7 +177,7 @@ def print_lang(*args) -> None:  # print message in language set in config file
         print(msg)  # print message in language set in config file
 
 
-def main():
+if __name__ == '__main__':
     try:
         set_update_config()
         src.shell_test_pixiv_token()
@@ -187,7 +186,3 @@ def main():
         print("已手动退出程序")
     # except Exception as error:
     #     print("there is an error:", error)
-
-
-if __name__ == '__main__':
-    main()

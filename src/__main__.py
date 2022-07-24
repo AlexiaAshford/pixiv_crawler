@@ -23,8 +23,8 @@ def set_update_config():
         Vars.cfg.data['refresh_token'] = ""
         config_change = True
 
-    if type(Vars.cfg.data.get('max_retry')) is not int:
-        Vars.cfg.data['max_retry'] = 5  # retry times when download failed
+    if type(Vars.cfg.data.get('picture_format')) is not int:
+        Vars.cfg.data['picture_format'] = ".jpg"
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('user_info'), dict):
