@@ -78,7 +78,7 @@ def shell_read_text_id(file_name: str = "./pixiv_list.txt"):
     for line in open(file_name, 'r', encoding='utf-8', newline="").readlines():
         if line.startswith("#") or line.strip() == "":
             continue
-        image_id = re.findall(r'^(\d+)', line) # get image id
+        image_id = re.findall(r'^(\d+)', line)  # get image id
         if isinstance(image_id, list) and len(image_id[0]) >= 5:
             image_id_list.append(image_id[0])
     print(image_id_list)

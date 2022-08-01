@@ -23,7 +23,7 @@ def update():
     if download_test:
         with open(data['name'] + ".exe", 'wb') as file:
             print(response['download_url'].format(response['version']))
-            file.write(src.get(response['download_url'].format(response['version']), types="content"))
+            file.write(src.get(response['download_url'].format(response['version']), return_type="content"))
         print(data['name'] + ".exe", "下载完毕")
         json.dump(response, open('update.json', 'w'))
         print("三秒后自动退出脚本...")

@@ -24,11 +24,11 @@ def return_headers(headers: str = "app"):
 
 def get(
         api_url: str,
+        method: str = "GET",
         params: [dict, str] = None,
         head: str = "app",
-        types: str = "json",
+        return_type: str = "json",
         params_clear: bool = False,
-        request_mode: str = "GET"
 ) -> [dict, bytes, str, None]:  # return json or bytes or str or None (if error)
     if params_clear:
         params = params.clear()
@@ -37,12 +37,13 @@ def get(
             params.update(common_params)
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
     try:
-        if request_mode == "GET":
-            return HttpUtil.get_api(api_url, params=params, return_type=types, headers=return_headers(head))
-        elif request_mode == "POST":
-            return HttpUtil.post_api(api_url, data=params, return_type=types, headers=return_headers(head))
-        elif request_mode == "PUT":
-            return HttpUtil.put_api(api_url, params=params, return_type=types, headers=return_headers(head))
+        headers = return_headers(head)
+        if return_type == "json":
+            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).json()
+        elif return_type == "content":
+            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).content
+        elif return_type == "text":
+            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).text
     except Exception as error:
         print("post error:", error)
 
@@ -258,7 +259,7 @@ class PixivLogin:
         response = get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
             head="login",
-            request_mode="POST",
+            method="POST",
             params={
                 "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
                 "client_secret": "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj",
@@ -280,7 +281,7 @@ class PixivLogin:
         response = get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
             head="login",
-            request_mode="POST",
+            method="POST",
             params={
                 "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
                 "client_secret": "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj",
