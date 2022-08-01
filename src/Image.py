@@ -69,9 +69,7 @@ class Multithreading:
         self.semaphore = threading.Semaphore(self.max_thread)
 
     def add_image_info_obj(self, image_info_obj):
-
         self.images_info_obj_list.append(image_info_obj)  # add image_info_obj to threading pool
-
         self.pool_length += 1  # pool length + 1 if add image_info_obj to threading pool
 
     def handling_threads(self):

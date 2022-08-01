@@ -9,7 +9,9 @@ setup(
     license='MIT License',
     author='Alex',
     author_email='',
-    entry_points={"console_scripts": ["pixiv = src.__main__:main"]},
+    entry_points={
+        "console_scripts": ["pixiv = src.__main__:main"]
+    },
     description='download pixiv illustrations',
     zip_safe=True
 )
