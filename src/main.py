@@ -28,8 +28,12 @@ def set_update_config():
         Vars.cfg.data['picture_format'] = ".png"
         config_change = True
 
-    if not isinstance(Vars.cfg.data.get('user_info'), dict):
-        Vars.cfg.data['user_info'] = {}  # save user info to config file
+    if not isinstance(Vars.cfg.data.get('user_id'), str):
+        Vars.cfg.data['user_id'] = ""  # user id
+        config_change = True
+
+    if not isinstance(Vars.cfg.data.get('account'), str):
+        Vars.cfg.data['account'] = ""  # user id
         config_change = True
 
     if config_change:  # if config change, save it to file and reload.

@@ -16,7 +16,7 @@ class PixivApp:
 
     @staticmethod
     def get_user_info(show_start: bool = False) -> bool:
-        params = {"user_id": Vars.cfg.data.get("user_info", {}).get("id")}
+        params = {"user_id": Vars.cfg.data.get('user_id')}
         response = src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
         if response is not None:
             if show_start is True:
@@ -40,7 +40,7 @@ class PixivApp:
             max_retry: int = 3
     ) -> [list, str, None]:  # get account start information and return a list of p_id
         if user_id is None:  # if user_id is None, get the user_id from config file
-            user_id = Vars.cfg.data['user_info']['id']
+            user_id = Vars.cfg.data['user_id']  # get user_id from config file
 
         if api_url != UrlConstant.BOOKMARK_INFORMATION:  # if api_url is not bookmark, clear to params dict
             params_clear = True
@@ -84,7 +84,7 @@ class PixivApp:
     ) -> [list, str]:  # get account follow information and return a list of AUTHOR_ID
         """获取指定 user_id 关注的所有画师信息"""
         if user_id is None:  # if user_id is None, get the user_id from config file
-            user_id = Vars.cfg.data['user_info']['id']  # get user_id from config file and set to user_id
+            user_id = Vars.cfg.data['user_id']  # get user_id from config file and set to user_id
         if api_url != UrlConstant.FOLLOWING_INFORMATION:  # if api_url is not recommended, clear to params dict
             params_clear = True
         response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict},
@@ -259,9 +259,8 @@ class PixivLogin:
         if isinstance(response, dict):  # if response is a dict
             Vars.cfg.data["access_token"] = response["access_token"]  # save access_token to config
             Vars.cfg.data["refresh_token"] = response["refresh_token"]  # save refresh_token to config
-            Vars.cfg.data["user_info"] = {
-                "id": response["user"]["id"], "account": response["user"]["account"]
-            }
+            Vars.cfg.data["user_id"] = response["user"]["id"]  # save user_id to config
+            Vars.cfg.data["account"] = response["user"]["account"]  # save account to config
             Vars.cfg.save()  # save config to file
             print("login success, user_id:", response["user"]["id"], "access_token:", response["access_token"])
         else:

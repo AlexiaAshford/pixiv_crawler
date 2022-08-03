@@ -2,7 +2,6 @@ import os
 from rich import print
 
 
-
 class Msg:
     msg_help = [
         "输入首字母",

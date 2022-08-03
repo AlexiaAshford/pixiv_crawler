@@ -97,7 +97,7 @@ def shell_test_pixiv_token():
         else:
             print(f"输入code无效，请重新尝试获取code！")
             shell_test_pixiv_token()
-    if Vars.cfg.data.get("user_info", {}).get("id") is None:
+    if Vars.cfg.data['user_id'] == "":
         print("test pixiv account info is impossible, refresh token is needed")
         src.refresh_pixiv_token()
     if not src.PixivApp.get_user_info(show_start=True):
