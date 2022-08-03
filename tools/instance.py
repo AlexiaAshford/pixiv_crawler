@@ -28,7 +28,7 @@ class YamlData:
                 try:
                     os.mkdir(self.file_dir)
                 except (FileExistsError, OSError) as err:
-                    print("file_dir：", err)
+                    print("Yaml Data Error: {}".format(err))
 
         if file_path is not None:
             self.file_path = os.path.join(os.getcwd(), file_path)
@@ -79,7 +79,7 @@ class TextFile:
             except Exception as error:
                 print("[error] text_file.write_image:", error)
         else:
-            print("[error] text_file.write_image: image_file is None", image_file)
+            print("[error] text_file.write_image:", image_file)
 
 
 class Vars:

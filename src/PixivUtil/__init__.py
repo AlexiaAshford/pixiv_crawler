@@ -1,51 +1,6 @@
-import random
-from src.https import HttpUtil
+import src
 from tools.instance import *
 from src.PixivUtil import UrlConstant
-
-common_params = {"filter": "for_android"}
-
-
-def return_headers(headers: str = "app"):
-    if headers == "app":
-        return {
-            'Host': 'app-api.pixiv.net ',
-            'user-agent': 'PixivAndroidApp/6.46.0',
-            'authorization': "Bearer " + Vars.cfg.data.get("access_token"),
-            'app-version': '6.46.0 ',
-        }
-    if headers == "login":
-        return {"User-Agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}
-    if headers == "png":
-        return {'Referer': 'https://www.pixiv.net/', 'User-Agent': random.choice(UrlConstant.USER_AGENT)}
-    else:
-        return {'User-Agent': random.choice(UrlConstant.USER_AGENT)}
-
-
-def get(
-        api_url: str,
-        method: str = "GET",
-        params: [dict, str] = None,
-        head: str = "app",
-        return_type: str = "json",
-        params_clear: bool = False,
-) -> [dict, bytes, str, None]:  # return json or bytes or str or None (if error)
-    if params_clear:
-        params = params.clear()
-    if head == "app":
-        if params is not None:
-            params.update(common_params)
-        api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
-    try:
-        headers = return_headers(head)
-        if return_type == "json":
-            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).json()
-        elif return_type == "content":
-            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).content
-        elif return_type == "text":
-            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).text
-    except Exception as error:
-        print("post error:", error)
 
 
 def refresh_pixiv_token(error_info: str = "") -> None:
@@ -62,7 +17,7 @@ class PixivApp:
     @staticmethod
     def get_user_info(show_start: bool = False) -> bool:
         params = {"user_id": Vars.cfg.data.get("user_info", {}).get("id")}
-        response = get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
+        response = src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
         if response is not None:
             if show_start is True:
                 print(f"用户名：{response.get('name')}\t\t用户id：{response.get('id')}")
@@ -70,7 +25,7 @@ class PixivApp:
 
     @staticmethod
     def images_information(works_id: str) -> dict:
-        response = get(UrlConstant.IMAGE_INFORMATION, params={'id': works_id}, head="web")
+        response = src.get(UrlConstant.IMAGE_INFORMATION, params={'id': works_id}, head="web")
         if isinstance(response, dict) and response.get('illust') is not None:
             return response["illust"]
         else:
@@ -89,7 +44,7 @@ class PixivApp:
 
         if api_url != UrlConstant.BOOKMARK_INFORMATION:  # if api_url is not bookmark, clear to params dict
             params_clear = True
-        response = get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
+        response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
         if response.get('illusts') is not None:
             return response.get('illusts'), response.get('next_url')
         if max_retry <= 3:
@@ -110,7 +65,7 @@ class PixivApp:
             params_clear = True
 
         params = {"include_ranking_illusts": include_ranking_illusts, "include_privacy_policy": include_privacy_policy}
-        response: dict = get(api_url=api_url, params=params, params_clear=params_clear)
+        response: dict = src.get(api_url=api_url, params=params, params_clear=params_clear)
         if response.get('illusts') is not None:
             return response.get("illusts"), response.get('next_url')
         if max_retry <= 3:  # if max_retry is less than 3, try to refresh token and retry
@@ -131,7 +86,7 @@ class PixivApp:
             user_id = Vars.cfg.data['user_info']['id']  # get user_id from config file and set to user_id
         if api_url != UrlConstant.FOLLOWING_INFORMATION:  # if api_url is not recommended, clear to params dict
             params_clear = True
-        response = get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
+        response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
         if response.get('user_previews') is not None:
             return response["user_previews"], response.get('next_url')
         if max_retry <= 3:
@@ -149,7 +104,7 @@ class PixivApp:
 
         if api_url != UrlConstant.AUTHOR_INFORMATION:  # if api_url is not author, clear to params dict
             params_clear = True
-        response = get(api_url=api_url, params={"user_id": author_id, "type": "illust"}, params_clear=params_clear)
+        response = src.get(api_url=api_url, params={"user_id": author_id, "type": "illust"}, params_clear=params_clear)
         if response.get('illusts') is not None:  # get success, return a list of p_id and next_url (if not None)
             return response.get('illusts'), response.get('next_url')
         if max_retry <= 3:
@@ -175,7 +130,7 @@ class PixivApp:
             mode_type = mode_list[input_int(">", len(mode_list))]  # input mode_type from user
         else:
             params_clear, mode_type = True, None  # clear to params dict and set mode_type to None
-        response = get(api_url=api_url, params={"mode": mode_type}, params_clear=params_clear)
+        response = src.get(api_url=api_url, params={"mode": mode_type}, params_clear=params_clear)
         if response.get('illusts') is not None:
             return response.get('illusts'), response.get('next_url')
         if max_retry <= 3:  # if max_retry is less than 3, try to refresh token and retry
@@ -207,7 +162,7 @@ class Tag:
             "sort": sort,
             "search_target": "exact_match_for_tags",
         }
-        response = get(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
+        response = src.get(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
         if response.get('illusts') is not None:
             return response["illusts"]
         if max_retry <= 3:
@@ -224,7 +179,7 @@ class Tag:
             "sort": sort,
             "search_target": "partial_match_for_tags",
         }
-        response = get(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
+        response = src.get(api_url=UrlConstant.SEARCH_INFORMATION, params=params)
         if response.get('illusts') is not None:
             return response["illusts"]
         if max_retry <= 3:
@@ -256,7 +211,7 @@ class PixivLogin:
 
     @staticmethod
     def login(code_verifier: str, code_information: str) -> bool:  # login with code_information
-        response = get(
+        response = src.get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
             head="login",
             method="POST",
@@ -278,7 +233,7 @@ class PixivLogin:
 
     @staticmethod
     def refresh(refresh_token: str) -> bool:  # refresh token and save to file
-        response = get(
+        response = src.get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
             head="login",
             method="POST",

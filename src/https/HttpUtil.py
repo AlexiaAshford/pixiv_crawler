@@ -1,6 +1,6 @@
+import functools
 import requests
 from tools.instance import *
-import functools
 
 
 def max_retry(func: callable) -> callable:
@@ -16,22 +16,13 @@ def max_retry(func: callable) -> callable:
     return wrapper
 
 
-def request(
-        api_url: str,
-        method: str = "GET",
-        headers: dict = None,
-        params: dict = None,
-        max_retry_count: int = 5,
-) -> requests.request:
-    for retry in range(max_retry_count):
-        try:
-            if method == "GET":
-                return requests.request(method=method, url=api_url, params=params, headers=headers)
-            else:
-                return requests.request(method=method, url=api_url, data=params, headers=headers)
-        except requests.exceptions.RequestException as error:
-            print("there is an error:", error)
-        except Exception as error:
-            print("there is an error:", error)
-    else:
-        print("retry too many times, please check your network")
+def request(api_url: str, method: str = "GET", headers: dict = None, params: dict = None) -> requests.request:
+    try:
+        if method == "GET":
+            return requests.request(method=method, url=api_url, params=params, headers=headers)
+        else:
+            return requests.request(method=method, url=api_url, data=params, headers=headers)
+    except requests.exceptions.RequestException as error:
+        print("request error: {}".format(error))
+    except Exception as error:
+        print("request exception error: {}".format(error))
