@@ -44,7 +44,8 @@ class PixivApp:
 
         if api_url != UrlConstant.BOOKMARK_INFORMATION:  # if api_url is not bookmark, clear to params dict
             params_clear = True
-        response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
+        response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict},
+                           params_clear=params_clear)
         if response.get('illusts') is not None:
             return response.get('illusts'), response.get('next_url')
         if max_retry <= 3:
@@ -86,7 +87,8 @@ class PixivApp:
             user_id = Vars.cfg.data['user_info']['id']  # get user_id from config file and set to user_id
         if api_url != UrlConstant.FOLLOWING_INFORMATION:  # if api_url is not recommended, clear to params dict
             params_clear = True
-        response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict}, params_clear=params_clear)
+        response = src.get(api_url=api_url, params={"user_id": user_id, "restrict": restrict},
+                           params_clear=params_clear)
         if response.get('user_previews') is not None:
             return response["user_previews"], response.get('next_url')
         if max_retry <= 3:

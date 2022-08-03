@@ -4,6 +4,7 @@ import sys
 import src
 from tools import *
 
+
 def update():
     download_test = False
     response = src.get("https://raw.githubusercontent.com/VeronicaAlexia/pixiv_crawler/main/update.json")
