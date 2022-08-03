@@ -17,8 +17,9 @@ def return_headers(headers: str = "app"):
             'app-version': '6.46.0 ',
         }
     if headers == "login":
-        return {"User-Agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}
-    if headers == "png":
+        return {"User-Agent": "PixivAndroidApp/6.46.0 (Android 11; Pixel 5)"}
+    if headers == "png" or headers == "jpg":
+        # download from pixiv image need to add Referer:'https://www.pixiv.net/
         return {'Referer': 'https://www.pixiv.net/', 'User-Agent': random.choice(UrlConstant.USER_AGENT)}
     else:
         return {'User-Agent': random.choice(UrlConstant.USER_AGENT)}
