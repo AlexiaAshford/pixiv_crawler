@@ -257,9 +257,11 @@ class PixivLogin:
     @staticmethod
     def save_token(response: dict) -> None:  # save token to file for later use
         if isinstance(response, dict):  # if response is a dict
-            Vars.cfg.data["user_info"] = response["user"]  # save user_id to config
             Vars.cfg.data["access_token"] = response["access_token"]  # save access_token to config
             Vars.cfg.data["refresh_token"] = response["refresh_token"]  # save refresh_token to config
+            Vars.cfg.data["user_info"] = {
+                "id": response["user"]["id"], "account": response["user"]["account"]
+            }
             Vars.cfg.save()  # save config to file
             print("login success, user_id:", response["user"]["id"], "access_token:", response["access_token"])
         else:
