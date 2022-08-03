@@ -33,11 +33,11 @@ class ImageInfo:
                     print("画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url)))
             print("发布时间: {}\n".format(self.create_date))
 
-        Vars.image_out_path = os.path.join(Vars.cfg.data['save_file'], self.author_name)
-        yaml_config.YamlData(file_dir=Vars.image_out_path)  # create a new image file
+        Vars.images_out_path = os.path.join(Vars.cfg.data['save_file'], self.author_name)
+        yaml_config.YamlData(file_dir=Vars.images_out_path)  # create a new image file
 
     def save_image_to_local(self, file_name: str, image_url: str):
-        save_image_dir: str = os.path.join(Vars.image_out_path, file_name)  # save image file
+        save_image_dir: str = os.path.join(Vars.images_out_path, file_name)  # save image file
         if not os.path.exists(save_image_dir):
             instance.TextFile.write_image(
                 save_path=save_image_dir,
