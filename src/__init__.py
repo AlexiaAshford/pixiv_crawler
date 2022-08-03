@@ -25,14 +25,22 @@ def return_headers(headers: str = "app"):
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(0.5))
-def get(
-        api_url: str,
+def get(api_url: str,
         method: str = "GET",
         params: [dict, str] = None,
         head: str = "app",
         return_type: str = "json",
-        params_clear: bool = False,
-) -> [dict, bytes, str, None]:  # return json or bytes or str or None (if error)
+        params_clear: bool = False
+        ) -> [dict, bytes, str, None]:  # return json or bytes or str or None (if error)
+    """
+    :param api_url: url
+    :param method: method of request
+    :param params: params of request
+    :param head: headers of request
+    :param return_type: return type of response
+    :param params_clear: clear params of request
+    :return: json or bytes or str or None (if error)
+    """
     if params_clear:
         params = params.clear()
     if head == "app":
