@@ -30,10 +30,12 @@ def get(api_url: str,
         method: str = "GET",
         params: [dict, str] = None,
         head: str = "app",
+        dumps: bool = False,
         return_type: str = "json",
         params_clear: bool = False
         ) -> [dict, bytes, str, None]:  # return json or bytes or str or None (if error)
     """
+    :param dumps: if False, return json.dumps(json_str)
     :param api_url: url
     :param method: method of request
     :param params: params of request
@@ -48,6 +50,9 @@ def get(api_url: str,
         if params is not None:
             params.update(common_params)
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
+    if dumps and isinstance(params, dict):  # dump params to string json
+        params = json.dumps(params)
+
     try:
         headers = return_headers(head)
         if return_type == "json":

@@ -101,12 +101,13 @@ class PixivApp:
             api_url: str = UrlConstant.AUTHOR_INFORMATION,
             author_id: str = "",
             params_clear: bool = False,
+            types: str = "illust",
             max_retry: int = 3
     ) -> [list, str, None]:  # get author information and return a list of p_id
-
         if api_url != UrlConstant.AUTHOR_INFORMATION:  # if api_url is not author, clear to params dict
             params_clear = True
-        response = src.get(api_url=api_url, params={"user_id": author_id, "type": "illust"}, params_clear=params_clear)
+
+        response = src.get(api_url=api_url, params={"user_id": author_id, "type": types}, params_clear=params_clear)
         if response.get('illusts') is not None:  # get success, return a list of p_id and next_url (if not None)
             return response.get('illusts'), response.get('next_url')
         if max_retry <= 3:

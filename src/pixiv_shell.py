@@ -6,15 +6,23 @@ import re
 
 
 def shell_author_works(author_id: str, next_url: str = ""):  # download author images save to local
+    next_type = 0
+    return_type = "illust"
     while True:
         if next_url is None:  # if next_url is None, it means that it is download complete
-            return print("the end of author_works list")
+            next_type += 1
+            if next_type == 2:  # if next_type is 2, it means it is the end of download author works
+                return print("\nthe end of author_works list, the author_id is: " + author_id)
+            else:
+                # change next_url to empty, it means it is the first time to download author_works list
+                return_type, next_url = "manga", ""
+                print("\ndownload the author cartoon works...")
         if next_url == "":  # if next_url is empty, it means it is the first time to download author works list
-            image_info_list, next_url = src.PixivApp.author_information(author_id=author_id)
+            images_list, next_url = src.PixivApp.author_information(author_id=author_id, types=return_type)
         else:  # if next_url is not empty, it means it is the next time to download author works list
-            image_info_list, next_url = src.PixivApp.author_information(api_url=next_url)
+            images_list, next_url = src.PixivApp.author_information(api_url=next_url, types=return_type)
         # # start download threading pool for download images from author works list
-        Image.Multithreading().executing_multithreading(image_info_list)
+        Image.Multithreading().executing_multithreading(images_list)
 
 
 @functions.count_time
