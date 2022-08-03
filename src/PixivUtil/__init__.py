@@ -1,5 +1,5 @@
 import src
-from tools.instance import *
+from tools import *
 from src.PixivUtil import UrlConstant
 
 
@@ -127,7 +127,7 @@ class PixivApp:
         if api_url == UrlConstant.RANKING_INFORMATION:  # if api_url is not author, clear to params dict
             for index, mode in enumerate(mode_list):  # for each mode, get the ranking information
                 print("index:", index, "\t\tmode_name:", mode)  # print mode_name
-            mode_type = mode_list[input_int(">", len(mode_list))]  # input mode_type from user
+            mode_type = mode_list[functions.input_int(">", len(mode_list))]  # input mode_type from user
         else:
             params_clear, mode_type = True, None  # clear to params dict and set mode_type to None
         response = src.get(api_url=api_url, params={"mode": mode_type}, params_clear=params_clear)

@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import src
-
+from tools import *
 
 def update():
     download_test = False
@@ -13,7 +13,7 @@ def update():
     data = json.loads(open('update.json', 'r').read())
     if data['version'] < response['version']:
         print("检测到有新版本", response['version'], "是否进行更新？[yes/no]")
-        choice = src.input_str('>').strip()
+        choice = functions.input_str('>').strip()
         if choice == "yes":
             download_test = True
             print("开始更新", response['version'], "版本")

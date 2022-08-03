@@ -1,5 +1,7 @@
+import os
+import re
 import threading
-from tools.instance import *
+from tools import *
 import src
 
 
@@ -8,9 +10,9 @@ class ImageInfo:
         self.result_info = result_info
         self.image_id = str(result_info["id"])
         self.author_id = str(result_info['user']["id"])
-        self.author_name = remove_str(str(result_info['user']["name"]))
+        self.author_name = functions.remove_str(str(result_info['user']["name"]))
         self.page_count = result_info['page_count']
-        self.image_name = remove_str(result_info['title'])
+        self.image_name = functions.remove_str(result_info['title'])
         self.create_date = result_info['create_date']
         self.tag_name = ' '.join([data["name"] for data in result_info['tags'] if data["name"]])
         self.original_url = result_info.get('meta_single_page', {}).get('original_image_url')
@@ -32,18 +34,18 @@ class ImageInfo:
             print("发布时间: {}\n".format(self.create_date))
 
         Vars.image_out_path = os.path.join(Vars.cfg.data['save_file'], self.author_name)
-        YamlData(file_dir=Vars.image_out_path)  # create a new image file
+        yaml_config.YamlData(file_dir=Vars.image_out_path)  # create a new image file
 
     def save_image_to_local(self, file_name: str, image_url: str):
         save_image_dir: str = os.path.join(Vars.image_out_path, file_name)  # save image file
         if not os.path.exists(save_image_dir):
-            TextFile.write_image(
+            instance.TextFile.write_image(
                 save_path=save_image_dir,
                 image_file=src.get(api_url=image_url, head="png", return_type="content")
             )
         elif os.path.getsize(save_image_dir) == 0:
             print("{} is empty, retry download png file!".format(self.image_name))
-            TextFile.write_image(
+            instance.TextFile.write_image(
                 save_path=save_image_dir,
                 image_file=src.get(api_url=image_url, head="png", return_type="content")
             )

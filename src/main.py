@@ -1,6 +1,8 @@
 import argparse
+import os
+import re
 import sys
-from tools.instance import *
+from tools  import *
 import src
 
 
@@ -133,10 +135,10 @@ def shell_parser(command_line_args: argparse.Namespace):
         shell_console = True
 
     if not shell_console:
-        for info in Msg.msg_help:
+        for info in instance.Msg.msg_help:
             print_lang('[帮助]', info)
         while True:  # start interactive mode for command line
-            shell(re.split('\\s+', src.input_str('>').strip()))
+            shell(re.split('\\s+', functions.input_str('>').strip()))
 
 
 def shell(inputs: list):

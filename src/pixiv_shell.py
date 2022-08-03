@@ -1,6 +1,8 @@
 from src import Image
-from tools.instance import *
+from tools import *
 import src
+import os
+import re
 
 
 def shell_author_works(author_id: str, next_url: str = ""):  # download author images save to local
@@ -15,10 +17,10 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
         Image.Multithreading().executing_multithreading(image_info_list)
 
 
-@count_time
+@functions.count_time
 def shell_illustration(inputs):
     if len(inputs) >= 2:
-        Vars.images_info = src.PixivApp.images_information(src.rec_id(inputs[1]))
+        Vars.images_info = src.PixivApp.images_information(functions.rec_id(inputs[1]))
         if isinstance(Vars.images_info, dict):
             Vars.images_info = Image.ImageInfo(Vars.images_info)
             Vars.images_info.show_images_information()
@@ -32,7 +34,7 @@ def shell_illustration(inputs):
         print("你没有输入id或者链接")
 
 
-@count_time
+@functions.count_time
 def shell_search(inputs: list):
     if len(inputs) < 2:  # if there is no search keyword input
         return print("没有输入搜索信息")  # print error message
@@ -41,7 +43,7 @@ def shell_search(inputs: list):
     Image.Multithreading().executing_multithreading(response)
 
 
-@count_time
+@functions.count_time
 def shell_download_follow_author(next_url: str = ""):
     while True:
         if next_url is None:  # if next_url is None, it means that it is download complete
@@ -55,7 +57,7 @@ def shell_download_follow_author(next_url: str = ""):
             shell_author_works(follow_info.get("user").get("id"))  # download author works list and save to local
 
 
-@count_time
+@functions.count_time
 def shell_download_rank(next_url: str = ""):
     while True:
         if next_url is None:  # if next_url is None, it means that it is download complete
@@ -90,7 +92,7 @@ def shell_test_pixiv_token():
     if Vars.cfg.data.get("refresh_token") == "":
         print("检测到本地档案没有令牌，请登入网站获取code来请求token，也可以将token自行写入本地档案")
         code_verifier, browser = src.PixivLogin.open_browser()
-        if src.PixivLogin.login(code_verifier, src.input_str('code:').strip()):
+        if src.PixivLogin.login(code_verifier, functions.input_str('code:').strip()):
             print(f"code信息验证成功！，token信息已经保存在本地档案，请继续使用")
         else:
             print(f"输入code无效，请重新尝试获取code！")
