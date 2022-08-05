@@ -1,4 +1,4 @@
-import logging
+import json
 import random
 from src.PixivUtil import *
 from src.pixiv_shell import *
@@ -8,7 +8,7 @@ from tenacity import *
 common_params = {"filter": "for_android"}
 
 
-def return_headers(headers: str = "app"):
+def header(headers: str = "app"):
     if headers == "app":
         return {
             'Host': 'app-api.pixiv.net ',
@@ -29,7 +29,7 @@ def return_headers(headers: str = "app"):
 def get(api_url: str,
         method: str = "GET",
         params: [dict, str] = None,
-        head: str = "app",
+        head_type: str = "app",
         dumps: bool = False,
         return_type: str = "json",
         params_clear: bool = False
@@ -39,28 +39,28 @@ def get(api_url: str,
     :param api_url: url
     :param method: method of request
     :param params: params of request
-    :param head: headers of request
+    :param head_type: headers of request
     :param return_type: return type of response
     :param params_clear: clear params of request
     :return: json or bytes or str or None (if error)
     """
     if params_clear:
         params = params.clear()
-    if head == "app":
-        if params is not None:
-            params.update(common_params)
+
+    if head_type == "app":
+        params.update(common_params) if params is not None else common_params
         api_url = UrlConstant.PIXIV_HOST + api_url.replace(UrlConstant.PIXIV_HOST, '')
+
     if dumps and isinstance(params, dict):  # dump params to string json
         params = json.dumps(params)
 
     try:
-        headers = return_headers(head)
-        if return_type == "json":
-            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).json()
-        elif return_type == "content":
-            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).content
-        elif return_type == "text":
-            return HttpUtil.request(method=method, api_url=api_url, params=params, headers=headers).text
-    except Exception as error:
-        logging.error(error)
+        response = HttpUtil.request(method=method, api_url=api_url, params=params, headers=header(head_type))
+        if return_type == "json" or return_type == "dict":
+            return response.json()
+        elif return_type == "content" or return_type == "bytes":
+            return response.content
+        elif return_type == "text" or return_type == "str":
+            return response.text
+    except Exception as error:  # if error, return None
         Exception("get error: {}".format(error))

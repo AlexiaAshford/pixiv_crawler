@@ -25,7 +25,7 @@ class PixivApp:
 
     @staticmethod
     def images_information(works_id: str) -> dict:
-        response = src.get(UrlConstant.IMAGE_INFORMATION, params={'id': works_id}, head="web")
+        response = src.get(UrlConstant.IMAGE_INFORMATION, params={'id': works_id}, head_type="web")
         if isinstance(response, dict) and response.get('illust') is not None:
             return response["illust"]
         else:
@@ -216,7 +216,7 @@ class PixivLogin:
     def login(code_verifier: str, code_information: str) -> bool:  # login with code_information
         response = src.get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
-            head="login",
+            head_type="login",
             method="POST",
             params={
                 "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
@@ -238,7 +238,7 @@ class PixivLogin:
     def refresh(refresh_token: str) -> bool:  # refresh token and save to file
         response = src.get(
             api_url="https://oauth.secure.pixiv.net/auth/token",
-            head="login",
+            head_type="login",
             method="POST",
             params={
                 "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",

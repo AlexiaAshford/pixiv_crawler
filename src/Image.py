@@ -41,13 +41,13 @@ class ImageInfo:
         if not os.path.exists(save_image_dir):
             instance.TextFile.write_image(
                 save_path=save_image_dir,
-                image_file=src.get(api_url=image_url, head="png", return_type="content")
+                image_file=src.get(api_url=image_url, head_type="png", return_type="content")
             )
         elif os.path.getsize(save_image_dir) == 0:
             print("{} is empty, retry download png file!".format(self.image_name))
             instance.TextFile.write_image(
                 save_path=save_image_dir,
-                image_file=src.get(api_url=image_url, head="png", return_type="content")
+                image_file=src.get(api_url=image_url, head_type="png", return_type="content")
             )
 
     def out_put_download_image_file(self, image_url: str = None, image_url_list: list = None):
