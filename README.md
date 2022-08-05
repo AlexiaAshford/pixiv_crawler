@@ -1,6 +1,8 @@
-# pixiv crawler for [pixiv.net](https://www.pixiv.net/)
  
-<img src="./docs/Pixiv_logo.png" alt="Pixiv_logo" width ="400">
+<h1 align="center">
+  <img src="./docs/Pixiv_logo.png" alt="Pixiv_logo" width ="400">
+  <br>pixiv crawler for <a href="https://www.pixiv.net/">pixiv.net</a><br>  
+</h1> 
 
 ### pixiv login.
 
