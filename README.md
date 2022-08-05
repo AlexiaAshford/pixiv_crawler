@@ -1,4 +1,6 @@
-# PixivCrawler
+# pixiv crawler for [pixiv.net](https://www.pixiv.net/)
+ 
+<img src="./docs/Pixiv_logo.png" alt="Pixiv_logo" width ="400">
 
 ### pixiv login.
 
