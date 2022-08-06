@@ -6,43 +6,6 @@ from tools import *
 import src
 
 
-def set_update_config():
-    Vars.cfg.load()
-    config_change = False
-    if not isinstance(Vars.cfg.data.get('max_thread'), int):
-        Vars.cfg.data['max_thread'] = 5
-        config_change = True
-
-    if not isinstance(Vars.cfg.data.get('save_file'), str):
-        Vars.cfg.data['save_file'] = 'image_file'
-        config_change = True
-
-    if not isinstance(Vars.cfg.data.get('access_token'), str):
-        Vars.cfg.data['access_token'] = ""
-        config_change = True
-
-    if not isinstance(Vars.cfg.data.get('refresh_token'), str):
-        Vars.cfg.data['refresh_token'] = ""
-        config_change = True
-    if not isinstance(Vars.cfg.data.get('picture_format'), str):
-        Vars.cfg.data['picture_format'] = ".png"
-        config_change = True
-
-    if not isinstance(Vars.cfg.data.get('user_id'), str):
-        Vars.cfg.data['user_id'] = ""  # user id
-        config_change = True
-
-    if not isinstance(Vars.cfg.data.get('account'), str):
-        Vars.cfg.data['account'] = ""  # user id
-        config_change = True
-
-    if config_change:  # if config change, save it to file and reload.
-        Vars.cfg.save()
-
-    if not os.path.exists(Vars.cfg.data.get('save_file')):
-        os.mkdir(Vars.cfg.data.get('save_file'))
-
-
 def start_parser() -> argparse.Namespace:  # start parser for command line arguments and start download process
     parser = argparse.ArgumentParser()  # create parser object for command line arguments
     parser.add_argument(

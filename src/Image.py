@@ -111,9 +111,13 @@ class Multithreading:
         self.semaphore.release()  # release semaphore when threading pool is empty
 
     def executing_multithreading(self, image_info_list: list):
-        if isinstance(image_info_list, list) and len(image_info_list) != 0:  # if image_info_list is not empty list
-            for illusts in image_info_list:  # add illusts to threading pool for download
-                self.add_image_info_obj(ImageInfo(illusts))
-            self.handling_threads()  # start download threading pool for download images
+        if isinstance(image_info_list, list):  # if image_info_list is not empty list
+            if len(image_info_list) != 0:
+                for illusts in image_info_list:  # add illusts to threading pool for download
+                    self.add_image_info_obj(ImageInfo(illusts))
+                self.handling_threads()  # start download threading pool for download images
+            else:
+                print("image_info_list is empty, no need to start download threading pool.")
         else:
-            return print("get works list error:", image_info_list)
+            print("image_info_list is not list, no need to start download threading pool.")
+            print("image_info_list: {}".format(image_info_list))
