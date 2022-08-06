@@ -1,6 +1,9 @@
 from tools import instance, functions, yaml_config
 
 
+# from src import Image
+
+
 class Vars:
     cfg = yaml_config.YamlData(file_path='pixiv-config.yaml')
     images_info = None

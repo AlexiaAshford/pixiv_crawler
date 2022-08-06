@@ -17,9 +17,12 @@ def remove_str(content: str):
     return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', content))
 
 
-def rec_id(book_id: str):
+def get_input_id(book_id: str):
     book_id = book_id if 'http' not in book_id else re.findall(r'/(\d+)/?', book_id)[0]
-    return str(book_id) if book_id.isdigit() else f'输入信息 {book_id} 不是数字或链接！'
+    if book_id.isdigit():
+        return str(book_id)
+    else:
+        raise f'输入信息 {book_id}  不是数字或链接！'
 
 
 def index_title(division_index: int, image_name: str):

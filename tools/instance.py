@@ -20,6 +20,10 @@ class Msg:
 class TextFile:
     @staticmethod
     def write(text_path: str = "", text_content: str = "", mode: str = "a") -> [str, None]:
+        if mode not in ["a", "w", "r"]:
+            raise ValueError("mode must be a, w, r")
+        if mode == "r":
+            return TextFile.read(text_path)
         try:
             with open(text_path, mode, encoding="utf-8") as file:
                 file.write(text_content)

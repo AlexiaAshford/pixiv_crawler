@@ -1,5 +1,5 @@
-from src import Image
 from tools import *
+from src import Image
 import src
 import os
 import re
@@ -28,18 +28,19 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
 @functions.count_time
 def shell_illustration(inputs):
     if len(inputs) >= 2:
-        Vars.images_info = src.PixivApp.images_information(functions.rec_id(inputs[1]))
-        if isinstance(Vars.images_info, dict):
-            Vars.images_info = Image.ImageInfo(Vars.images_info)
-            Vars.images_info.show_images_information()
-            if Vars.images_info.page_count == 1:
-                Vars.images_info.out_put_download_image_file(image_url=Vars.images_info.original_url)
-            else:
-                Vars.images_info.out_put_download_image_file(image_url_list=Vars.images_info.original_url_list)
-        else:
-            print("没有找到相应的作品！")
+        images_id = functions.get_input_id(inputs[1])
     else:
-        print("你没有输入id或者链接")
+        raise Exception("illustration id is needed")
+    Vars.images_info = src.PixivApp.images_information(images_id)
+    if isinstance(Vars.images_info, dict):
+        Vars.images_info = Image.ImageInfo(Vars.images_info)
+        Vars.images_info.show_images_information()
+        if Vars.images_info.page_count == 1:
+            Vars.images_info.out_put_download_image_file(image_url=Vars.images_info.original_url)
+        else:
+            Vars.images_info.out_put_download_image_file(image_url_list=Vars.images_info.original_url_list)
+    else:
+        print("没有找到相应的作品！")
 
 
 @functions.count_time
