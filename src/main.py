@@ -1,5 +1,4 @@
 import argparse
-import os
 import re
 import sys
 from tools import *
@@ -129,7 +128,7 @@ def shell(inputs: list):
     elif inputs_choice == 'f' or inputs_choice == 'follow':
         src.shell_download_follow_author()
     else:
-        print(inputs_choice, "为无效指令")
+        print(inputs_choice, "is not a valid command, please try again!")
 
 
 def print_lang(*args) -> None:  # print message in language set in config file
