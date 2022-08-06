@@ -1,6 +1,6 @@
 import src
 from tools import *
-from src.PixivUtil import UrlConstant
+from src.pixiv import UrlConstant
 
 
 def refresh_pixiv_token(error_info: str = "") -> None:
