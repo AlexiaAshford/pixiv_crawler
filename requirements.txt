@@ -4,3 +4,4 @@ PyYAML~=6.0
 zhconv~=1.0
 setuptools~=62.6.0
 tenacity~=8.0.1
+prettytable~=3.3.0
