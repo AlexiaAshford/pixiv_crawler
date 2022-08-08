@@ -81,11 +81,19 @@ class ImageInfo:
 class Multithreading:
     def __init__(self):
         self.threading_list = []
+        self.pool_length = 0
         self.threading_page = 0
         self.images_info_obj_list = []
-        self.pool_length = 0
-        self.max_thread = Vars.cfg.data.get("max_thread")
-        self.semaphore = threading.Semaphore(self.max_thread)
+        self.semaphore = threading.Semaphore(self.max_thread_number)
+
+    @property
+    def max_thread_number(self) -> int:
+        max_thread_number = Vars.cfg.data["max_thread"]
+        if max_thread_number == 0:
+            max_thread_number = 16
+        elif max_thread_number > 64:
+            max_thread_number = 64
+        return max_thread_number
 
     def add_image_info_obj(self, image_info_obj):
         self.images_info_obj_list.append(image_info_obj)  # add image_info_obj to threading pool

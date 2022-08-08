@@ -14,7 +14,7 @@ def set_update_config():
     Vars.cfg.load()
     config_change = False
     if not isinstance(Vars.cfg.data.get('max_thread'), int):
-        Vars.cfg.data['max_thread'] = 5
+        Vars.cfg.data['max_thread'] = 10
         config_change = True
 
     if not isinstance(Vars.cfg.data.get('save_file'), str):
