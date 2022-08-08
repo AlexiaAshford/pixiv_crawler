@@ -1,4 +1,3 @@
-import os
 import re
 import threading
 from tools import *
@@ -10,29 +9,41 @@ class ImageInfo:
         self.result_info = result_info
         self.image_id = str(result_info["id"])
         self.author_id = str(result_info['user']["id"])
-        self.author_name = functions.remove_str(str(result_info['user']["name"]))
         self.page_count = result_info['page_count']
-        self.image_name = functions.remove_str(result_info['title'])
         self.create_date = result_info['create_date']
-        self.tag_name = ' '.join([data["name"] for data in result_info['tags'] if data["name"]])
         self.original_url = result_info.get('meta_single_page', {}).get('original_image_url')
         self.original_url_list = [url['image_urls']["original"] for url in result_info.get('meta_pages')]
 
+    @property
+    def tag_name(self) -> str:  # get tag name
+        return ' '.join([data["name"] for data in self.result_info['tags'] if data["name"]])
+
+    @property
+    def image_name(self) -> str:  # author name
+        res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
+        return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info['title'])))
+
+    @property
+    def author_name(self) -> str:  # author name
+        res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
+        return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info['user']["name"])))
+
+    @property
+    def description(self) -> str:  # author name
+        description_info = "插画名称: {}:\n插画序号: {}\n".format(self.image_name, self.image_id)
+        description_info += "作者名称: {}\n作者序号: {}\n".format(self.author_name, self.author_id)
+        description_info += "插画标签: {}\n画集数量: {}".format(self.tag_name, self.page_count)
+        if self.page_count == 1:
+            description_info += "\n插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", self.original_url))
+        else:
+            for index, original_url in enumerate(self.original_url_list, start=1):
+                description_info += "\n画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url))
+        description_info += "\n发布时间: {}\n".format(self.create_date)
+        return description_info
+
     def show_images_information(self, thread_status: bool = False):
         if not thread_status:
-            print("插画名称: {}:".format(self.image_name))
-            print("插画序号: {}".format(self.image_id))
-            print("作者名称: {}".format(self.author_name))
-            print("作者序号: {}".format(self.author_id))
-            print("插画标签: {}".format(self.tag_name))
-            print("画集数量: {}".format(self.page_count))
-            if self.page_count == 1:
-                print("插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", self.original_url)))
-            else:
-                for index, original_url in enumerate(self.original_url_list, start=1):
-                    print("画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url)))
-            print("发布时间: {}\n".format(self.create_date))
-
+            print(self.description)
         Vars.images_out_path = os.path.join(Vars.cfg.data['save_file'], self.author_name)
         yaml_config.YamlData(file_dir=Vars.images_out_path)  # create a new image file
 
