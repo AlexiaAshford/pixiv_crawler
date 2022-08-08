@@ -17,6 +17,10 @@ def set_update_config():
         Vars.cfg.data['max_thread'] = 10
         config_change = True
 
+    if not isinstance(Vars.cfg.data.get('app_version'), int):
+        Vars.cfg.data['app_version'] = "6.46.0"
+        config_change = True
+
     if not isinstance(Vars.cfg.data.get('save_file'), str):
         Vars.cfg.data['save_file'] = 'image_file'
         config_change = True

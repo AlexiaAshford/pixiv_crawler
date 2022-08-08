@@ -26,12 +26,12 @@ def header(headers: str = "app"):
     if headers == "app":
         return {
             'Host': 'app-api.pixiv.net ',
-            'user-agent': 'PixivAndroidApp/6.46.0',
+            'user-agent': 'PixivAndroidApp/{} (Android 11; Pixel 5)'.format(Vars.cfg.data['app_version']),
             'authorization': "Bearer " + Vars.cfg.data.get("access_token"),
-            'app-version': '6.46.0 ',
+            'app-version': Vars.cfg.data['app_version'],
         }
     if headers == "login":
-        return {"User-Agent": "PixivAndroidApp/6.46.0 (Android 11; Pixel 5)"}
+        return {"User-Agent": "PixivAndroidApp/{} (Android 11; Pixel 5)".format(Vars.cfg.data['app_version'])}
     if headers == "png" or headers == "jpg":
         # download from pixiv image need to add Referer:'https://www.pixiv.net/
         return {'Referer': 'https://www.pixiv.net/', 'User-Agent': random.choice(UrlConstant.USER_AGENT)}
