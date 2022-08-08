@@ -11,15 +11,21 @@ class ImageInfo:
         self.author_id = str(result_info['user']["id"])
         self.page_count = result_info['page_count']
         self.create_date = result_info['create_date']
-        self.original_url = result_info.get('meta_single_page', {}).get('original_image_url')
-        self.original_url_list = [url['image_urls']["original"] for url in result_info.get('meta_pages')]
 
     @property
     def tag_name(self) -> str:  # get tag name
         return ' '.join([data["name"] for data in self.result_info['tags'] if data["name"]])
 
     @property
-    def image_name(self) -> str:  # author name
+    def original_url_list(self) -> list:  # get original image url list
+        return [url['image_urls']["original"] for url in self.result_info.get('meta_pages')]
+
+    @property
+    def original_url(self) -> str:  # get original url
+        return self.result_info.get('meta_single_page', {}).get('original_image_url')
+
+    @property
+    def image_name(self) -> str:  # get image name
         res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
         return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info['title'])))
 
@@ -29,7 +35,7 @@ class ImageInfo:
         return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info['user']["name"])))
 
     @property
-    def description(self) -> str:  # author name
+    def description(self) -> str:  # get description
         description_info = "插画名称: {}:\n插画序号: {}\n".format(self.image_name, self.image_id)
         description_info += "作者名称: {}\n作者序号: {}\n".format(self.author_name, self.author_id)
         description_info += "插画标签: {}\n画集数量: {}".format(self.tag_name, self.page_count)
