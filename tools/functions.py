@@ -12,11 +12,6 @@ def count_time(func: callable) -> callable:
     return wrapper
 
 
-def remove_str(content: str):
-    res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-    return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', content))
-
-
 def get_input_id(book_id: str):
     book_id = book_id if 'http' not in book_id else re.findall(r'/(\d+)/?', book_id)[0]
     if book_id.isdigit():

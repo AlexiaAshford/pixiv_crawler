@@ -8,20 +8,6 @@ from tenacity import *
 common_params = {"filter": "for_android"}
 
 
-class Images:
-    def __init__(self, image_info: dict):
-        self.result_info = image_info
-        self.image_id = str(image_info["id"])
-        self.author_id = str(image_info['user']["id"])
-        self.author_name = functions.remove_str(str(image_info['user']["name"]))
-        self.page_count = image_info['page_count']
-        self.image_name = functions.remove_str(image_info['title'])
-        self.create_date = image_info['create_date']
-        self.tag_name = ' '.join([data["name"] for data in image_info['tags'] if data["name"]])
-        self.original_url = image_info.get('meta_single_page', {}).get('original_image_url')
-        self.original_url_list = [url['image_urls']["original"] for url in image_info.get('meta_pages')]
-
-
 def header(headers: str = "app"):
     if headers == "app":
         return {

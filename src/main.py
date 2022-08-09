@@ -101,8 +101,7 @@ def shell_parser(command_line_args: argparse.Namespace):
         shell_console = True
 
     if not shell_console:
-        for info in instance.Msg.msg_help:
-            print_lang('[帮助]', info)
+        [print('[帮助]', info) for info in instance.Msg.msg_help]
         while True:  # start interactive mode for command line
             shell(re.split('\\s+', functions.input_str('>').strip()))
 
