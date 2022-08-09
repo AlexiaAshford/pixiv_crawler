@@ -12,7 +12,7 @@
 - so, you can't use this crawler to with login account,but you can use this crawler to web get the account token to
   login.
 - You can refer to the following [link](/docs) to get the account token.
-- run `py mian.py` browser automatically login pixiv on startup **[1](/docs/1.png)**
+- run `python run.py` browser automatically login pixiv on startup **[1](/docs/1.png)**
 - copy the `code`  **[2](/docs/2.png)**
 - enter the `code` it to command terminal  **[3](/docs/3.png)**
 - **Congratulations on your login success!**
@@ -58,9 +58,9 @@ n | tag name           --- search tag name and download all picture
 
 | functions                                    | complete |
 |----------------------------------------------|----------|
-| download picture by image_id                 | ✅        |
+| download picture by image id                 | ✅        |
 | command line                                 | ✅        |
-| download picture by image_name               | ✅        |
+| download picture by image name               | ✅        |
 | download collect illustrations               | ✅        |
 | download recommend illustrations             | ✅        |
 | multi-threading                              | ✅        |

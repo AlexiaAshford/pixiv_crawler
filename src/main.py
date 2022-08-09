@@ -85,11 +85,11 @@ def shell_parser(command_line_args: argparse.Namespace):
         Vars.cfg.data['max_thread'] = int(command_line_args.max)
 
     if command_line_args.name:
-        src.shell_search(['n'] + command_line_args.name)
+        src.shell_search(['name', command_line_args.name[0]])
         shell_console = True
 
     if command_line_args.download:
-        src.shell_illustration(['d'] + command_line_args.download)
+        src.shell_illustration(['download', command_line_args.download[0]])
         shell_console = True
 
     if command_line_args.author:

@@ -58,6 +58,9 @@ def get(api_url: str,
     :param params_clear: clear params of request
     :return: json or bytes or str or None (if error)
     """
+    if method not in ["GET", "POST", "PUT", "DELETE"]:
+        raise Exception("method is not in ['GET', 'POST', 'PUT', 'DELETE']")
+
     if params_clear:
         params = params.clear()
 
@@ -72,7 +75,7 @@ def get(api_url: str,
         response = HttpUtil.request(method=method, api_url=api_url, params=params, headers=header(head_type))
         if return_type == "json" or return_type == "dict":
             return response.json()
-        elif return_type == "content" or return_type == "bytes":
+        elif return_type == "content" or return_type == "png":
             return response.content
         elif return_type == "text" or return_type == "str":
             return response.text
