@@ -1,4 +1,5 @@
 import src
+import pixiv_template
 from rich import print
 from tools import *
 from src.pixiv import UrlConstant
@@ -18,7 +19,7 @@ class PixivApp:
     @staticmethod
     def get_user_info(show_start: bool = False) -> bool:
         params = {"user_id": Vars.cfg.data.get('user_id')}
-        user_info = src.UserInfo(**src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params))
+        user_info = pixiv_template.UserInfo(**src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params))
         if user_info.user is not None:
             if show_start is True:
                 print(f"用户名：{user_info.user.name}\t\t用户id：{user_info.user.id}")
@@ -68,7 +69,7 @@ class PixivApp:
 
         params = {"include_ranking_illusts": include_ranking_illusts, "include_privacy_policy": include_privacy_policy}
         response: dict = src.get(api_url=api_url, params=params, params_clear=params_clear)
-        recommend_images_info = src.RecommendImages(**response)
+        recommend_images_info = pixiv_template.RecommendImages(**response)
         if recommend_images_info.illusts is not None:
             return recommend_images_info.illusts, recommend_images_info.next_url
         if max_retry <= 3:  # if max_retry is less than 3, try to refresh token and retry
@@ -233,7 +234,7 @@ class PixivLogin:
         if response.get("errors") is not None:  # if get error, return False and print error message
             print("errors:", response['errors'])
         else:
-            PixivLogin.save_token(src.RefreshToken(**response))
+            PixivLogin.save_token(pixiv_template.RefreshToken(**response))
             return True
 
     @staticmethod
@@ -254,11 +255,11 @@ class PixivLogin:
         if response.get("errors") is not None:
             print("errors:", response['errors'])
         else:
-            PixivLogin.save_token(src.RefreshToken(**response))
+            PixivLogin.save_token(pixiv_template.RefreshToken(**response))
             return True
 
     @staticmethod
-    def save_token(response: src.RefreshToken) -> None:  # save token to file for later use
+    def save_token(response: pixiv_template.RefreshToken) -> None:  # save token to file for later use
         Vars.cfg.data["access_token"] = response.access_token
         Vars.cfg.data["refresh_token"] = response.refresh_token
         Vars.cfg.data["user_id"] = response.user.id

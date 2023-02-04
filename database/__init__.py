@@ -11,9 +11,9 @@ Base = declarative_base()
 
 class ImageDB(Base):
     __tablename__ = 'images'
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     image_title = Column(String)
-    image_description = Column(String)
+    image_caption = Column(String)
     image_author = Column(String)
     image_author_id = Column(String)
     image_tags = Column(String)
@@ -37,4 +37,7 @@ class UserDB(Base):
 
 Base.metadata.create_all(engine)
 
-session = sessionmaker(bind=engine)()
+Session = sessionmaker(bind=engine)
+session = Session()
+# 生成索引
+session.execute('CREATE INDEX if not exists image_id_index ON images (id)')

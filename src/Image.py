@@ -1,16 +1,28 @@
 import re
+import src
+import base64
+import database
 import threading
 from tools import *
-import src
+from rich import print
+import pixiv_template
+from concurrent.futures import ThreadPoolExecutor
 
 
 class ImageInfo:
-    def __init__(self, result_info: src.Illusts):
-        self.result_info = result_info
-        # self.image_id = str(result_info["id"])
-        # self.author_id = str(result_info['user']["id"])
-        # self.page_count = result_info['page_count']
-        # self.create_date = result_info['create_date']
+    def __init__(self, result_info):
+        if isinstance(result_info, dict):
+            # try:
+            #     self.result_info = pixiv_template.Illusts(**result_info)
+            # except Exception as e:
+            #     print("result_info type error, it must be dict or Illusts:", result_info)
+            #     print(e)
+            # print(self.result_info)
+            self.result_info = pixiv_template.Illusts(**result_info)
+        elif isinstance(result_info, pixiv_template.Illusts):
+            self.result_info = result_info
+        else:
+            raise Exception("result_info type error, it must be dict or Illusts:", type(result_info))
 
     @property
     def tag_name(self) -> str:  # get tag name
@@ -47,35 +59,25 @@ class ImageInfo:
         description_info += "\n发布时间: {}\n".format(self.result_info.create_date)
         return description_info
 
-    def show_images_information(self, thread_status: bool = False):
-        if not thread_status:
-            print(self.description)
-        Vars.images_out_path = os.path.join(Vars.cfg.data['save_file'], self.author_name)
-        yaml_config.YamlData(file_dir=Vars.images_out_path)  # create a new image file
-
-    def save_image_to_local(self, file_name: str, image_url: str):
-        save_image_dir: str = os.path.join(Vars.images_out_path, file_name)  # save image file
-        if not os.path.exists(save_image_dir):
-            instance.TextFile.write_image(
-                save_path=save_image_dir,
-                image_file=src.get(api_url=image_url, head_type="png", return_type="content")
-            )
-        elif os.path.getsize(save_image_dir) == 0:
-            print("{} is empty, retry download png file!".format(self.image_name))
-            instance.TextFile.write_image(
-                save_path=save_image_dir,
-                image_file=src.get(api_url=image_url, head_type="png", return_type="content")
-            )
-
-    def out_put_download_image_file(self, image_url: str = None, image_url_list: list = None):
-        if isinstance(image_url_list, list) and len(image_url_list) > 0:
-            for index, url in enumerate(image_url_list, start=1):
-                file_name = str(self.result_info.id) + "-" + str(index).rjust(4, "0") + '-' + self.image_name
-                self.save_image_to_local(file_name=file_name + Vars.cfg.data['picture_format'], image_url=url)
-
-        elif isinstance(image_url, str) and image_url != "":
-            file_name = str(self.result_info.id) + "-" + self.image_name + Vars.cfg.data['picture_format']
-            self.save_image_to_local(file_name=file_name, image_url=image_url)
+    def save_image_to_local(self, image_url: str):
+        print("start download image: {}".format(self.result_info.title))
+        image_id = image_url.split("/")[-1].replace(".jpg", "").replace(".png", "")
+        try:
+            database.session.add(database.ImageDB(
+                id=image_id,
+                image_title=self.result_info.title,
+                image_caption=self.result_info.caption,
+                image_author=self.result_info.user.name,
+                image_author_id=self.result_info.user.id,
+                image_tags=self.tag_name,
+                image_url=image_url,
+                image_page_count=self.result_info.page_count,
+                image_create_date=self.result_info.create_date,
+                cover=base64.b64encode(src.get(api_url=image_url, head_type="png", return_type="content")).decode()
+            ))  # add data to database
+        except Exception as e:
+            print("Error: {}".format(e))
+            self.save_image_to_local(image_url=image_url)
 
 
 class Multithreading:
@@ -99,50 +101,67 @@ class Multithreading:
         self.images_info_obj_list.append(image_info_obj)  # add image_info_obj to threading pool
         self.pool_length += 1  # pool length + 1 if add image_info_obj to threading pool
 
-    def handling_threads(self):
-        if len(self.images_info_obj_list) != 0:
-            print("download {} images~ ".format(self.pool_length))
-            self.threading_list = [
-                threading.Thread(target=self.download_images, args=(image_info_obj,))
-                for image_info_obj in self.images_info_obj_list
-            ]
-            for thread_ing in self.threading_list:  # start threading pool for download images
-                thread_ing.start()  # start threading pool for download images
+    # def handling_threads(self):
+    #     if len(self.images_info_obj_list) != 0:
+    #         print("download {} images~ ".format(self.pool_length))
+    #         self.threading_list = [
+    #             threading.Thread(target=self.download_images, args=(image_info_obj,))
+    #             for image_info_obj in self.images_info_obj_list
+    #         ]
+    #         for thread_ing in self.threading_list:  # start threading pool for download images
+    #             thread_ing.start()  # start threading pool for download images
+    #
+    #         for thread_ing in self.threading_list:  # wait for all threading pool finish download
+    #             thread_ing.join()  # wait for all threading pool finish download
+    #         self.threading_list.clear()
+    #     else:
+    #         print("threading pool is empty, no need to start download threading pool.")
+    #     self.images_info_obj_list.clear()  # clear threading pool and semaphore for next download
 
-            for thread_ing in self.threading_list:  # wait for all threading pool finish download
-                thread_ing.join()  # wait for all threading pool finish download
-            self.threading_list.clear()
-        else:
-            print("threading pool is empty, no need to start download threading pool.")
-        self.images_info_obj_list.clear()  # clear threading pool and semaphore for next download
+    # def progress_bar(self, total_length: int, images_name: str) -> None:  # progress bar
+    #     percentage = int(100 * self.threading_page / total_length)
+    #     print("progress: {}/{}\tpercentage: {}%\tname: {}".format(
+    #         self.threading_page, total_length, percentage, images_name),
+    #         end="\r")  # print progress bar for download images in threading pool
 
-    def progress_bar(self, total_length: int, images_name: str) -> None:  # progress bar
-        percentage = int(100 * self.threading_page / total_length)
-        print("progress: {}/{}\tpercentage: {}%\tname: {}".format(
-            self.threading_page, total_length, percentage, images_name),
-            end="\r")  # print progress bar for download images in threading pool
+    # def download_images(self, images_info: ImageInfo):
+    #     self.semaphore.acquire()  # acquire semaphore to limit threading pool
+    #     self.threading_page += 1  # threading page count + 1
+    #     images_info.show_images_information(thread_status=True)  # show images information
+    #     if images_info.result_info.page_count == 1:
+    #         images_info.out_put_download_image_file(image_url=images_info.original_url)
+    #     else:
+    #         images_info.out_put_download_image_file(image_url_list=images_info.original_url_list)
+    #
+    #     self.progress_bar(len(self.images_info_obj_list), images_info.image_name)
+    #
+    #     self.semaphore.release()  # release semaphore when threading pool is empty
 
-    def download_images(self, images_info:ImageInfo):
-        self.semaphore.acquire()  # acquire semaphore to limit threading pool
-        self.threading_page += 1  # threading page count + 1
-        images_info.show_images_information(thread_status=True)  # show images information
-        if images_info.result_info.page_count == 1:
-            images_info.out_put_download_image_file(image_url=images_info.original_url)
-        else:
-            images_info.out_put_download_image_file(image_url_list=images_info.original_url_list)
-
-        self.progress_bar(len(self.images_info_obj_list), images_info.image_name)
-
-        self.semaphore.release()  # release semaphore when threading pool is empty
-
-    def executing_multithreading(self, image_info_list: list[src.Illusts]):
-        if isinstance(image_info_list, list):  # if image_info_list is not empty list
-            if len(image_info_list) != 0:
-                for illusts in image_info_list:  # type: src.Illusts
-                    self.add_image_info_obj(ImageInfo(illusts))
-                self.handling_threads()  # start download threading pool for download images
+    def executing_multithreading(self, image_info_list: list):
+        download_list = []
+        if len(image_info_list) == 0:
+            return print("image_info_list is empty, no need to start download threading pool.")
+        for illusts in image_info_list:
+            illust_info = ImageInfo(illusts)
+            if illust_info.result_info.page_count == 1:
+                image_id = illust_info.original_url.split("/")[-1].replace(".jpg", "").replace(".png", "")
+                # check image is exist in database
+                if not database.session.query(database.ImageDB).filter(database.ImageDB.id == image_id).first():
+                    download_list.append([illust_info, illust_info.original_url])
             else:
-                print("image_info_list is empty, no need to start download threading pool.")
-        else:
-            print("image_info_list is not list, no need to start download threading pool.")
-            print("image_info_list: {}".format(image_info_list))
+                for image_url in illust_info.original_url_list:
+                    image_id = image_url.split("/")[-1].replace(".jpg", "").replace(".png", "")
+                    # check image is exist in database
+                    if not database.session.query(database.ImageDB).filter(database.ImageDB.id == image_id).first():
+                        download_list.append([illust_info, image_url])
+
+            self.add_image_info_obj(illust_info)
+
+        print("download {} images~ ".format(len(download_list)))
+        # start download threading pool for download images
+        with ThreadPoolExecutor(max_workers=self.max_thread_number) as executor:
+            for illusts, url in download_list:  # type: ImageInfo, str
+                executor.submit(illusts.save_image_to_local, url)
+        database.session.commit()  # commit database
+        return True
+        # self.handling_threads()  # start download threading pool for download images

@@ -1,3 +1,4 @@
+import database
 from tools import *
 from src import Image
 import src
@@ -12,7 +13,7 @@ def shell_author_works(author_id: str, next_url: str = ""):  # download author i
         if next_url is None:  # if next_url is None, it means that it is download complete
             next_type += 1
             if next_type == 2:  # if next_type is 2, it means it is the end of download author works
-                return print("\nthe end of author_works list, the author_id is: " + author_id)
+                return print("\nthe end of author_works list, the author_id is: ", author_id)
             else:
                 # change next_url to empty, it means it is the first time to download author_works list
                 return_type, next_url = "manga", ""
@@ -34,11 +35,16 @@ def shell_illustration(inputs):
     Vars.images_info = src.PixivApp.images_information(images_id)
     if isinstance(Vars.images_info, dict):
         Vars.images_info = Image.ImageInfo(Vars.images_info)
-        Vars.images_info.show_images_information()
-        if Vars.images_info.page_count == 1:
-            Vars.images_info.out_put_download_image_file(image_url=Vars.images_info.original_url)
+        print(Vars.images_info.description)
+        if Vars.images_info.result_info.page_count == 1:
+            Vars.images_info.save_image_to_local(Vars.images_info.original_url)
         else:
-            Vars.images_info.out_put_download_image_file(image_url_list=Vars.images_info.original_url_list)
+            for image_url in Vars.images_info.original_url_list:
+                image_id = image_url.split("/")[-1].replace(".jpg", "").replace(".png", "")
+                if not database.session.query(database.ImageDB).filter(
+                        database.ImageDB.id == image_id).first():
+                    Vars.images_info.save_image_to_local(image_url)
+        database.session.commit()
     else:
         print("没有找到相应的作品！")
 
@@ -62,7 +68,8 @@ def shell_download_follow_author(next_url: str = ""):
         else:  # if next_url is not empty, it means it is the next time to download author works list
             follow_image_list, next_url = src.PixivApp.follow_information(api_url=next_url)  # get next follow list
         for follow_info in follow_image_list:  # start download threading pool for download images from author works
-            print("start download author {} works".format(follow_info['user_name']))  # print author name
+            # print(follow_info)
+            print("start download author {} works".format(follow_info.get("user")['name']))  # print author name
             shell_author_works(follow_info.get("user").get("id"))  # download author works list and save to local
 
 

@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import sys
@@ -29,3 +30,13 @@ def update():
         json.dump(response, open('update.json', 'w'))
         print("三秒后自动退出脚本...")
         sys.exit()
+
+
+# import database
+#
+#
+# res = database.session.query(database.ImageDB).filter(database.ImageDB.id == "102696414_p0").first()
+# print(res.cover)
+# # res.cover是图片转换成base64的字符串
+# with open("test.jpg", "wb") as file:
+#     file.write(base64.b64decode(res.cover))

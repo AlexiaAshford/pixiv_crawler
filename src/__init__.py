@@ -1,7 +1,6 @@
 import json
 import random
 from tenacity import *
-from .pixiv_templite import *
 from .pixiv import *
 from .pixiv_shell import *
 from .https import request
