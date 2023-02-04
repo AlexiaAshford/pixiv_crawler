@@ -3,7 +3,7 @@ import src
 import base64
 import database
 import threading
-from tools import *
+from lib.tools import *
 from rich import print
 import pixiv_template
 from concurrent.futures import ThreadPoolExecutor

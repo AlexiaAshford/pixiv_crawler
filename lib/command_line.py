@@ -47,4 +47,10 @@ def start_parser() -> argparse.Namespace:  # start parser for command line argum
         "-a", "--author",
         nargs=1, default=None, help="enter author id"
     )  # add author argument to parser object for command line arguments for download author
+
+    parser.add_argument(
+        "--output",
+        default=False, action="store_true", help="output database image to local file"
+    )
+
     return parser.parse_args()  # return parser object for command line arguments and return it as a tuple

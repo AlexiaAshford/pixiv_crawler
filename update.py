@@ -1,9 +1,7 @@
-import base64
 import json
-import os
 import sys
 import src
-from tools import *
+from lib.tools import *
 
 
 def update():

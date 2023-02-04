@@ -1,7 +1,7 @@
 import src
 import pixiv_template
 from rich import print
-from tools import *
+from lib.tools import *
 from src.pixiv import UrlConstant
 
 

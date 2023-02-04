@@ -1,7 +1,6 @@
 import functools
 import time
 import requests
-from tools.instance import *
 
 
 def max_retry(func: callable) -> callable:
