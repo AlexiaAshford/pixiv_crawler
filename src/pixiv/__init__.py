@@ -1,5 +1,5 @@
 import src
-
+from rich import print
 from tools import *
 from src.pixiv import UrlConstant
 
@@ -18,10 +18,10 @@ class PixivApp:
     @staticmethod
     def get_user_info(show_start: bool = False) -> bool:
         params = {"user_id": Vars.cfg.data.get('user_id')}
-        response = src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params).get('user')
-        if response is not None:
+        user_info = src.UserInfo(**src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params))
+        if user_info.user is not None:
             if show_start is True:
-                print(f"用户名：{response.get('name')}\t\t用户id：{response.get('id')}")
+                print(f"用户名：{user_info.user.name}\t\t用户id：{user_info.user.id}")
             return True
 
     @staticmethod
@@ -68,8 +68,9 @@ class PixivApp:
 
         params = {"include_ranking_illusts": include_ranking_illusts, "include_privacy_policy": include_privacy_policy}
         response: dict = src.get(api_url=api_url, params=params, params_clear=params_clear)
-        if response.get('illusts') is not None:
-            return response.get("illusts"), response.get('next_url')
+        recommend_images_info = src.RecommendImages(**response)
+        if recommend_images_info.illusts is not None:
+            return recommend_images_info.illusts, recommend_images_info.next_url
         if max_retry <= 3:  # if max_retry is less than 3, try to refresh token and retry
             refresh_pixiv_token(response.get("error").get("message"))  # refresh token
             PixivApp.recommend_images(api_url=api_url)  # if get error, try to refresh token and retry

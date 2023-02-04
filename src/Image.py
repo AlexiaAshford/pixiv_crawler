@@ -5,46 +5,46 @@ import src
 
 
 class ImageInfo:
-    def __init__(self, result_info: dict):
+    def __init__(self, result_info: src.Illusts):
         self.result_info = result_info
-        self.image_id = str(result_info["id"])
-        self.author_id = str(result_info['user']["id"])
-        self.page_count = result_info['page_count']
-        self.create_date = result_info['create_date']
+        # self.image_id = str(result_info["id"])
+        # self.author_id = str(result_info['user']["id"])
+        # self.page_count = result_info['page_count']
+        # self.create_date = result_info['create_date']
 
     @property
     def tag_name(self) -> str:  # get tag name
-        return ' '.join([data["name"] for data in self.result_info['tags'] if data["name"]])
+        return ' '.join([data.name for data in self.result_info.tags if data.name])
 
     @property
     def original_url_list(self) -> list:  # get original image url list
-        return [url['image_urls']["original"] for url in self.result_info.get('meta_pages')]
+        return [url['image_urls']["original"] for url in self.result_info.meta_pages]
 
     @property
     def original_url(self) -> str:  # get original url
-        return self.result_info.get('meta_single_page', {}).get('original_image_url')
+        return self.result_info.meta_single_page.original_image_url
 
     @property
     def image_name(self) -> str:  # get image name
         res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-        return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info['title'])))
+        return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info.title)))
 
     @property
     def author_name(self) -> str:  # author name
         res_compile = re.compile(u'[\U00010000-\U0010ffff\\uD800-\\uDBFF\\uDC00-\\uDFFF]')
-        return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info['user']["name"])))
+        return res_compile.sub("", re.sub('[/:*?"<>|x08]', '#', str(self.result_info.user.name)))
 
     @property
     def description(self) -> str:  # get description
-        description_info = "插画名称: {}:\n插画序号: {}\n".format(self.image_name, self.image_id)
-        description_info += "作者名称: {}\n作者序号: {}\n".format(self.author_name, self.author_id)
-        description_info += "插画标签: {}\n画集数量: {}".format(self.tag_name, self.page_count)
-        if self.page_count == 1:
+        description_info = "插画名称: {}:\n插画序号: {}\n".format(self.image_name, self.result_info.id)
+        description_info += "作者名称: {}\n作者序号: {}\n".format(self.author_name, self.result_info.user.id)
+        description_info += "插画标签: {}\n画集数量: {}".format(self.tag_name, self.result_info.page_count)
+        if self.result_info.page_count == 1:
             description_info += "\n插画地址:{}".format(re.sub(r"pximg.net", "pixiv.cat", self.original_url))
         else:
             for index, original_url in enumerate(self.original_url_list, start=1):
                 description_info += "\n画集{}:{}".format(index, re.sub(r"pximg.net", "pixiv.cat", original_url))
-        description_info += "\n发布时间: {}\n".format(self.create_date)
+        description_info += "\n发布时间: {}\n".format(self.result_info.create_date)
         return description_info
 
     def show_images_information(self, thread_status: bool = False):
@@ -70,11 +70,11 @@ class ImageInfo:
     def out_put_download_image_file(self, image_url: str = None, image_url_list: list = None):
         if isinstance(image_url_list, list) and len(image_url_list) > 0:
             for index, url in enumerate(image_url_list, start=1):
-                file_name = self.image_id + "-" + str(index).rjust(4, "0") + '-' + self.image_name
+                file_name = str(self.result_info.id) + "-" + str(index).rjust(4, "0") + '-' + self.image_name
                 self.save_image_to_local(file_name=file_name + Vars.cfg.data['picture_format'], image_url=url)
 
         elif isinstance(image_url, str) and image_url != "":
-            file_name = self.image_id + "-" + self.image_name + Vars.cfg.data['picture_format']
+            file_name = str(self.result_info.id) + "-" + self.image_name + Vars.cfg.data['picture_format']
             self.save_image_to_local(file_name=file_name, image_url=image_url)
 
 
@@ -122,11 +122,11 @@ class Multithreading:
             self.threading_page, total_length, percentage, images_name),
             end="\r")  # print progress bar for download images in threading pool
 
-    def download_images(self, images_info):
+    def download_images(self, images_info:ImageInfo):
         self.semaphore.acquire()  # acquire semaphore to limit threading pool
         self.threading_page += 1  # threading page count + 1
         images_info.show_images_information(thread_status=True)  # show images information
-        if images_info.page_count == 1:
+        if images_info.result_info.page_count == 1:
             images_info.out_put_download_image_file(image_url=images_info.original_url)
         else:
             images_info.out_put_download_image_file(image_url_list=images_info.original_url_list)
@@ -135,10 +135,10 @@ class Multithreading:
 
         self.semaphore.release()  # release semaphore when threading pool is empty
 
-    def executing_multithreading(self, image_info_list: list):
+    def executing_multithreading(self, image_info_list: list[src.Illusts]):
         if isinstance(image_info_list, list):  # if image_info_list is not empty list
             if len(image_info_list) != 0:
-                for illusts in image_info_list:  # add illusts to threading pool for download
+                for illusts in image_info_list:  # type: src.Illusts
                     self.add_image_info_obj(ImageInfo(illusts))
                 self.handling_threads()  # start download threading pool for download images
             else:
