@@ -1,10 +1,10 @@
 import json
 import random
-from src.pixiv_templite import *
-from src.pixiv import *
-from src.pixiv_shell import *
-from src.https import HttpUtil
 from tenacity import *
+from .pixiv_templite import *
+from .pixiv import *
+from .pixiv_shell import *
+from .https import HttpUtil
 
 common_params = {"filter": "for_android"}
 
