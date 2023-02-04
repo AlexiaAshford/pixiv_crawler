@@ -1,4 +1,5 @@
 import src
+
 from tools import *
 from src.pixiv import UrlConstant
 
@@ -231,7 +232,7 @@ class PixivLogin:
         if response.get("errors") is not None:  # if get error, return False and print error message
             print("errors:", response['errors'])
         else:
-            PixivLogin.save_token(response)
+            PixivLogin.save_token(src.RefreshToken(**response))
             return True
 
     @staticmethod
@@ -252,17 +253,14 @@ class PixivLogin:
         if response.get("errors") is not None:
             print("errors:", response['errors'])
         else:
-            PixivLogin.save_token(response)
+            PixivLogin.save_token(src.RefreshToken(**response))
             return True
 
     @staticmethod
-    def save_token(response: dict) -> None:  # save token to file for later use
-        if isinstance(response, dict):  # if response is a dict
-            Vars.cfg.data["access_token"] = response["access_token"]  # save access_token to config
-            Vars.cfg.data["refresh_token"] = response["refresh_token"]  # save refresh_token to config
-            Vars.cfg.data["user_id"] = response["user"]["id"]  # save user_id to config
-            Vars.cfg.data["account"] = response["user"]["account"]  # save account to config
-            Vars.cfg.save()  # save config to file
-            print("login success, user_id:", response["user"]["id"], "access_token:", response["access_token"])
-        else:
-            print("response is not dict type")
+    def save_token(response: src.RefreshToken) -> None:  # save token to file for later use
+        Vars.cfg.data["access_token"] = response.access_token
+        Vars.cfg.data["refresh_token"] = response.refresh_token
+        Vars.cfg.data["user_id"] = response.user.id
+        Vars.cfg.data["account"] = response.user.account
+        Vars.cfg.save()  # save config to file
+        print("login success, user_id:", response.user.id, "\t\tnew access_token:", response.access_token)

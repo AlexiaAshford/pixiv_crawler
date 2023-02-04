@@ -1,5 +1,6 @@
 import json
 import random
+from src.pixiv_templite import *
 from src.pixiv import *
 from src.pixiv_shell import *
 from src.https import HttpUtil
