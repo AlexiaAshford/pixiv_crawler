@@ -1,6 +1,5 @@
 import os
-from lib.tools import  functions, yaml_config
-# from src import Image
+from . import functions, yaml_config
 
 
 class Vars:
