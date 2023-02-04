@@ -1,5 +1,4 @@
 import json
-import random
 from tenacity import *
 from .pixiv import *
 from .pixiv_shell import *
@@ -20,9 +19,12 @@ def header(headers: str = "app"):
         return {"User-Agent": "PixivAndroidApp/{} (Android 11; Pixel 5)".format(Vars.cfg.data['app_version'])}
     if headers == "png" or headers == "jpg":
         # download from pixiv image need to add Referer:'https://www.pixiv.net/
-        return {'Referer': 'https://www.pixiv.net/', 'User-Agent': random.choice(UrlConstant.USER_AGENT)}
+        return {'Referer': 'https://www.pixiv.net/',
+                'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) "
+                              "Chrome/41.0.2227.1 Safari/537.36"}
     else:
-        return {'User-Agent': random.choice(UrlConstant.USER_AGENT)}
+        return {'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) "
+                              "Chrome/41.0.2227.1 Safari/537.36"}
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(0.5))
