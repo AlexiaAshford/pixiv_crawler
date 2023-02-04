@@ -4,7 +4,7 @@ from tenacity import *
 from .pixiv_templite import *
 from .pixiv import *
 from .pixiv_shell import *
-from .https import HttpUtil
+from .https import request
 
 common_params = {"filter": "for_android"}
 
@@ -59,7 +59,7 @@ def get(api_url: str,
         params = json.dumps(params)
 
     try:
-        response = HttpUtil.request(method=method, api_url=api_url, params=params, headers=header(head_type))
+        response = request(method=method, api_url=api_url, params=params, headers=header(head_type))
         if return_type == "json" or return_type == "dict":
             return response.json()
         elif return_type == "content" or return_type == "png":

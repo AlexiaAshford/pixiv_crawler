@@ -3,7 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('sqlite:///test.db', echo=True)
+# 允许多线程
+engine = create_engine('sqlite:///pixiv_image.db', connect_args={"check_same_thread": False})
 
 Base = declarative_base()
 
@@ -11,7 +12,6 @@ Base = declarative_base()
 class ImageDB(Base):
     __tablename__ = 'images'
     id = Column(Integer, primary_key=True)
-    image_id = Column(String)
     image_title = Column(String)
     image_description = Column(String)
     image_author = Column(String)
