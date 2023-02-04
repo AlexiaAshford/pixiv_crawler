@@ -3,7 +3,7 @@ import random
 from tenacity import *
 from .pixiv import *
 from .pixiv_shell import *
-from .https import request
+from lib import request
 
 common_params = {"filter": "for_android"}
 
