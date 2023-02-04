@@ -1,6 +1,6 @@
  
 <h1 align="center">
-  <img src="./docs/Pixiv_logo.png" alt="Pixiv_logo" width ="400">
+  <img src="docs/logo.png" alt="Pixiv_logo" width ="400">
   <br>pixiv crawler for <a href="https://www.pixiv.net/">pixiv.net</a><br>  
 </h1> 
 
