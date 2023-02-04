@@ -1,39 +1,11 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
+from .model_base import Base, ImageDB, UserDB
 
 # 允许多线程
-engine = create_engine('sqlite:///pixiv_image.db', connect_args={"check_same_thread": False})
-
-Base = declarative_base()
-
-
-class ImageDB(Base):
-    __tablename__ = 'images'
-    id = Column(String, primary_key=True)
-    image_title = Column(String)
-    image_caption = Column(String)
-    image_author = Column(String)
-    image_author_id = Column(String)
-    image_tags = Column(String)
-    image_url = Column(String)
-    image_page_count = Column(Integer)
-    image_create_date = Column(String)
-    cover = Column(String)
-
-
-class UserDB(Base):
-    __tablename__ = 'users_info'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    fullname = Column(String)
-    password = Column(String)
-
-    def __repr__(self):
-        return "<User(name='%s', fullname='%s', password='%s')>" % (
-            self.name, self.fullname, self.password)
-
+db_name = "pixiv_image.db"
+check_same_thread = False
+engine = create_engine('sqlite:///' + db_name, connect_args={"check_same_thread": check_same_thread})
 
 Base.metadata.create_all(engine)
 
