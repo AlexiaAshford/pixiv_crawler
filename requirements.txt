@@ -5,3 +5,5 @@ zhconv~=1.0
 setuptools~=65.5.0
 tenacity~=8.1.0
 prettytable~=3.6.0
+pydantic~=1.10.2
+SQLAlchemy~=1.4.45
