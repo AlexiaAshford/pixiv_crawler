@@ -3,6 +3,7 @@ import pixiv_template
 from rich import print
 from lib.tools import *
 from src.pixiv import UrlConstant
+from lib.https import request, MessageError, GET, GET_WEB
 
 
 def refresh_pixiv_token(error_info: str = "") -> None:
@@ -17,21 +18,31 @@ def refresh_pixiv_token(error_info: str = "") -> None:
 class PixivApp:
 
     @staticmethod
-    def get_user_info(show_start: bool = False) -> bool:
-        params = {"user_id": Vars.cfg.data.get('user_id')}
-        user_info = pixiv_template.UserInfo(**src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params))
+    @GET(path=UrlConstant.ACCOUNT_INFORMATION)
+    def get_user_info(response) -> bool:
+        user_info = pixiv_template.UserInfo(**response.json())
         if user_info.user is not None:
-            if show_start is True:
-                print(f"用户名：{user_info.user.name}\t\t用户id：{user_info.user.id}")
+            print(f"用户名：{user_info.user.name}\t\t用户id：{user_info.user.id}")
             return True
+        return False
+
+    # def get_user_info(show_start: bool = False) -> bool:
+    #     params = {"user_id": Vars.cfg.data.get('user_id')}
+    #     user_info = pixiv_template.UserInfo(**src.get(api_url=UrlConstant.ACCOUNT_INFORMATION, params=params))
+    #     if user_info.user is not None:
+    #         if show_start is True:
+    #             print(f"用户名：{user_info.user.name}\t\t用户id：{user_info.user.id}")
+    #         return True
 
     @staticmethod
-    def images_information(works_id: str) -> dict:
-        response = src.get(UrlConstant.IMAGE_INFORMATION, params={'id': works_id}, head_type="web")
-        if isinstance(response, dict) and response.get('illust') is not None:
-            return response["illust"]
-        else:
-            print(response)
+    @GET_WEB(path=UrlConstant.IMAGE_INFORMATION)
+    def images_information(response) -> pixiv_template.Illusts:
+        try:
+            image_info = pixiv_template.Illusts(**response.json().get('illust'))
+            return image_info
+        except Exception as error:
+            print(error)
+            print("get image information failed", response.json().get("error").get("user_message"))
 
     @staticmethod
     def start_images(

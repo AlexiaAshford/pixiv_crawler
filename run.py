@@ -2,11 +2,11 @@ import sys
 from lib.tools import *
 from rich import print
 from prettytable import PrettyTable
-from src import main
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         set_update_config()
+        from src import main
         if sys.argv[1] == "token":
             Vars.cfg.data['refresh_token'] = sys.argv[2]
             print("your refresh token is: " + Vars.cfg.data['refresh_token'])
@@ -23,5 +23,6 @@ if __name__ == '__main__':
         else:
             main.main()  # main function for main.py
         sys.exit()
-
-    main.main()  # main function for main.py
+    else:
+        from src import main
+        main.main()  # main function for main.py

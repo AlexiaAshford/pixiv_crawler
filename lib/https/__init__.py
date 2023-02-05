@@ -1,9 +1,7 @@
-
 import time
 import requests
-
+from lib.tools import *
 from functools import wraps, partial
-from lib.tools import Vars
 
 
 def max_retry(func: callable) -> callable:
@@ -31,21 +29,44 @@ def request(api_url: str, method: str = "GET", headers: dict = None, params: dic
         print("request exception error: {}".format(error))
 
 
+# def refresh_pixiv_token(error_info: str = "") -> None:
+#     if error_info != "" and error_info is not None:
+#         print("[error]:", error_info)
+#     if PixivLogin.refresh(Vars.cfg.data.get("refresh_token")):
+#         print("refresh token success, new token:", Vars.cfg.data.get("access_token"))
+#     else:
+#         print("refresh token failed, please login again")
+
+
+class MessageError:
+
+    def __call__(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            response = func(*args, **kwargs)
+            if response.get("errors") is not None:
+                print("errors:", response['errors'])
+            else:
+                return response
+
+        return wrapper
+
+
 class Request:
-    def __init__(self, method: str, app: str = None):
+    def __init__(self, method: str, app: str, path: str):
         self.api_url = None
+        self.path = path
+        self.app = app
         self.method = method
-        self.params = {}
         self.common_params = {"filter": "for_android"}
         if app == "app":
-            self.params = self.common_params
             self.headers = {
                 'Host': 'app-api.pixiv.net ',
-                'user-agent': 'PixivAndroidApp/{} (Android 11; Pixel 5)'.format("6.46.0"),
-                'authorization': "Bearer " + "Cf1beejLfplEpi5061L0f4i1UyiogU8QBnIFGShcV_A",
-                'app-version': "6.46.0",
+                'user-agent': 'PixivAndroidApp/{} (Android 11; Pixel 5)'.format(Vars.cfg.data['app_version']),
+                'authorization': "Bearer " + Vars.cfg.data.get("access_token", ""),
+                'app-version': Vars.cfg.data['app_version'],
             }
-        elif app == "png" or app == "jpg":
+        elif app == "png" or app == "jpg" or app == "web":
             self.headers = {
                 'Referer': 'https://www.pixiv.net/',
                 'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -54,11 +75,14 @@ class Request:
 
     def __call__(self, func):
         @wraps(func)
-        def wrapper(params, host=None, path=None):
-            self.params.update(params if params else {})
-            self.api_url = host if host else "https://app-api.pixiv.net/v1/"
-            self.api_url = self.api_url + path if path else self.api_url
-            print(self.api_url, self.params, self.headers)
+        def wrapper(params=None, host=None):
+            if params is None:
+                params = {}
+            if self.app == "app":
+                params.update(self.common_params)
+                self.api_url = (host if host else "https://app-api.pixiv.net/v1/") + self.path
+            else:
+                self.api_url = self.path
             if self.method == "GET":
                 response = requests.request(method=self.method, url=self.api_url, params=params, headers=self.headers)
             else:
@@ -70,11 +94,4 @@ class Request:
 
 GET = partial(Request, method="GET", app="app")
 
-
-# @GET()
-# def get_(response):
-#     print(response.text)
-#
-#
-# if __name__ == '__main__':
-#     get_(params={"include_ranking_illusts": "true", "include_privacy_policy": "true"}, path="illust/recommended")
+GET_WEB = partial(Request, method="GET", app="web")

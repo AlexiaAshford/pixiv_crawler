@@ -102,5 +102,5 @@ def main():
         print("已手动退出程序")
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

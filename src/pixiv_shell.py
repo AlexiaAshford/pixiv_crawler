@@ -32,12 +32,14 @@ def shell_illustration(inputs):
         images_id = functions.get_input_id(inputs[1])
     else:
         raise Exception("illustration id is needed")
-    Vars.images_info = src.PixivApp.images_information(images_id)
-    if isinstance(Vars.images_info, dict):
+    Vars.images_info = src.PixivApp.images_information(params={'id': images_id})
+    if Vars.images_info is not None:
         Vars.images_info = Image.ImageInfo(Vars.images_info)
         print(Vars.images_info.description)
         if Vars.images_info.result_info.page_count == 1:
-            Vars.images_info.save_image_to_local(Vars.images_info.original_url)
+            if not database.session.query(database.ImageDB).filter(
+                    database.ImageDB.id == str(Vars.images_info.result_info.id) + "_p0").first():
+                Vars.images_info.save_image_to_local(Vars.images_info.original_url)
         else:
             for image_url in Vars.images_info.original_url_list:
                 image_id = image_url.split("/")[-1].replace(".jpg", "").replace(".png", "")
@@ -116,7 +118,7 @@ def shell_test_pixiv_token():
     if Vars.cfg.data['user_id'] == "":
         print("test pixiv account info is impossible, refresh token is needed")
         src.refresh_pixiv_token()
-    if not src.PixivApp.get_user_info(show_start=True):
+    if not src.PixivApp.get_user_info(params={"user_id": Vars.cfg.data.get('user_id')}):
         src.refresh_pixiv_token()
 
 
